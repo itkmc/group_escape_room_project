@@ -9,6 +9,8 @@ const BabylonScene = () => {
 
   // 플레이어 위치 상태 관리
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
+  // 달리기 상태 관리
+  const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -35,6 +37,11 @@ const BabylonScene = () => {
     const maxPitch = BABYLON.Tools.ToRadians(180);
     const minPitch = BABYLON.Tools.ToRadians(-60);
 
+    // 기본 속도와 달리기 속도 설정
+    const WALK_SPEED = 0.1;
+    const RUN_SPEED = 0.3;
+    camera.speed = WALK_SPEED;
+
     // 사다리 위치 저장용 배열
     let ladderPositions = [];
 
@@ -43,7 +50,7 @@ const BabylonScene = () => {
       new BABYLON.Vector3(-33.39, 3.38, -0.39), //사다리
       new BABYLON.Vector3(-13.72, 2.73, 2.31), //계단
     ];
-    const specialRadius = 12; // 3미터 이내
+    const specialRadius = 12; // 3미터 이내hh
 
     // 모델 로드
     BABYLON.SceneLoader.ImportMeshAsync(
@@ -142,6 +149,24 @@ if (isLadderDown) {
     camera.speed = 0.1;
     camera.angularSensibility = 6000;
 
+    // Shift 키 이벤트 리스너 추가
+    const handleKeyDown = (evt) => {
+      if (evt.key === "Shift" || evt.keyCode === 16) {
+        setIsRunning(true);
+        camera.speed = RUN_SPEED;
+      }
+    };
+
+    const handleKeyUp = (evt) => {
+      if (evt.key === "Shift" || evt.keyCode === 16) {
+        setIsRunning(false);
+        camera.speed = WALK_SPEED;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
     // 마우스 휠로 전후 이동
     canvasRef.current.addEventListener("wheel", (evt) => {
       evt.preventDefault();
@@ -187,6 +212,8 @@ if (isLadderDown) {
     // 컴포넌트 언마운트 시 정리
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("resize", onResize);
       scene.dispose();
       engine.dispose();
