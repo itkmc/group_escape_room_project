@@ -50,7 +50,7 @@ const BabylonScene = () => {
       new BABYLON.Vector3(-33.54, 2.26, -0.35), //사다리
       new BABYLON.Vector3(-13.72, 2.73, 2.31), //계단
     ];
-    const specialRadius = 12; // 3미터 이내
+    const specialRadius = 12; // 3미터 이내hh
 
     // 모델 로드
     BABYLON.SceneLoader.ImportMeshAsync(
