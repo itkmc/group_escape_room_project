@@ -7,9 +7,7 @@ import { GLTF2Export } from "@babylonjs/serializers";
 const BabylonScene = () => {
   const canvasRef = useRef(null);
 
-  // 플레이어 위치 상태 관리
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
-  // 달리기 상태 관리
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
@@ -19,7 +17,7 @@ const BabylonScene = () => {
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
 
-    // 카메라 생성 및 설정
+    // 카메라 설정
     const camera = new BABYLON.UniversalCamera(
       "camera",
       new BABYLON.Vector3(-21, 15.5, 12),
@@ -37,22 +35,18 @@ const BabylonScene = () => {
     const maxPitch = BABYLON.Tools.ToRadians(180);
     const minPitch = BABYLON.Tools.ToRadians(-60);
 
-    // 기본 속도와 달리기 속도 설정
     const WALK_SPEED = 0.1;
     const RUN_SPEED = 0.3;
     camera.speed = WALK_SPEED;
 
-    // 사다리 위치 저장용 배열
     let ladderPositions = [];
 
-    // 특수 위치 및 반경: 중력 해제 및 자유 상승 가능 위치들 (여러개 가능하도록 배열로)
     const specialPositions = [
-      new BABYLON.Vector3(-33.39, 3.38, -0.39), //사다리
-      new BABYLON.Vector3(-13.72, 2.73, 2.31), //계단
+      new BABYLON.Vector3(-33.39, 3.38, -0.39),
+      new BABYLON.Vector3(-13.72, 2.73, 2.31),
     ];
-    const specialRadius = 12; // 3미터 이내hh
+    const specialRadius = 12;
 
-    // 모델 로드
     BABYLON.SceneLoader.ImportMeshAsync(
       "",
       "/models/",
@@ -61,19 +55,28 @@ const BabylonScene = () => {
     ).then((result) => {
       console.log("✅ Loaded hospital meshes");
 
+      let parentMesh = null;
+
       result.meshes.forEach((mesh) => {
         if (mesh.name.startsWith("Hospital_02_")) {
           mesh.checkCollisions = true;
           mesh.isPickable = true;
         }
 
-        if (mesh.name === "Hospital_02_36m_0" || mesh.name === "Hospital_02_105m_0") {
+        if (
+          mesh.name === "Hospital_02_36m_0" ||
+          mesh.name === "Hospital_02_105m_0"
+        ) {
           mesh.checkCollisions = false;
           mesh.isPickable = false;
           mesh.computeWorldMatrix(true);
           const worldPos = mesh.getAbsolutePosition();
           ladderPositions.push(worldPos);
           console.log(`📌 Ladder position (${mesh.name}):`, worldPos);
+
+          if (mesh.name === "Hospital_02_36m_0") {
+            parentMesh = mesh;
+          }
         }
 
         if (mesh.name.startsWith("door")) {
@@ -81,64 +84,111 @@ const BabylonScene = () => {
           console.log(`🗑️ Removed mesh: ${mesh.name}`);
         }
       });
+
+      // 🚪 도어 모델을 부모 메시에 자식으로 추가
+      if (parentMesh) {
+        BABYLON.SceneLoader.ImportMeshAsync(
+          "",
+          "/models/",
+          "low_poly_door_-_game_ready.glb",
+          scene
+        ).then((doorResult) => {
+          const doorMeshes = doorResult.meshes;
+
+          // 도어의 월드 위치 설정
+          const desiredWorldPos = new BABYLON.Vector3(-28.25, 14.4, 14.2);
+
+          doorMeshes.forEach((doorMesh) => {
+            if (doorMesh !== scene.meshes[0]) {
+              // 부모 메시에 자식으로 추가
+              doorMesh.parent = parentMesh;
+
+              // 부모 메시의 월드 매트릭스를 반영하여 도어의 위치를 계산
+              const parentWorldMatrix = parentMesh.getWorldMatrix();
+              const invParentWorldMatrix = BABYLON.Matrix.Invert(parentWorldMatrix);
+
+              // 월드 좌표 → 로컬 좌표 변환
+              doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+                desiredWorldPos,
+                invParentWorldMatrix
+              );
+
+              // 스케일 설정
+              doorMesh.scaling = new BABYLON.Vector3(50, 50, 50);
+
+              // 회전 설정: Quaternion을 사용하여 회전 적용
+              const rotationQuaternion = BABYLON.Quaternion.RotationAxis(
+                BABYLON.Axis.X, // X축 기준으로 회전
+                Math.PI / 2       // 90도 회전
+              ).multiply(
+                BABYLON.Quaternion.RotationAxis(
+                  BABYLON.Axis.Y, // Y축 기준으로 회전
+                  Math.PI / 2      // 90도 회전
+                )
+              );
+              doorMesh.rotationQuaternion = rotationQuaternion;
+
+              console.log("🚪 Door attached at local position:", doorMesh.position);
+            }
+          });
+        });
+      }
     });
 
-   scene.registerBeforeRender(() => {
-  // 사다리 근처 체크
-  const nearLadder =
-    ladderPositions.length > 0 &&
-    ladderPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < 3);
+    scene.registerBeforeRender(() => {
+      // 사다리 근처 체크
+      const nearLadder =
+        ladderPositions.length > 0 &&
+        ladderPositions.some(
+          (pos) => BABYLON.Vector3.Distance(camera.position, pos) < 3
+        );
 
-  const ladderDownStart = new BABYLON.Vector3(-33.44, 14.13, -0.29);
-const isLadderDown =
-  Math.abs(camera.position.x - ladderDownStart.x) < 0.25 &&
-  camera.position.y <= 14.13 &&
-  camera.position.y >= 2.74 &&
-  Math.abs(camera.position.z - ladderDownStart.z) < 1;
+      const ladderDownStart = new BABYLON.Vector3(-33.44, 14.13, -0.29);
+      const isLadderDown =
+        Math.abs(camera.position.x - ladderDownStart.x) < 0.25 &&
+        camera.position.y <= 14.13 &&
+        camera.position.y >= 2.74 &&
+        Math.abs(camera.position.z - ladderDownStart.z) < 1;
 
-if (isLadderDown) {
-  // ✅ 시야 아래 고정
-  camera.rotation.x = 1.4;
+      if (isLadderDown) {
+        camera.rotation.x = 1.4;
+        camera.rotation.y = Math.PI / 30;
+        const offset = new BABYLON.Vector3(0, 0, 0.5);
+        const adjustedPos = ladderDownStart.add(offset);
+        camera.position.x = adjustedPos.x;
+        camera.position.z = adjustedPos.z;
+      } else {
+        if (camera.rotation && camera.rotation.x !== undefined) {
+          if (camera.rotation.x > maxPitch) camera.rotation.x = maxPitch;
+          if (camera.rotation.x < minPitch) camera.rotation.x = minPitch;
+        }
+      }
 
-  // ✅ 오른쪽으로 90도 회전 (필요 시 각도 조절 가능)
-  camera.rotation.y = Math.PI / 30;
+      const nearSpecialPos = specialPositions.some(
+        (pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius
+      );
 
-  // ✅ 사다리에 살짝 더 붙이기
-  const offset = new BABYLON.Vector3(0, 0, 0.5); // Z축으로 앞당김
-  const adjustedPos = ladderDownStart.add(offset);
+      if (nearSpecialPos || nearLadder) {
+        camera.applyGravity = false;
+        if (camera.position.y > MAX_CAMERA_HEIGHT)
+          camera.position.y = MAX_CAMERA_HEIGHT;
+        if (camera.position.y < MIN_CAMERA_HEIGHT)
+          camera.position.y = MIN_CAMERA_HEIGHT;
+      } else {
+        camera.applyGravity = true;
+        if (camera.position.y > MAX_CAMERA_HEIGHT)
+          camera.position.y = MAX_CAMERA_HEIGHT;
+        if (camera.position.y < MIN_CAMERA_HEIGHT)
+          camera.position.y = MIN_CAMERA_HEIGHT;
+      }
 
-  camera.position.x = adjustedPos.x;
-  camera.position.z = adjustedPos.z;
-}else {
-    // ✅ 일반 시야 각도 제한
-    if (camera.rotation && camera.rotation.x !== undefined) {
-      if (camera.rotation.x > maxPitch) camera.rotation.x = maxPitch;
-      if (camera.rotation.x < minPitch) camera.rotation.x = minPitch;
-    }
-  }
-
-  // 특수 위치 처리
-  const nearSpecialPos = specialPositions.some(
-    (pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius
-  );
-
-  if (nearSpecialPos || nearLadder) {
-    camera.applyGravity = false;
-    if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
-    if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
-  } else {
-    camera.applyGravity = true;
-    if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
-    if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
-  }
-
-  // 위치 상태 업데이트
-  setPlayerPos({
-    x: camera.position.x.toFixed(2),
-    y: camera.position.y.toFixed(2),
-    z: camera.position.z.toFixed(2),
-  });
-});
+      // 위치 상태 업데이트
+      setPlayerPos({
+        x: camera.position.x.toFixed(2),
+        y: camera.position.y.toFixed(2),
+        z: camera.position.z.toFixed(2),
+      });
+    });
 
     // 키보드 이동 설정
     camera.keysUp.push(87); // W
@@ -149,7 +199,6 @@ if (isLadderDown) {
     camera.speed = 0.1;
     camera.angularSensibility = 6000;
 
-    // Shift 키 이벤트 리스너 추가
     const handleKeyDown = (evt) => {
       if (evt.key === "Shift" || evt.keyCode === 16) {
         setIsRunning(true);
@@ -164,7 +213,6 @@ if (isLadderDown) {
       }
     };
 
-    
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
@@ -179,7 +227,6 @@ if (isLadderDown) {
     // 기본 조명 생성
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
-    // 메시 클릭 시 이름 콘솔 및 알림
     scene.onPointerObservable.add((pointerInfo) => {
       if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
         const mesh = pointerInfo.pickInfo?.pickedMesh;
@@ -190,7 +237,6 @@ if (isLadderDown) {
       }
     });
 
-    // P 키 누르면 GLB 파일로 씬 저장
     const onKeyDown = (evt) => {
       if (evt.key === "p" || evt.key === "P") {
         GLTF2Export.GLBAsync(scene, "saved_scene").then((glb) => {
@@ -201,16 +247,13 @@ if (isLadderDown) {
     };
     window.addEventListener("keydown", onKeyDown);
 
-    // 렌더 루프 시작
     engine.runRenderLoop(() => {
       scene.render();
     });
 
-    // 창 크기 변경 시 캔버스 크기 조절
     const onResize = () => engine.resize();
     window.addEventListener("resize", onResize);
 
-    // 컴포넌트 언마운트 시 정리
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keydown", handleKeyDown);
