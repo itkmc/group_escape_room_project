@@ -9,6 +9,8 @@ const BabylonScene = () => {
 
   // 플레이어 위치 상태 관리
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
+  // 달리기 상태 관리
+  const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -34,6 +36,11 @@ const BabylonScene = () => {
     const MIN_CAMERA_HEIGHT = 0;
     const maxPitch = BABYLON.Tools.ToRadians(180);
     const minPitch = BABYLON.Tools.ToRadians(-60);
+
+    // 기본 속도와 달리기 속도 설정
+    const WALK_SPEED = 0.1;
+    const RUN_SPEED = 0.3;
+    camera.speed = WALK_SPEED;
 
     // 사다리 위치 저장용 배열
     let ladderPositions = [];
@@ -129,8 +136,25 @@ const BabylonScene = () => {
     camera.keysLeft.push(65); // A
     camera.keysRight.push(68); // D
     camera.minZ = 0.1;
-    camera.speed = 0.3;
     camera.angularSensibility = 6000;
+
+    // Shift 키 이벤트 리스너 추가
+    const handleKeyDown = (evt) => {
+      if (evt.key === "Shift" || evt.keyCode === 16) {
+        setIsRunning(true);
+        camera.speed = RUN_SPEED;
+      }
+    };
+
+    const handleKeyUp = (evt) => {
+      if (evt.key === "Shift" || evt.keyCode === 16) {
+        setIsRunning(false);
+        camera.speed = WALK_SPEED;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     // 마우스 휠로 전후 이동
     canvasRef.current.addEventListener("wheel", (evt) => {
@@ -177,6 +201,8 @@ const BabylonScene = () => {
     // 컴포넌트 언마운트 시 정리
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("resize", onResize);
       scene.dispose();
       engine.dispose();
@@ -209,6 +235,11 @@ const BabylonScene = () => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
+        {isRunning && (
+          <div style={{ marginTop: "8px", color: "#ff6b6b" }}>
+            🏃 달리기
+          </div>
+        )}
       </div>
     </>
   );
