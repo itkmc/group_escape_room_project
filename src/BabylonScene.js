@@ -164,6 +164,7 @@ if (isLadderDown) {
       }
     };
 
+    
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
