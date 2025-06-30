@@ -40,7 +40,7 @@ const BabylonScene = () => {
 
     // 특수 위치 및 반경: 중력 해제 및 자유 상승 가능 위치들 (여러개 가능하도록 배열로)
     const specialPositions = [
-      new BABYLON.Vector3(-33.54, 2.26, -0.35), //사다리
+      new BABYLON.Vector3(-33.39, 3.38, -0.39), //사다리
       new BABYLON.Vector3(-13.72, 2.73, 2.31), //계단
     ];
     const specialRadius = 12; // 3미터 이내
@@ -76,52 +76,62 @@ const BabylonScene = () => {
       });
     });
 
-    // 매 프레임 중력 제어 및 위치 제한, 플레이어 위치 상태 업데이트
-    scene.registerBeforeRender(() => {
-      // 사다리 근처 체크
-      const nearLadder =
-        ladderPositions.length > 0 &&
-        ladderPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < 3);
+   scene.registerBeforeRender(() => {
+  // 사다리 근처 체크
+  const nearLadder =
+    ladderPositions.length > 0 &&
+    ladderPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < 3);
 
-      // 특수 위치 중 하나라도 가까운지 체크
-      const nearSpecialPos = specialPositions.some(
-        (pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius
-      );
+  const ladderDownStart = new BABYLON.Vector3(-33.44, 14.13, -0.29);
+const isLadderDown =
+  Math.abs(camera.position.x - ladderDownStart.x) < 0.25 &&
+  camera.position.y <= 14.13 &&
+  camera.position.y >= 2.74 &&
+  Math.abs(camera.position.z - ladderDownStart.z) < 1;
 
-      if (nearSpecialPos) {
-        // 특수 위치 근처: 중력 해제, 자유롭게 위로 이동 가능
-        camera.applyGravity = false;
+if (isLadderDown) {
+  // ✅ 시야 아래 고정
+  camera.rotation.x = 1.4;
 
-        // 높이 제한 해제: 필요하면 주석 처리한 상태 유지
-      } else if (nearLadder) {
-        // 사다리 근처: 중력 해제
-        camera.applyGravity = false;
+  // ✅ 오른쪽으로 90도 회전 (필요 시 각도 조절 가능)
+  camera.rotation.y = Math.PI / 30;
 
-        // 높이 제한 적용
-        if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
-        if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
-      } else {
-        // 그 외 일반 상태: 중력 적용, 높이 제한 적용
-        camera.applyGravity = true;
+  // ✅ 사다리에 살짝 더 붙이기
+  const offset = new BABYLON.Vector3(0, 0, 0.5); // Z축으로 앞당김
+  const adjustedPos = ladderDownStart.add(offset);
 
-        if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
-        if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
-      }
+  camera.position.x = adjustedPos.x;
+  camera.position.z = adjustedPos.z;
+}else {
+    // ✅ 일반 시야 각도 제한
+    if (camera.rotation && camera.rotation.x !== undefined) {
+      if (camera.rotation.x > maxPitch) camera.rotation.x = maxPitch;
+      if (camera.rotation.x < minPitch) camera.rotation.x = minPitch;
+    }
+  }
 
-      // 시야 각도 제한
-      // if (camera.rotation && camera.rotation.x !== undefined) {
-      //   if (camera.rotation.x > maxPitch) camera.rotation.x = maxPitch;
-      //   if (camera.rotation.x < minPitch) camera.rotation.x = minPitch;
-      // }
+  // 특수 위치 처리
+  const nearSpecialPos = specialPositions.some(
+    (pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius
+  );
 
+  if (nearSpecialPos || nearLadder) {
+    camera.applyGravity = false;
+    if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
+    if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
+  } else {
+    camera.applyGravity = true;
+    if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
+    if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
+  }
 
-      // 플레이어 위치 상태 업데이트 (소수점 둘째 자리까지)
-      setPlayerPos({
-        x: camera.position.x.toFixed(2),
-        y: camera.position.y.toFixed(2),
-        z: camera.position.z.toFixed(2),
-      });
-    });
+  // 위치 상태 업데이트
+  setPlayerPos({
+    x: camera.position.x.toFixed(2),
+    y: camera.position.y.toFixed(2),
+    z: camera.position.z.toFixed(2),
+  });
+});
 
     // 키보드 이동 설정
     camera.keysUp.push(87); // W
