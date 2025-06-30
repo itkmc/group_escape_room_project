@@ -235,11 +235,6 @@ const BabylonScene = () => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-        {isRunning && (
-          <div style={{ marginTop: "8px", color: "#ff6b6b" }}>
-            🏃 달리기
-          </div>
-        )}
       </div>
     </>
   );
