@@ -129,7 +129,7 @@ const BabylonScene = () => {
     camera.keysLeft.push(65); // A
     camera.keysRight.push(68); // D
     camera.minZ = 0.1;
-    camera.speed = 0.3;
+    camera.speed = 0.1;
     camera.angularSensibility = 6000;
 
     // 마우스 휠로 전후 이동
