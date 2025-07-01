@@ -87,7 +87,7 @@ const BabylonScene = () => {
         });
 
         // 수술대 위치 
-        const desiredOperatingWorldPos = new BABYLON.Vector3(6, 6.25, 12.37);
+        const desiredOperatingWorldPos = new BABYLON.Vector3(10, 6.25, 12.37);
         const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
         operating.meshes.forEach((operatingMesh) => {
           if (operatingMesh.name !== "__root__") {
@@ -98,14 +98,14 @@ const BabylonScene = () => {
             );
             operatingMesh.scaling = new BABYLON.Vector3(20,20,20);
             operatingMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI/2));
             operatingMesh.checkCollisions = true;
           }
         });
 
 
         // 사물함 위치 
-        const desiredlockerWorldPos = new BABYLON.Vector3(10.73, 7.15, 14.99);
+        const desiredlockerWorldPos = new BABYLON.Vector3(11.33, 7.15, 14.99);
         const locker = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "armored_cabinet (1).glb", scene);
 
         const clickableNames = ["Object_15", "Object_13", "Object_17", "Object_9", "Object_7"];
