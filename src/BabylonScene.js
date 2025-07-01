@@ -155,55 +155,59 @@ const BabylonScene = () => {
       const desiredlockerWorldPos = new BABYLON.Vector3(10.73, 7.15, 14.99);
       const locker = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "armored_cabinet (1).glb", scene);
 
-      let doorMesh = null; // Object_15 메시 저장용
-      let animationGroup = null; // 애니메이션 그룹 저장용
+      const clickableNames = ["Object_15", "Object_13", "Object_17", "Object_9", "Object_7"];
+      let animationGroup = null;
 
       locker.meshes.forEach((lockerMesh) => {
         if (lockerMesh.name !== "__root__") {
           lockerMesh.parent = parentMesh;
-          lockerMesh.position = BABYLON.Vector3.TransformCoordinates(
+
+          // 공통 위치 계산
+          let localPos = BABYLON.Vector3.TransformCoordinates(
             desiredlockerWorldPos,
             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
+
+          // 특정 메시들의 위치 조정
+          if (clickableNames.includes(lockerMesh.name)) {
+            localPos.z -= 100;
+            console.log(`${lockerMesh.name} 위치 조정됨 (z -= 100):`, localPos);
+          }
+
+          lockerMesh.position = localPos;
           lockerMesh.scaling = new BABYLON.Vector3(110, 110, 110);
           lockerMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
           lockerMesh.checkCollisions = true;
           lockerMesh.isPickable = true;
-
-          if (lockerMesh.name === "Object_15") {
-            doorMesh = lockerMesh;
-          }
         }
       });
 
-      console.log("doorMesh:", doorMesh);
-      console.log("animationGroups:", locker.animationGroups);
-
+      // 애니메이션 그룹 찾기
       animationGroup = locker.animationGroups?.find(group => group.targetedAnimations.length > 0);
 
       if (animationGroup) {
-        animationGroup.stop();
+        animationGroup.stop(); // 처음엔 멈춰둠
       } else {
         console.warn("애니메이션 그룹을 찾지 못했습니다.");
       }
 
+      // 클릭 이벤트 처리
       scene.onPointerObservable.add((pointerInfo) => {
         if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
           const pickedMesh = pointerInfo.pickInfo?.pickedMesh;
           console.log("pickedMesh:", pickedMesh?.name);
-          if (pickedMesh && pickedMesh === doorMesh) {
-            console.log("object15 클릭됨 - 애니메이션 재생");
+
+          if (pickedMesh && clickableNames.includes(pickedMesh.name)) {
+            console.log(`${pickedMesh.name} 클릭됨 - 애니메이션 재생`);
             animationGroup?.reset();
-            animationGroup?.play(false);
+            animationGroup?.play(false); // 한 번만 재생
           }
         }
       });
 
 
 
-
-      
     }
 
       const keysPressed = {};
