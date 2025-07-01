@@ -30,16 +30,19 @@ const BabylonScene = () => {
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
+     
 
       const WALK_SPEED = 0.1;
       const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
 
+      
+
       const specialPositions = [
+        
         new BABYLON.Vector3(-13.72, 2.73, 2.31),
       ];
       const specialRadius = 12;
-
       let ladderMesh = null;
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
@@ -49,35 +52,33 @@ const BabylonScene = () => {
           mesh.checkCollisions = true;
           mesh.isPickable = true;
         }
+       
+          if (mesh.name === "Hospital_02_36m_0") {
+            parentMesh = mesh;
+          }
         
-        if (mesh.name === "Hospital_02_36m_0") {
-          parentMesh = mesh;
-        }
-        
-        if (mesh.name.startsWith("door")) {
-          mesh.dispose();
-        }
-
-        if (mesh.name === "Hospital_02_105m_0") {
-          ladderMesh = mesh;
-          ladderMesh.checkCollisions = false;
-        }
-      });
+      if (mesh.name.startsWith("door")) {
+        mesh.dispose();
+      }
+      if (mesh.name === "Hospital_02_105m_0") {
+        ladderMesh = mesh;
+        ladderMesh.checkCollisions = false;
+      }
+    });
 
       if (parentMesh) {
         // 첫 번째 문 위치
-        const desiredDoor1WorldPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
+        // const desiredDoor1WorldPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
         const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
         door1.meshes.forEach((doorMesh) => {
-<<<<<<< HEAD
           console.log("도어 메시 이름:", doorMesh.name);
           if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
             // 1. 피벗 이동 (스케일 적용 전에!)
-            const boundingBox = doorMesh.getBoundingInfo().boundingBox;
-            const min = boundingBox.minimum;
-            const center = boundingBox.center;
+            // const boundingBox = doorMesh.getBoundingInfo().boundingBox;
+            // const min = boundingBox.minimum;
+            // const center = boundingBox.center;
             const pivot = new BABYLON.Vector3(-0.6, -6.3, 0);
-            doorMesh.setPivotPoint(pivot);
+          doorMesh.setPivotPoint(pivot);
 
             // 2. 위치, 회전, 스케일 적용
             doorMesh.parent = parentMesh;
@@ -92,6 +93,8 @@ const BabylonScene = () => {
 
             let isDoorOpen = false;
             const startRotation = doorMesh.rotationQuaternion.clone();
+
+            // X축을 기준으로 90도 회전
             const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
 
             // 열기 애니메이션
@@ -133,6 +136,7 @@ const BabylonScene = () => {
                 isDoorOpen = !isDoorOpen;
               })
             );
+
           }
         });
 
@@ -170,57 +174,8 @@ const BabylonScene = () => {
           }
         });
       }
-=======
-          if (doorMesh.name !== "__root__") {
-            doorMesh.parent = parentMesh;
-            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-              desiredDoor1WorldPos,
-              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8);
-            doorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
-            // doorMesh.checkCollisions = true;
-          }
-        });
-
-        // 두 번째 문 위치
-        const desiredDoor2WorldPos = new BABYLON.Vector3(-28.28, 14.2, 14.1); // 원하는 다른 위치로 지정
-        const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
-        door2.meshes.forEach((doorMesh) => {
-          if (doorMesh.name !== "__root__") {
-            doorMesh.parent = parentMesh;
-            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-              desiredDoor2WorldPos,
-              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            doorMesh.scaling = new BABYLON.Vector3(90, 70, 50);
-            doorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
-            doorMesh.checkCollisions = true;
-          }
-        });
-
-        // 의자 위치 (중복 선언 제거)
-        const desiredChairWorldPos = new BABYLON.Vector3(-21, 14.2, 11.5);
-        const chair = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wooden_chair.glb", scene);
-        chair.meshes.forEach((chairMesh) => {
-          if (chairMesh.name !== "__root__") {
-            chairMesh.parent = parentMesh;
-            chairMesh.position = BABYLON.Vector3.TransformCoordinates(
-              desiredChairWorldPos,
-              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            chairMesh.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
-            chairMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
-            chairMesh.checkCollisions = true;
-          }
-        });
-      }
 
       const keysPressed = {};
->>>>>>> 69851895027b47d275b896dc44762e3f9153e3a5
 
       scene.registerBeforeRender(() => {
         const nearSpecialPos = specialPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius);
@@ -312,7 +267,7 @@ const BabylonScene = () => {
       camera.angularSensibility = 6000;
 
       const handleKeyDown = (evt) => {
-        keysPressed[evt.key.toLowerCase()] = true;
+         keysPressed[evt.key.toLowerCase()] = true;
       };
 
       const handleKeyUp = (evt) => {
@@ -365,6 +320,7 @@ const BabylonScene = () => {
     };
 
     initScene();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
