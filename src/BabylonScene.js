@@ -6,7 +6,6 @@ import { GLTF2Export } from "@babylonjs/serializers";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
-
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isRunning, setIsRunning] = useState(false);
 
@@ -17,260 +16,273 @@ const BabylonScene = () => {
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
 
-    // 카메라 설정
-    const camera = new BABYLON.UniversalCamera(
-      "camera",
-      new BABYLON.Vector3(-21, 15.5, 12),
-      scene
-    );
-    camera.rotation.y = Math.PI + Math.PI / 2;
-    camera.attachControl(canvasRef.current, true);
+    const initScene = async () => {
+      const camera = new BABYLON.UniversalCamera(
+        "camera",
+        new BABYLON.Vector3(-21, 15.5, 11.5),
+        scene
+      );
+      camera.rotation.y = Math.PI + Math.PI / 2;
+      camera.attachControl(canvasRef.current, true);
+      camera.checkCollisions = true;
+      camera.applyGravity = true;
+      camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
 
-    camera.checkCollisions = true;
-    camera.applyGravity = true;
-    camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
+      const MAX_CAMERA_HEIGHT = 50;
+      const MIN_CAMERA_HEIGHT = 0;
+      const maxPitch = BABYLON.Tools.ToRadians(180);
+      const minPitch = BABYLON.Tools.ToRadians(-60);
 
-    const MAX_CAMERA_HEIGHT = 50;
-    const MIN_CAMERA_HEIGHT = 0;
-    const maxPitch = BABYLON.Tools.ToRadians(180);
-    const minPitch = BABYLON.Tools.ToRadians(-60);
+      const WALK_SPEED = 0.1;
+      const RUN_SPEED = 0.3;
+      camera.speed = WALK_SPEED;
 
-    const WALK_SPEED = 0.1;
-    const RUN_SPEED = 0.3;
-    camera.speed = WALK_SPEED;
+      let ladderPositions = [];
 
-    let ladderPositions = [];
+      const specialPositions = [
+        new BABYLON.Vector3(-33.39, 3.38, -0.39),
+        new BABYLON.Vector3(-13.72, 2.73, 2.31),
+      ];
+      const specialRadius = 12;
 
-    const specialPositions = [
-      new BABYLON.Vector3(-33.39, 3.38, -0.39),
-      new BABYLON.Vector3(-13.72, 2.73, 2.31),
-    ];
-    const specialRadius = 12;
-
-    BABYLON.SceneLoader.ImportMeshAsync(
-      "",
-      "/models/",
-      "abandoned_hospital_part_two.glb",
-      scene
-    ).then((result) => {
-      console.log("✅ Loaded hospital meshes");
-
+      const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
-
       result.meshes.forEach((mesh) => {
         if (mesh.name.startsWith("Hospital_02_")) {
           mesh.checkCollisions = true;
           mesh.isPickable = true;
         }
-
-        if (
-          mesh.name === "Hospital_02_36m_0" ||
-          mesh.name === "Hospital_02_105m_0"
-        ) {
+        if (mesh.name === "Hospital_02_36m_0" || mesh.name === "Hospital_02_105m_0") {
           mesh.checkCollisions = false;
           mesh.isPickable = false;
           mesh.computeWorldMatrix(true);
-          const worldPos = mesh.getAbsolutePosition();
-          ladderPositions.push(worldPos);
-          console.log(`📌 Ladder position (${mesh.name}):`, worldPos);
-
+          ladderPositions.push(mesh.getAbsolutePosition());
           if (mesh.name === "Hospital_02_36m_0") {
             parentMesh = mesh;
           }
         }
-
         if (mesh.name.startsWith("door")) {
           mesh.dispose();
-          console.log(`🗑️ Removed mesh: ${mesh.name}`);
         }
       });
 
-      // 🚪 도어 모델을 부모 메시에 자식으로 추가
       if (parentMesh) {
-        BABYLON.SceneLoader.ImportMeshAsync(
-          "",
-          "/models/",
-          "low_poly_door_-_game_ready.glb",
-          scene
-        ).then((doorResult) => {
-          const doorMeshes = doorResult.meshes;
+        // 첫 번째 문 위치
+        const desiredDoor1WorldPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
+        const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+        door1.meshes.forEach((doorMesh) => {
+          console.log("도어 메시 이름:", doorMesh.name);
+          if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
+            // 1. 피벗 이동 (스케일 적용 전에!)
+            const boundingBox = doorMesh.getBoundingInfo().boundingBox;
+            const min = boundingBox.minimum;
+            const center = boundingBox.center;
+            const pivot = new BABYLON.Vector3(-0.6, -6.3, 0);
+            doorMesh.setPivotPoint(pivot);
 
-          // 도어의 월드 위치 설정
-          const desiredWorldPos = new BABYLON.Vector3(-28.25, 14.4, 14.2);
+            // 2. 위치, 회전, 스케일 적용
+            doorMesh.parent = parentMesh;
+            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+              new BABYLON.Vector3(-25.10, 14.80, 10.57),
+              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            doorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
+            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8);
+            doorMesh.checkCollisions = true;
 
-          doorMeshes.forEach((doorMesh) => {
-            if (doorMesh !== scene.meshes[0]) {
-              // 부모 메시에 자식으로 추가
-              doorMesh.parent = parentMesh;
+            let isDoorOpen = false;
+            const startRotation = doorMesh.rotationQuaternion.clone();
+            const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
 
-              // 부모 메시의 월드 매트릭스를 반영하여 도어의 위치를 계산
-              const parentWorldMatrix = parentMesh.getWorldMatrix();
-              const invParentWorldMatrix = BABYLON.Matrix.Invert(parentWorldMatrix);
+            // 열기 애니메이션
+            const openAnim = new BABYLON.Animation(
+              "doorOpen",
+              "rotationQuaternion",
+              30,
+              BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+              BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            openAnim.setKeys([
+              { frame: 0, value: startRotation },
+              { frame: 30, value: endRotation },
+            ]);
 
-              // 월드 좌표 → 로컬 좌표 변환
-              doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-                desiredWorldPos,
-                invParentWorldMatrix
-              );
+            // 닫기 애니메이션
+            const closeAnim = new BABYLON.Animation(
+              "doorClose",
+              "rotationQuaternion",
+              30,
+              BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+              BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            closeAnim.setKeys([
+              { frame: 0, value: endRotation },
+              { frame: 30, value: startRotation },
+            ]);
 
-              // 스케일 설정
-              doorMesh.scaling = new BABYLON.Vector3(50, 50, 50);
+            doorMesh.actionManager = new BABYLON.ActionManager(scene);
+            doorMesh.actionManager.registerAction(
+              new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                if (!isDoorOpen) {
+                  doorMesh.checkCollisions = false;
+                  scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false);
+                } else {
+                  doorMesh.checkCollisions = true;
+                  scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false);
+                }
+                isDoorOpen = !isDoorOpen;
+              })
+            );
+          }
+        });
 
-              // 회전 설정: Quaternion을 사용하여 회전 적용
-              const rotationQuaternion = BABYLON.Quaternion.RotationAxis(
-                BABYLON.Axis.X, // X축 기준으로 회전
-                Math.PI / 2       // 90도 회전
-              ).multiply(
-                BABYLON.Quaternion.RotationAxis(
-                  BABYLON.Axis.Y, // Y축 기준으로 회전
-                  Math.PI / 2      // 90도 회전
-                )
-              );
-              doorMesh.rotationQuaternion = rotationQuaternion;
+        // 두 번째 문 위치
+        const desiredDoor2WorldPos = new BABYLON.Vector3(-28.28, 14.2, 14.1); // 원하는 다른 위치로 지정
+        const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
+        door2.meshes.forEach((doorMesh) => {
+          if (doorMesh.name !== "__root__") {
+            doorMesh.parent = parentMesh;
+            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+              desiredDoor2WorldPos,
+              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            doorMesh.scaling = new BABYLON.Vector3(90, 70, 50);
+            doorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+            doorMesh.checkCollisions = true;
+          }
+        });
 
-              console.log("🚪 Door attached at local position:", doorMesh.position);
-            }
-          });
+        // 의자 위치
+        const desiredChairWorldPos = new BABYLON.Vector3(-21, 14.2, 11.5);
+        const chair = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wooden_chair.glb", scene);
+        chair.meshes.forEach((chairMesh) => {
+          if (chairMesh.name !== "__root__") {
+            chairMesh.parent = parentMesh;
+            chairMesh.position = BABYLON.Vector3.TransformCoordinates(
+              desiredChairWorldPos,
+              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            chairMesh.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+            chairMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+            chairMesh.checkCollisions = true;
+          }
         });
       }
-    });
 
-    scene.registerBeforeRender(() => {
-      // 사다리 근처 체크
-      const nearLadder =
-        ladderPositions.length > 0 &&
-        ladderPositions.some(
-          (pos) => BABYLON.Vector3.Distance(camera.position, pos) < 3
+      scene.registerBeforeRender(() => {
+        const nearLadder = ladderPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < 3);
+
+        const ladderDownStart = new BABYLON.Vector3(-33.44, 14.13, -0.29);
+        const isLadderDown =
+          Math.abs(camera.position.x - ladderDownStart.x) < 0.25 &&
+          camera.position.y <= 14.13 &&
+          camera.position.y >= 2.74 &&
+          Math.abs(camera.position.z - ladderDownStart.z) < 1;
+
+        if (isLadderDown) {
+          camera.rotation.x = 1.4;
+          camera.rotation.y = Math.PI / 30;
+          const offset = new BABYLON.Vector3(0, 0, 0.5);
+          const adjustedPos = ladderDownStart.add(offset);
+          camera.position.x = adjustedPos.x;
+          camera.position.z = adjustedPos.z;
+        } else {
+          if (camera.rotation && camera.rotation.x !== undefined) {
+            if (camera.rotation.x > maxPitch) camera.rotation.x = maxPitch;
+            if (camera.rotation.x < minPitch) camera.rotation.x = minPitch;
+          }
+        }
+
+        const nearSpecialPos = specialPositions.some(
+          (pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius
         );
 
-      const ladderDownStart = new BABYLON.Vector3(-33.44, 14.13, -0.29);
-      const isLadderDown =
-        Math.abs(camera.position.x - ladderDownStart.x) < 0.25 &&
-        camera.position.y <= 14.13 &&
-        camera.position.y >= 2.74 &&
-        Math.abs(camera.position.z - ladderDownStart.z) < 1;
+        camera.applyGravity = !(nearSpecialPos || nearLadder);
+        if (camera.position.y > MAX_CAMERA_HEIGHT) camera.position.y = MAX_CAMERA_HEIGHT;
+        if (camera.position.y < MIN_CAMERA_HEIGHT) camera.position.y = MIN_CAMERA_HEIGHT;
 
-      if (isLadderDown) {
-        camera.rotation.x = 1.4;
-        camera.rotation.y = Math.PI / 30;
-        const offset = new BABYLON.Vector3(0, 0, 0.5);
-        const adjustedPos = ladderDownStart.add(offset);
-        camera.position.x = adjustedPos.x;
-        camera.position.z = adjustedPos.z;
-      } else {
-        if (camera.rotation && camera.rotation.x !== undefined) {
-          if (camera.rotation.x > maxPitch) camera.rotation.x = maxPitch;
-          if (camera.rotation.x < minPitch) camera.rotation.x = minPitch;
-        }
-      }
-
-      const nearSpecialPos = specialPositions.some(
-        (pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius
-      );
-
-      if (nearSpecialPos || nearLadder) {
-        camera.applyGravity = false;
-        if (camera.position.y > MAX_CAMERA_HEIGHT)
-          camera.position.y = MAX_CAMERA_HEIGHT;
-        if (camera.position.y < MIN_CAMERA_HEIGHT)
-          camera.position.y = MIN_CAMERA_HEIGHT;
-      } else {
-        camera.applyGravity = true;
-        if (camera.position.y > MAX_CAMERA_HEIGHT)
-          camera.position.y = MAX_CAMERA_HEIGHT;
-        if (camera.position.y < MIN_CAMERA_HEIGHT)
-          camera.position.y = MIN_CAMERA_HEIGHT;
-      }
-
-      // 위치 상태 업데이트
-      setPlayerPos({
-        x: camera.position.x.toFixed(2),
-        y: camera.position.y.toFixed(2),
-        z: camera.position.z.toFixed(2),
-      });
-    });
-
-    // 키보드 이동 설정
-    camera.keysUp.push(87); // W
-    camera.keysDown.push(83); // S
-    camera.keysLeft.push(65); // A
-    camera.keysRight.push(68); // D
-    camera.minZ = 0.1;
-    camera.speed = 0.1;
-    camera.angularSensibility = 6000;
-
-    const handleKeyDown = (evt) => {
-      if (evt.key === "Shift" || evt.keyCode === 16) {
-        setIsRunning(true);
-        camera.speed = RUN_SPEED;
-      }
-    };
-
-    const handleKeyUp = (evt) => {
-      if (evt.key === "Shift" || evt.keyCode === 16) {
-        setIsRunning(false);
-        camera.speed = WALK_SPEED;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    // 마우스 휠로 전후 이동
-    canvasRef.current.addEventListener("wheel", (evt) => {
-      evt.preventDefault();
-      const delta = evt.deltaY < 0 ? 1 : -1;
-      const forward = camera.getDirection(BABYLON.Axis.Z);
-      camera.position.addInPlace(forward.scale(delta));
-    });
-
-    // 기본 조명 생성
-    new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-
-    scene.onPointerObservable.add((pointerInfo) => {
-      if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-        const mesh = pointerInfo.pickInfo?.pickedMesh;
-        if (mesh) {
-          console.log("🖱️ Clicked mesh name:", mesh.name);
-          alert(`Clicked mesh name: ${mesh.name}`);
-        }
-      }
-    });
-
-    const onKeyDown = (evt) => {
-      if (evt.key === "p" || evt.key === "P") {
-        GLTF2Export.GLBAsync(scene, "saved_scene").then((glb) => {
-          glb.downloadFiles();
-          console.log("💾 Scene exported to GLB");
+        setPlayerPos({
+          x: camera.position.x.toFixed(2),
+          y: camera.position.y.toFixed(2),
+          z: camera.position.z.toFixed(2),
         });
-      }
+      });
+
+      camera.keysUp.push(87);
+      camera.keysDown.push(83);
+      camera.keysLeft.push(65);
+      camera.keysRight.push(68);
+      camera.minZ = 0.1;
+      camera.angularSensibility = 6000;
+
+      const handleKeyDown = (evt) => {
+        if (evt.key === "Shift") {
+          setIsRunning(true);
+          camera.speed = RUN_SPEED;
+        }
+      };
+
+      const handleKeyUp = (evt) => {
+        if (evt.key === "Shift") {
+          setIsRunning(false);
+          camera.speed = WALK_SPEED;
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+
+      canvasRef.current.addEventListener("wheel", (evt) => {
+        evt.preventDefault();
+        const delta = evt.deltaY < 0 ? 1 : -1;
+        const forward = camera.getDirection(BABYLON.Axis.Z);
+        camera.position.addInPlace(forward.scale(delta));
+      });
+
+      new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
+
+      window.addEventListener("keydown", (evt) => {
+        if (evt.key === "p" || evt.key === "P") {
+          GLTF2Export.GLBAsync(scene, "saved_scene").then((glb) => {
+            glb.downloadFiles();
+          });
+        }
+      });
+
+      engine.runRenderLoop(() => {
+        scene.render();
+      });
+
+      const onResize = () => engine.resize();
+      window.addEventListener("resize", onResize);
+
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+        window.removeEventListener("resize", onResize);
+        scene.dispose();
+        engine.dispose();
+      };
     };
-    window.addEventListener("keydown", onKeyDown);
 
-    engine.runRenderLoop(() => {
-      scene.render();
-    });
-
-    const onResize = () => engine.resize();
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("resize", onResize);
-      scene.dispose();
-      engine.dispose();
-    };
+    initScene();
   }, []);
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        style={{ width: "100vw", height: "100vh", display: "block" }}
-      />
-      {/* 화면 좌측 상단에 플레이어 좌표 표시 */}
+      <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
       <div
         style={{
           position: "absolute",
