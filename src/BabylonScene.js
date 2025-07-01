@@ -32,16 +32,19 @@ const BabylonScene = () => {
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
+     
 
       const WALK_SPEED = 0.1;
       const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
 
+      
+
       const specialPositions = [
+        
         new BABYLON.Vector3(-13.72, 2.73, 2.31),
       ];
       const specialRadius = 12;
-
       let ladderMesh = null;
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
@@ -51,20 +54,19 @@ const BabylonScene = () => {
           mesh.checkCollisions = true;
           mesh.isPickable = true;
         }
+       
+          if (mesh.name === "Hospital_02_36m_0") {
+            parentMesh = mesh;
+          }
         
-        if (mesh.name === "Hospital_02_36m_0") {
-          parentMesh = mesh;
-        }
-        
-        if (mesh.name.startsWith("door")) {
-          mesh.dispose();
-        }
-
-        if (mesh.name === "Hospital_02_105m_0") {
-          ladderMesh = mesh;
-          ladderMesh.checkCollisions = false;
-        }
-      });
+      if (mesh.name.startsWith("door")) {
+        mesh.dispose();
+      }
+      if (mesh.name === "Hospital_02_105m_0") {
+        ladderMesh = mesh;
+        ladderMesh.checkCollisions = false;
+      }
+    });
 
       if (parentMesh) {
         await addDoorAndChair(scene, parentMesh);
@@ -198,7 +200,7 @@ const BabylonScene = () => {
       camera.angularSensibility = 6000;
 
       const handleKeyDown = (evt) => {
-        keysPressed[evt.key.toLowerCase()] = true;
+         keysPressed[evt.key.toLowerCase()] = true;
       };
 
       const handleKeyUp = (evt) => {
@@ -251,6 +253,7 @@ const BabylonScene = () => {
     };
 
     initScene();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
