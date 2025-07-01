@@ -19,7 +19,8 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        new BABYLON.Vector3(-21, 15.5, 11.5),
+        // new BABYLON.Vector3(-21, 15.5, 11.5),
+        new BABYLON.Vector3(5.19, 8, 16.05),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -117,6 +118,95 @@ const BabylonScene = () => {
           chairMesh.checkCollisions = true;
         }
       });
+
+      // 모니터 위치 
+      const desiredMonitorWorldPos = new BABYLON.Vector3(4.10, 7.85, 12.37);
+      const monitor = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "monitor_with_heart_rate.glb", scene);
+      monitor.meshes.forEach((monitorMesh) => {
+        if (monitorMesh.name !== "__root__") {
+          monitorMesh.parent = parentMesh;
+          monitorMesh.position = BABYLON.Vector3.TransformCoordinates(
+            desiredMonitorWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          monitorMesh.scaling = new BABYLON.Vector3(120,100,100);
+          monitorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+          monitorMesh.checkCollisions = true;
+        }
+      });
+
+      // 수술대 위치 
+      const desiredOperatingWorldPos = new BABYLON.Vector3(6, 6.25, 12.37);
+      const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
+      operating.meshes.forEach((operatingMesh) => {
+        if (operatingMesh.name !== "__root__") {
+          operatingMesh.parent = parentMesh;
+          operatingMesh.position = BABYLON.Vector3.TransformCoordinates(
+            desiredOperatingWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          operatingMesh.scaling = new BABYLON.Vector3(20,20,20);
+          operatingMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+          operatingMesh.checkCollisions = true;
+        }
+      });
+
+
+      // 사물함 위치 
+      const desiredlockerWorldPos = new BABYLON.Vector3(10.73, 7.15, 14.99);
+      const locker = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "armored_cabinet (1).glb", scene);
+
+      let doorMesh = null; // Object_15 메시 저장용
+      let animationGroup = null; // 애니메이션 그룹 저장용
+
+      locker.meshes.forEach((lockerMesh) => {
+        if (lockerMesh.name !== "__root__") {
+          lockerMesh.parent = parentMesh;
+          lockerMesh.position = BABYLON.Vector3.TransformCoordinates(
+            desiredlockerWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          lockerMesh.scaling = new BABYLON.Vector3(110, 110, 110);
+          lockerMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+          lockerMesh.checkCollisions = true;
+          lockerMesh.isPickable = true;
+
+          if (lockerMesh.name === "Object_15") {
+            doorMesh = lockerMesh;
+          }
+        }
+      });
+
+      console.log("doorMesh:", doorMesh);
+      console.log("animationGroups:", locker.animationGroups);
+
+      animationGroup = locker.animationGroups?.find(group => group.targetedAnimations.length > 0);
+
+      if (animationGroup) {
+        animationGroup.stop();
+      } else {
+        console.warn("애니메이션 그룹을 찾지 못했습니다.");
+      }
+
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const pickedMesh = pointerInfo.pickInfo?.pickedMesh;
+          console.log("pickedMesh:", pickedMesh?.name);
+          if (pickedMesh && pickedMesh === doorMesh) {
+            console.log("object15 클릭됨 - 애니메이션 재생");
+            animationGroup?.reset();
+            animationGroup?.play(false);
+          }
+        }
+      });
+
+
+
+
+      
     }
 
 
@@ -192,14 +282,14 @@ const BabylonScene = () => {
 
       new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
