@@ -152,8 +152,8 @@ const BabylonScene = () => {
 
         if (distanceToDarkZone < darkZoneRadius) {
           // **어두워지는 영역 진입 시**
-          hemiLight.intensity = 0.005; // 영역 진입 시 씬의 밝기 강도 (0.001 ~ 0.3)
-          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
+          hemiLight.intensity = 0.5; // 영역 진입 시 씬의 밝기 강도 (수정 후 0.005로 맞추기)
+          // scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
         } else {
           // **영역 벗어날 시 (평소 밝기로 복구)**
           hemiLight.intensity = originalHemiLightIntensity;
