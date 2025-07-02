@@ -14,21 +14,21 @@ export async function addOperatingRoom(scene, parentMesh) {
   }
 
   // 🖥️ 모니터 위치
-  const desiredMonitorWorldPos = new BABYLON.Vector3(4.10, 7.85, 12.37);
-  const monitor = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "monitor_with_heart_rate.glb", scene);
-  monitor.meshes.forEach((monitorMesh) => {
-    if (monitorMesh.name !== "__root__") {
-      monitorMesh.parent = parentMesh;
-      monitorMesh.position = BABYLON.Vector3.TransformCoordinates(
-        desiredMonitorWorldPos,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-      monitorMesh.scaling = new BABYLON.Vector3(120, 100, 100);
-      monitorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-      monitorMesh.checkCollisions = true;
-    }
-  });
+  // const desiredMonitorWorldPos = new BABYLON.Vector3(4.10, 7.85, 12.37);
+  // const monitor = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "monitor_with_heart_rate.glb", scene);
+  // monitor.meshes.forEach((monitorMesh) => {
+  //   if (monitorMesh.name !== "__root__") {
+  //     monitorMesh.parent = parentMesh;
+  //     monitorMesh.position = BABYLON.Vector3.TransformCoordinates(
+  //       desiredMonitorWorldPos,
+  //       BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  //     );
+  //     monitorMesh.scaling = new BABYLON.Vector3(120, 100, 100);
+  //     monitorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+  //       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+  //     monitorMesh.checkCollisions = true;
+  //   }
+  // });
 
   // 🛏️ 수술대 위치
   const desiredOperatingWorldPos = new BABYLON.Vector3(10, 6.25, 12.37);
@@ -48,7 +48,7 @@ export async function addOperatingRoom(scene, parentMesh) {
   });
 
   // 🔐 사물함 위치 및 클릭 애니메이션
-  const desiredlockerWorldPos = new BABYLON.Vector3(11.33, 7.15, 14.99);
+  const desiredlockerWorldPos = new BABYLON.Vector3(11.33, 7.55, 14.39);
   const locker = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "armored_cabinet (1).glb", scene);
   const clickableNames = ["Object_15", "Object_13", "Object_17", "Object_9", "Object_7"];
   const animationGroup = locker.animationGroups?.find(group => group.targetedAnimations.length > 0);
