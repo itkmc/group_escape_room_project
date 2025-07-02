@@ -21,7 +21,7 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        new BABYLON.Vector3(5.19, 8, 16.05),
+        new BABYLON.Vector3(-21, 15.5, 11.5),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
