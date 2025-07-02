@@ -5,6 +5,7 @@ import "@babylonjs/inspector";
 import { GLTF2Export } from "@babylonjs/serializers";
 import { addDoorAndChair } from "./rooms/looptop";
 import { addOperatingRoom } from "./rooms/op_room";
+import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 
 const BabylonScene = () => {
@@ -22,7 +23,7 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        new BABYLON.Vector3(-21, 15.5, 11.5),
+        new BABYLON.Vector3(-20.44, 7.85, 6.78),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -72,6 +73,7 @@ const BabylonScene = () => {
       if (parentMesh) {
         await addDoorAndChair(scene, parentMesh);
         await addOperatingRoom(scene, parentMesh);
+        await addDoctorOffice(scene, parentMesh);
       }
 
       const keysPressed = {};
