@@ -6,6 +6,7 @@ import "@babylonjs/inspector";
 import { GLTF2Export } from "@babylonjs/serializers";
 import { addDoorAndChair } from "./rooms/looptop"; // looptop 임포트
 import { addOperatingRoom } from "./rooms/op_room";
+import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 
 const BabylonScene = () => {
@@ -30,6 +31,7 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
+        // new BABYLON.Vector3(-20.44, 7.85, 6.78),
         new BABYLON.Vector3(-0.51, 7.85, 11.90),
         scene
       );
@@ -79,6 +81,7 @@ const BabylonScene = () => {
         // 이 함수가 looptop.js의 addDoorAndChair에서 두루마리 클릭 시 호출됩니다.
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true));
         await addOperatingRoom(scene, parentMesh);
+        await addDoctorOffice(scene, parentMesh);
       }
       
       // --- 특정 모델 밝기 조절 (LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0) ---
