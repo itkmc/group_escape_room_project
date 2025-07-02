@@ -23,10 +23,14 @@ const BabylonScene = () => {
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
 
+    let hemiLight;
+    let originalHemiLightIntensity;
+    let originalSceneClearColor;
+
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        new BABYLON.Vector3(-21, 15.5, 11.5),
+        new BABYLON.Vector3(-0.51, 7.85, 11.90),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -37,6 +41,7 @@ const BabylonScene = () => {
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
+
       const WALK_SPEED = 0.1;
       const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
@@ -55,9 +60,11 @@ const BabylonScene = () => {
           mesh.checkCollisions = true;
           mesh.isPickable = true;
         }
+
         if (mesh.name === "Hospital_02_36m_0") {
           parentMesh = mesh;
         }
+
         if (mesh.name.startsWith("door")) {
           mesh.dispose();
         }
@@ -73,8 +80,48 @@ const BabylonScene = () => {
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true));
         await addOperatingRoom(scene, parentMesh);
       }
+      
+      // --- 특정 모델 밝기 조절 (LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0) ---
+      const lampMesh1 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0");
+      if (lampMesh1 && lampMesh1.material) {
+        const material = lampMesh1.material;
+        if (material instanceof BABYLON.PBRMaterial) {
+          material.emissiveIntensity = 0.01; // 원하는 밝기 값으로 조절 (0.01 ~ 1.0)
+        } else if (material instanceof BABYLON.StandardMaterial) {
+          material.emissiveColor = material.emissiveColor.scale(0.01); // StandardMaterial인 경우
+        }
+      } else {
+        console.warn("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0 메쉬 또는 재질을 찾을 수 없습니다.");
+      }
+      // --- 특정 모델 밝기 조절 끝 ---
+      
+      // --- 특정 모델 밝기 조절 (LAMP_LP:LAMP_03_lowLAMP_03polySurface14_I_0) ---
+      const lampMesh2 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_I_0");
+      if (lampMesh2 && lampMesh2.material) {
+        const material = lampMesh2.material;
+        if (material instanceof BABYLON.PBRMaterial) {
+          material.emissiveIntensity = 0.01; // 원하는 밝기 값으로 조절 (0.01 ~ 1.0)
+          material.emissiveColor = material.emissiveColor.scale(0.1); // 필요하다면 발광 색상도 조절 (0.0 ~ 1.0)
+        } else if (material instanceof BABYLON.StandardMaterial) {
+          material.emissiveColor = material.emissiveColor.scale(0.01); // StandardMaterial인 경우
+        }
+      } else {
+        console.warn("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_I_0 메쉬 또는 재질을 찾을 수 없습니다.");
+      }
+      // --- 특정 모델 밝기 조절 끝 ---
 
       const keysPressed = {};
+
+      // --- 조명 제어 코드 (평소 밝게, 영역 진입 시 어둡게) ---
+      hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+      originalHemiLightIntensity = 0.7; // 씬의 기본 (평소) 밝기 강도 (0.0 ~ 1.0)
+      hemiLight.intensity = originalHemiLightIntensity;
+
+      const darkZoneCenter = new BABYLON.Vector3(4.91, 7.85, 12.85); // 어둡게 할 영역의 중심 좌표 (X, Y, Z)
+      const darkZoneRadius = 4.8; // 어둡게 할 영역의 반경 (미터)
+
+      originalSceneClearColor = scene.clearColor.clone(); 
+      originalSceneClearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // 씬의 평소 배경색 (R, G, B, Alpha)
 
       scene.registerBeforeRender(() => {
         const nearSpecialPos = specialPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius);
@@ -99,6 +146,20 @@ const BabylonScene = () => {
           z: camera.position.z.toFixed(2),
         });
         handleLadderMovement(camera, ladderMesh, keysPressed, isOnLadder, setIsOnLadder);
+
+        // --- 특정 영역 밝게/어둡게 로직 (원하는 방향으로 수정) ---
+        const distanceToDarkZone = BABYLON.Vector3.Distance(camera.position, darkZoneCenter);
+
+        if (distanceToDarkZone < darkZoneRadius) {
+          // **어두워지는 영역 진입 시**
+          hemiLight.intensity = 0.005; // 영역 진입 시 씬의 밝기 강도 (0.001 ~ 0.3)
+          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
+        } else {
+          // **영역 벗어날 시 (평소 밝기로 복구)**
+          hemiLight.intensity = originalHemiLightIntensity;
+          scene.clearColor = originalSceneClearColor;
+        }
+        // --- 조명 로직 끝 ---
       });
 
       camera.keysUp.push(87);
@@ -109,7 +170,7 @@ const BabylonScene = () => {
       camera.angularSensibility = 6000;
 
       const handleKeyDown = (evt) => {
-         keysPressed[evt.key.toLowerCase()] = true;
+        keysPressed[evt.key.toLowerCase()] = true;
       };
 
       const handleKeyUp = (evt) => {
@@ -134,7 +195,7 @@ const BabylonScene = () => {
           // ActionManager가 있는 메쉬 (두루마리, 서랍, 문 등)는 각자 클릭 이벤트가 있으므로 여기서 일반적인 alert는 방지합니다.
           // 또한 __root__ 메쉬는 일반적으로 클릭할 필요가 없습니다.
           if (mesh && mesh.name !== "__root__" && !mesh.actionManager) {
-            // alert(`Clicked mesh name: ${mesh.name}`); // 필요시 주석 해제하여 사용
+            // alert(`Clicked mesh name: ${mesh.name}`); // 필요시 주석 해제하여 사
           }
         }
       });
