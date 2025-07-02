@@ -6,8 +6,9 @@ import "@babylonjs/loaders";
  * 도어 및 의자를 Babylon.js 씬에 추가하는 함수
  * @param {BABYLON.Scene} scene - Babylon.js Scene 객체
  * @param {BABYLON.AbstractMesh} parentMesh - parent로 사용할 메시 (ex: 건물 메시)
+ * @param {Function} [onScrollClick] - 두루마리 클릭 시 호출될 콜백 함수 (선택 사항)
  */
-export async function addDoorAndChair(scene, parentMesh) {
+export async function addDoorAndChair(scene, parentMesh, onScrollClick) { // onScrollClick 매개변수 추가
   if (!parentMesh) {
     console.warn("❗ parentMesh가 없습니다.");
     return;
@@ -15,58 +16,28 @@ export async function addDoorAndChair(scene, parentMesh) {
 
   // 🚪 첫 번째 문 위치
   const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
-  // door1.meshes[0]는 rootMesh일 가능성이 높지만, 여기서는 doorMesh에 직접 접근합니다.
-  // 이전 코드 상태로 되돌리기 위해 rootDoorMesh 변수를 직접 사용하지 않습니다.
-
   door1.meshes.forEach((doorMesh) => {
     if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
-
-      // 1. 피벗 이동 (왼쪽 끝 경첩 기준)
-      // 이 피벗은 문 모델의 로컬 좌표계에서 '경첩'이 될 지점입니다.
-      // 이 값은 문이 '세워진' 상태가 아니라, '원본 GLB 파일에 정의된' 문 모델의 로컬 좌표를 기준으로 합니다.
-      // -0.6 (X축): 문의 한쪽 끝 (너비 방향)
-      // -6.3 (Y축): 문의 바닥에서 위로 (높이 방향) - 이 값이 문제의 원인일 수 있습니다.
-      //             만약 문이 바닥에 파묻힌다면, -6.3을 0에 가깝게 조절하거나 (예: -2.0, -1.0, 0.0)
-      //             혹은 양수 값(0.1, 0.5 등)을 시도해봐야 합니다.
-      // 0 (Z축): 문의 두께 중앙
-      // 가장 중요한 점은 이 피벗이 **애니메이션 회전이 발생할 실제 경첩의 위치**여야 한다는 것입니다.
-      // **이전 상황을 복구하기 위해 -0.6, -6.3, 0으로 다시 설정합니다.**
       const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
       doorMesh.setPivotPoint(pivot);
 
-      // 2. 위치, 회전, 스케일 (절대 건드리지 말라고 하셨으므로, 원본 그대로 유지)
       doorMesh.parent = parentMesh;
       doorMesh.position = BABYLON.Vector3.TransformCoordinates(
         new BABYLON.Vector3(-25.10, 14.80, 10.57), // 이 월드 위치는 유지
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
 
-      // 📌 기본 회전 (문을 세워주는 역할)
-      // 이 회전이 문의 초기 방향을 결정합니다.
-      // Math.PI / 2 (X축)은 문을 세우고, -Math.PI (Y축)은 문을 180도 돌리는 역할입니다.
-      // 이 값은 `doorMesh` 자체에 적용됩니다.
       const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
 
       doorMesh.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
-      doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 원본 스케일 유지 (너무 크다면 이 값을 조절해야 함!)
+      doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 원본 스케일 유지
       doorMesh.checkCollisions = true;
 
-      // 애니메이션 회전값
       const startRotation = doorMesh.rotationQuaternion.clone();
-
-      // 문이 열릴 때의 회전 축을 변경해봅니다.
-      // 1. Math.PI / 2 (X축으로 90도 회전) -> 이미 baseRotation에 X축 회전이 있으므로, 이 경우 문이 눕거나 뒤집힐 가능성이 높음.
-      // 2. Math.PI / 2 (Z축으로 90도 회전) -> 이 축이 문을 옆으로 열리게 할 가능성이 높습니다.
-      const openAngle = Math.PI / 2; // 또는 -Math.PI / 2 로 문 여는 방향 조절
-
-      // **여기서 BABYLON.Axis.Y를 BABYLON.Axis.X 또는 BABYLON.Axis.Z로 변경하여 시도해보세요.**
-      // 가장 유력한 후보는 BABYLON.Axis.Z 입니다.
+      const openAngle = Math.PI / 2;
       const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
-      // 또는
-      // const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, openAngle).multiply(startRotation);
 
-      // 열기 애니메이션
       const openAnim = new BABYLON.Animation(
         "doorOpen",
         "rotationQuaternion",
@@ -79,7 +50,6 @@ export async function addDoorAndChair(scene, parentMesh) {
         { frame: 30, value: endRotation },
       ]);
 
-      // 닫기 애니메이션
       const closeAnim = new BABYLON.Animation(
         "doorClose",
         "rotationQuaternion",
@@ -92,20 +62,26 @@ export async function addDoorAndChair(scene, parentMesh) {
         { frame: 30, value: startRotation },
       ]);
 
-      // 클릭 시 문 열기/닫기
       let isDoorOpen = false;
+      let isAnimating = false;
       doorMesh.actionManager = new BABYLON.ActionManager(scene);
       doorMesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+          if (isAnimating) return; // 애니메이션 중이면 무시
+          isAnimating = true;
           if (!isDoorOpen) {
             doorMesh.checkCollisions = false;
-            scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false);
+            scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+              isDoorOpen = true;
+              isAnimating = false;
+            });
           } else {
-            scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, () => {
+            scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
               doorMesh.checkCollisions = true;
+              isDoorOpen = false;
+              isAnimating = false;
             }); // 닫힐 때만 애니메이션 완료 후 충돌 켬
           }
-          isDoorOpen = !isDoorOpen;
         })
       );
     }
@@ -142,6 +118,204 @@ export async function addDoorAndChair(scene, parentMesh) {
       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
       mesh.checkCollisions = true;
+    }
+  });
+
+  // 🛏️ 침대 옆 테이블 추가
+  const desiredBedsideTableWorldPos = new BABYLON.Vector3(-24.87, 13.9, 11.3);
+  const bedsideTable = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "bedside_table.glb", scene);
+  console.log("로드된 책 서랍장 메쉬 목록:", bedsideTable.meshes.map(m => m.name));
+
+  const rootBedsideTableMesh = bedsideTable.meshes[0];
+
+  // 애니메이션 자동 재생 방지: 모든 animationGroup을 stop/reset
+  if (bedsideTable.animationGroups && bedsideTable.animationGroups.length > 0) {
+    bedsideTable.animationGroups.forEach(group => {
+      group.stop();
+      group.reset();
+    });
+  }
+
+  // __root__ 메쉬가 실제로 루트 메쉬인지 확인하는 것이 좋습니다.
+  if (rootBedsideTableMesh.name === "__root__") {
+    rootBedsideTableMesh.parent = parentMesh;
+    rootBedsideTableMesh.position = BABYLON.Vector3.TransformCoordinates(
+      desiredBedsideTableWorldPos,
+      BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+    );
+    rootBedsideTableMesh.scaling = new BABYLON.Vector3(130, 130, 130);
+    rootBedsideTableMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+    rootBedsideTableMesh.checkCollisions = true;
+
+  } else {
+    console.warn("Bedside table __root__ mesh not found at expected index. Applying transformations to all meshes.");
+    bedsideTable.meshes.forEach((mesh) => {
+      if (mesh.name !== "__root__") { // __root__가 아닌 모든 메쉬에 적용
+        mesh.parent = parentMesh;
+        mesh.position = BABYLON.Vector3.TransformCoordinates(
+          desiredBedsideTableWorldPos,
+          BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        mesh.scaling = new BABYLON.Vector3(50, 50, 50);
+        mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+        mesh.checkCollisions = true;
+      }
+    });
+  }
+
+  // bedside_table.glb 클릭 애니메이션 (3개 메시 동시)
+  const targetDrawerNames = [
+    "polySurface541_bedside_wood2_0",
+    "polySurface541_side_rail_0",
+    "polySurface553_cupboard_wood1_0"
+  ];
+
+  // animationGroups가 있다면, 클릭 시 모든 그룹을 play
+  if (bedsideTable.animationGroups && bedsideTable.animationGroups.length > 0) {
+    const group = bedsideTable.animationGroups[0];
+    bedsideTable.meshes.forEach(mesh => {
+      if (targetDrawerNames.includes(mesh.name)) {
+        if (!mesh.actionManager) {
+          mesh.actionManager = new BABYLON.ActionManager(scene);
+        }
+        mesh.actionManager.registerAction(
+          new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+            group.reset();
+            group.play(false);
+          })
+        );
+      }
+    });
+  }
+
+  // --- 서랍장 그룹별(본체+손잡이) 애니메이션 및 상태 관리 ---
+  const drawerGroups = [
+    [2, 3], // 1번 서랍: 본체+손잡이
+    [4, 6], // 2번 서랍: 본체+손잡이
+    [7],    // 3번 서랍: 본체만
+  ];
+  // 각 서랍 그룹의 열림/닫힘 상태를 관리합니다.
+  const drawerStates = [false, false, false];
+
+  // 모든 메시의 actionManager를 완전히 제거 (중복 등록 방지)
+  bedsideTable.meshes.forEach(mesh => mesh.actionManager = null);
+
+  // 서랍의 초기 Z 위치를 저장할 객체. 메시의 이름을 키로 사용합니다.
+  if (!window.drawerInitialPositionsMap) {
+    window.drawerInitialPositionsMap = new Map();
+  }
+
+  function animateDrawer(meshesToAnimate, open) {
+    meshesToAnimate.forEach(mesh => {
+      // 해당 메시의 초기 위치를 맵에서 가져오거나, 없으면 현재 위치를 저장합니다.
+      if (!window.drawerInitialPositionsMap.has(mesh.name)) {
+        window.drawerInitialPositionsMap.set(mesh.name, mesh.position.z);
+      }
+      const initialZ = window.drawerInitialPositionsMap.get(mesh.name);
+
+      const start = mesh.position.z;
+      // 열 때는 초기 위치에서 -0.8만큼 이동, 닫을 때는 초기 위치로 돌아옵니다.
+      const end = open ? initialZ - 0.8 : initialZ;
+
+      const anim = new BABYLON.Animation(
+        "drawerMove",
+        "position.z",
+        30, // FPS
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+      );
+      anim.setKeys([
+        { frame: 0, value: start },
+        { frame: 30, value: end }
+      ]);
+      mesh.getScene().beginDirectAnimation(mesh, [anim], 0, 30, false, 1.0, () => {
+        // 애니메이션 완료 후 최종 위치를 정확히 설정합니다.
+        mesh.position.z = end;
+      });
+    });
+  }
+
+  // --- 첫 번째 서랍(2, 3번 인덱스) 클릭 이벤트 등록 ---
+  const firstDrawerMeshes = drawerGroups[0].map(i => bedsideTable.meshes[i]).filter(Boolean);
+
+  firstDrawerMeshes.forEach(mesh => {
+    // 각 메시의 초기 위치를 미리 저장합니다.
+    if (!window.drawerInitialPositionsMap.has(mesh.name)) {
+      window.drawerInitialPositionsMap.set(mesh.name, mesh.position.z);
+    }
+
+    if (!mesh.actionManager) { // ensure actionManager exists
+      mesh.actionManager = new BABYLON.ActionManager(scene);
+    }
+    mesh.actionManager.registerAction(
+      new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+        // 첫 번째 서랍의 상태를 토글합니다.
+        drawerStates[0] = !drawerStates[0];
+        animateDrawer(firstDrawerMeshes, drawerStates[0]);
+      })
+    );
+  });
+
+  // --- 두 번째/세 번째 서랍 동시 애니메이션 (이름으로 메시 찾기) ---
+  const doubleDrawerMeshNames = [
+    "polySurface541_bedside_wood2_0", // 2번 서랍 본체 이름 예시
+    "polySurface553_cupboard_wood1_0"  // 3번 서랍 본체 이름 예시
+  ];
+
+  // 해당하는 메시들을 찾습니다.
+  const doubleDrawerMeshes = doubleDrawerMeshNames
+    .map(name => bedsideTable.meshes.find(m => m.name === name))
+    .filter(Boolean); // 유효한 메시만 필터링
+
+  doubleDrawerMeshes.forEach(mesh => {
+    // 각 메시의 초기 위치를 미리 저장합니다.
+    if (!window.drawerInitialPositionsMap.has(mesh.name)) {
+      window.drawerInitialPositionsMap.set(mesh.name, mesh.position.z);
+    }
+
+    if (mesh) {
+      if (!mesh.actionManager) { // ensure actionManager exists
+        mesh.actionManager = new BABYLON.ActionManager(scene);
+      }
+      mesh.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+          // 두 번째 서랍 그룹의 상태를 토글 (drawerStates[1]을 사용)
+          drawerStates[1] = !drawerStates[1];
+          animateDrawer(doubleDrawerMeshes, drawerStates[1]);
+        })
+      );
+    }
+  });
+
+  // 모든 서랍의 초기 위치 로깅 (디버깅용)
+  console.log("모든 서랍의 초기 위치:", window.drawerInitialPositionsMap);
+
+  // 🗞️ 고대 두루마리 추가 (첫 번째 서랍 안에 넣기)
+  const scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
+  scrollResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__") {
+      // 첫 번째 서랍 본체(2번 인덱스)의 자식으로 설정
+      mesh.parent = bedsideTable.meshes[2];
+      // 서랍 내부의 로컬 좌표 (조금 앞으로)
+      mesh.position = new BABYLON.Vector3(0, 0, -0.4);
+      mesh.scaling = new BABYLON.Vector3(8, 8, 8);
+      mesh.checkCollisions = true;
+
+      // 두루마리 클릭 이벤트 처리 추가
+      // BabylonScene.js에서 전달받은 onScrollClick 콜백 함수를 호출합니다.
+      if (!mesh.actionManager) {
+        mesh.actionManager = new BABYLON.ActionManager(scene);
+      }
+      mesh.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+          console.log("두루마리가 클릭되었습니다! 퀴즈를 표시합니다.");
+          if (onScrollClick) { // 콜백 함수가 있는지 확인 후 호출
+            onScrollClick();
+          }
+        })
+      );
     }
   });
 }
