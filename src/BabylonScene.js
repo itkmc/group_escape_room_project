@@ -1,10 +1,9 @@
-// BabylonScene.js
 import React, { useEffect, useRef, useState } from "react";
 import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 import "@babylonjs/inspector";
 import { GLTF2Export } from "@babylonjs/serializers";
-import { addDoorAndChair } from "./rooms/looptop"; // looptop 임포트
+import { addDoorAndChair } from "./rooms/looptop";
 import { addOperatingRoom } from "./rooms/op_room";
 import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
@@ -14,8 +13,6 @@ const BabylonScene = () => {
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
-
-  // showQuizRef는 더 이상 필요 없으니 제거했습니다.
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -31,7 +28,6 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        // new BABYLON.Vector3(-20.44, 7.85, 6.78),
         new BABYLON.Vector3(-0.51, 7.85, 11.90),
         scene
       );
@@ -53,7 +49,6 @@ const BabylonScene = () => {
       ];
       const specialRadius = 12;
       let ladderMesh = null;
-      // bedsideTable은 이제 addDoorAndChair 함수 내부에서 관리됩니다.
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
@@ -77,8 +72,6 @@ const BabylonScene = () => {
       });
 
       if (parentMesh) {
-        // ✨ 중요: setShowQuiz 상태 업데이트 함수를 콜백으로 전달 ✨
-        // 이 함수가 looptop.js의 addDoorAndChair에서 두루마리 클릭 시 호출됩니다.
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true));
         await addOperatingRoom(scene, parentMesh);
         await addDoctorOffice(scene, parentMesh);
@@ -117,7 +110,7 @@ const BabylonScene = () => {
 
       // --- 조명 제어 코드 (평소 밝게, 영역 진입 시 어둡게) ---
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 씬의 기본 (평소) 밝기 강도 (0.0 ~ 1.0)
+      originalHemiLightIntensity = 0.2; // 씬의 기본 (평소) 밝기 강도 (0.0 ~ 1.0)
       hemiLight.intensity = originalHemiLightIntensity;
 
       const darkZoneCenter = new BABYLON.Vector3(4.91, 7.85, 12.85); // 어둡게 할 영역의 중심 좌표 (X, Y, Z)
@@ -155,8 +148,8 @@ const BabylonScene = () => {
 
         if (distanceToDarkZone < darkZoneRadius) {
           // **어두워지는 영역 진입 시**
-          hemiLight.intensity = 0.5; // 영역 진입 시 씬의 밝기 강도 (수정 후 0.005로 맞추기)
-          // scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
+          hemiLight.intensity = 0.005; // 영역 진입 시 씬의 밝기 강도 (0.001 ~ 0.3)
+          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
         } else {
           // **영역 벗어날 시 (평소 밝기로 복구)**
           hemiLight.intensity = originalHemiLightIntensity;
@@ -190,8 +183,6 @@ const BabylonScene = () => {
         camera.position.addInPlace(forward.scale(delta));
       });
 
-      new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-
       scene.onPointerObservable.add((pointerInfo) => {
         if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
           const mesh = pointerInfo.pickInfo?.pickedMesh;
@@ -218,13 +209,10 @@ const BabylonScene = () => {
       const onResize = () => engine.resize();
       window.addEventListener("resize", onResize);
 
-      // 클린업 함수는 useEffect에서 반환됩니다.
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
         window.removeEventListener("keyup", handleKeyUp);
         window.removeEventListener("resize", onResize);
-        // 엔진과 씬은 컴포넌트 언마운트 시 자동으로 정리됩니다.
-        // 하지만 명시적으로 dispose하는 것이 좋습니다.
         scene.dispose();
         engine.dispose();
       };
@@ -232,7 +220,8 @@ const BabylonScene = () => {
 
     initScene();
 
-  }, []); // 빈 배열은 컴포넌트가 마운트될 때 한 번만 실행되도록 합니다.
+  }, []);
+  
 
   return (
     <>
