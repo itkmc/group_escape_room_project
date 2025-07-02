@@ -4,9 +4,9 @@
   "private": true,
   "dependencies": {
     "@babylonjs/core": "^8.13.1",
-    "@babylonjs/inspector": "^8.14.0",
+    "@babylonjs/inspector": "^8.14.1",
     "@babylonjs/loaders": "^8.13.1",
-    "@babylonjs/serializers": "^8.14.0",
+    "@babylonjs/serializers": "^8.14.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
