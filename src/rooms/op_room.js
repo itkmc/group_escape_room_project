@@ -143,8 +143,6 @@ export async function addOperatingRoom(scene, parentMesh) {
                     }
                 })
             );
-
-            // **E 키로 문 열고 닫는 window.toggleMainDoor 함수는 제거되었습니다.**
         }
     });
 
