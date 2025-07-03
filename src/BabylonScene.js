@@ -69,7 +69,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-22.95, 7.85, 1.36),
+        new BABYLON.Vector3(-2.35, 7.85, 11.90),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -153,7 +153,9 @@ const BabylonScene = () => {
       // 어두운 구역 설정
       const darkZoneCenter = new BABYLON.Vector3(7,7,12);
       const darkZoneRadius = 5.5;
-      originalSceneClearColor = new BABYLON.Color4(0.0001, 0.0001, 0.0001, 1); // 씬 배경색 초기값
+
+      
+      originalSceneClearColor = new BABYLON.Color4(0.7, 0.7, 0.7, 1); // 씬 배경색 초기값
 
       
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
@@ -241,7 +243,7 @@ const BabylonScene = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.5; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
