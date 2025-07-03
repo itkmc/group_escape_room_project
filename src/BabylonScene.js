@@ -22,6 +22,30 @@ const BabylonScene = () => {
   // ⭐ 추가: 손전등 UI 상태를 위한 useState
   const [flashlightStatus, setFlashlightStatus] = useState(" 없음"); // "손전등 없음", "손전등 있음 (꺼짐)", "손전등 있음 (켜짐)"
 
+  // ⭐ 새로 추가된 퀴즈 및 아이템 관련 상태 ⭐
+  const [answerInput, setAnswerInput] = useState(''); // 사용자가 입력할 정답
+  const [quizMessage, setQuizMessage] = useState(''); // 퀴즈 결과 메시지
+  const [hasKeyItem, setHasKeyItem] = useState(false); // 키 아이템 획득 여부
+
+  // 퀴즈 정답 정의 (컴포넌트 내부에 상수로 선언)
+  const correctAnswer = "410";
+
+  // ⭐ 퀴즈 정답 제출 핸들러 함수 ⭐
+  const handleAnswerSubmit = () => {
+    if (answerInput === correctAnswer) {
+      setQuizMessage("정답입니다! 키 아이템을 획득했습니다.");
+      setHasKeyItem(true); // 키 아이템 획득 상태로 변경
+      // 정답을 맞췄으므로 퀴즈 창을 바로 닫지 않고 메시지를 보여준 후,
+      // 사용자가 '닫기' 버튼을 눌러 퀴즈를 종료하도록 유도합니다.
+    } else {
+      setQuizMessage("오답입니다. 다시 시도해 보세요.");
+      setAnswerInput(''); // 오답일 경우 입력 필드 초기화
+    }
+  };
+
+  // ⭐ renderKeyItem 함수는 더 이상 사용하지 않으므로 제거합니다. ⭐
+
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -36,7 +60,7 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        new BABYLON.Vector3(-0.51, 7.85, 11.90),
+        new BABYLON.Vector3(-21, 15.5, 11.5),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -80,7 +104,8 @@ const BabylonScene = () => {
       });
 
       if (parentMesh) {
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true));
+        // setShowQuiz(true)는 이 함수가 호출될 때 퀴즈를 띄웁니다.
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addOperatingRoom(scene, parentMesh);
         await addDoctorOffice(scene, parentMesh);
       }
@@ -361,8 +386,18 @@ const BabylonScene = () => {
           zIndex: 1000,
         }}
       >
-        <div>아이템</div>
+        <div>{hasKeyItem ? "아이템" : "아이템 없음"}</div>
         <span>{flashlightStatus}</span>
+        {hasKeyItem && (
+          <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <img
+              src="/key_with_tag.png"
+              alt="열쇠 아이템"
+              style={{ width: 50, height: 50, objectFit: 'contain' }}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
+            />
+          </div>
+        )}
       </div>
 
       {showQuiz && (
@@ -381,12 +416,45 @@ const BabylonScene = () => {
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
             <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
-            <img src="/problem1.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            {/* 퀴즈 문제 이미지 경로 확인 (스크린샷 2025-07-03 09.34.28.png 또는 다른 이미지 사용 여부) */}
+            <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
-            <button onClick={() => setShowQuiz(false)} style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}>닫기</button>
+            {/* 정답 입력 필드 */}
+            <input
+              type="text"
+              value={answerInput}
+              onChange={(e) => setAnswerInput(e.target.value)}
+              placeholder="정답을 입력하세요"
+              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
+            />
+            {/* 정답 확인 버튼 */}
+            <button
+              onClick={handleAnswerSubmit}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
+            >
+              정답 확인
+            </button>
+            <button
+              onClick={() => {
+                setShowQuiz(false); // 퀴즈 창 닫기
+                setQuizMessage(''); // 메시지 초기화
+                setAnswerInput(''); // 입력 초기화
+              }}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+            >
+              닫기
+            </button>
+            {quizMessage && (
+              <div style={{ marginTop: 16, fontSize: 16, color: quizMessage.includes("정답입니다") ? "green" : "red" }}>
+                {quizMessage}
+              </div>
+            )}
           </div>
         </div>
       )}
+
+      {/* renderKeyItem 함수는 더 이상 사용하지 않으므로 제거하거나 null 반환 */}
+      {/* {renderKeyItem()} */}
     </>
   );
 };
