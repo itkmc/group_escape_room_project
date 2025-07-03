@@ -93,6 +93,17 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyIt
           }
         })
       );
+      // 🔑 E키로 문 열기용 함수 등록!
+      window.openMainDoor = function() {
+        if (!isFirstOpen) isFirstOpen = true;
+        if (isAnimating || isDoorOpen) return;
+        isAnimating = true;
+        doorMesh.checkCollisions = false;
+        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+          isDoorOpen = true;
+          isAnimating = false;
+        });
+      };
     }
   });
 
