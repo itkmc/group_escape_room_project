@@ -64,6 +64,90 @@ export async function addOperatingRoom(scene, parentMesh) {
     }
   });
 
+  //문
+  const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+    door1.meshes.forEach((doorMesh) => {
+        // "Cube.002_Cube.000_My_Ui_0"은 문짝 메쉬의 실제 이름에 따라 다를 수 있습니다.
+        if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") {
+            const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정
+            doorMesh.setPivotPoint(pivot);
+
+            doorMesh.parent = parentMesh;
+            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+                new BABYLON.Vector3(2,6.95,12.5), // 문짝의 월드 위치
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+
+            // 문의 초기 회전 설정
+            const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2))
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));;
+
+            doorMesh.rotationQuaternion = baseRotation.clone();
+            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 문의 스케일
+            doorMesh.checkCollisions = true; // 문에 대한 충돌 감지 활성화
+
+            // 문 열림/닫힘 애니메이션 정의
+            const startRotation = doorMesh.rotationQuaternion.clone();
+            const openAngle = Math.PI / 2; // 문이 열리는 각도 (90도)
+            const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+
+            const openAnim = new BABYLON.Animation(
+                "doorOpen",
+                "rotationQuaternion",
+                30, // FPS
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            openAnim.setKeys([
+                { frame: 0, value: startRotation },
+                { frame: 30, value: endRotation },
+            ]);
+
+            const closeAnim = new BABYLON.Animation(
+                "doorClose",
+                "rotationQuaternion",
+                30, // FPS
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            closeAnim.setKeys([
+                { frame: 0, value: endRotation },
+                { frame: 30, value: startRotation },
+            ]);
+
+            let isDoorOpen = false;    // 문의 현재 상태 (열림/닫힘)
+            let isAnimating = false;   // 애니메이션 진행 여부
+
+            // 마우스 클릭 시 문 열고 닫는 로직
+            doorMesh.actionManager = new BABYLON.ActionManager(scene);
+            doorMesh.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    if (isAnimating) return; // 애니메이션 중이면 중복 클릭 무시
+                    isAnimating = true;
+
+                    if (!isDoorOpen) {
+                        // 문 닫힘 -> 열기
+                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 비활성화
+                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                            isDoorOpen = true;
+                            isAnimating = false;
+                        });
+                    } else {
+                        // 문 열림 -> 닫기
+                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                            doorMesh.checkCollisions = true; // 문이 완전히 닫히면 충돌 다시 활성화
+                            isDoorOpen = false;
+                            isAnimating = false;
+                        });
+                    }
+                })
+            );
+
+            // **E 키로 문 열고 닫는 window.toggleMainDoor 함수는 제거되었습니다.**
+        }
+    });
+
   // 수술대 위치
   const desiredOperatingWorldPos = new BABYLON.Vector3(6.8, 6.43, 12.67);
   const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
@@ -81,79 +165,7 @@ export async function addOperatingRoom(scene, parentMesh) {
     }
   });
 
-  const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
-  door1.meshes.forEach((doorMesh) => {
-    if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
-      const pivot = new BABYLON.Vector3(0.19,7.85,12.18); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
-      doorMesh.setPivotPoint(pivot);
-
-      doorMesh.parent = parentMesh;
-      doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-25.10, 14.80, 10.57), // 이 월드 위치는 유지
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-
-      const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
-
-      doorMesh.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
-      doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 원본 스케일 유지
-      doorMesh.checkCollisions = true;
-
-      const startRotation = doorMesh.rotationQuaternion.clone();
-      const openAngle = Math.PI / 2;
-      const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
-
-      const openAnim = new BABYLON.Animation(
-        "doorOpen",
-        "rotationQuaternion",
-        30,
-        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-      );
-      openAnim.setKeys([
-        { frame: 0, value: startRotation },
-        { frame: 30, value: endRotation },
-      ]);
-
-      const closeAnim = new BABYLON.Animation(
-        "doorClose",
-        "rotationQuaternion",
-        30,
-        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-      );
-      closeAnim.setKeys([
-        { frame: 0, value: endRotation },
-        { frame: 30, value: startRotation },
-      ]);
-
-      let isDoorOpen = false;
-      let isAnimating = false;
-      
-      doorMesh.actionManager = new BABYLON.ActionManager(scene);
-      doorMesh.actionManager.registerAction(
-        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-          if (isAnimating) return; // 애니메이션 중이면 무시
-          isAnimating = true;
-          if (!isDoorOpen) {
-            doorMesh.checkCollisions = false;
-            scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-              isDoorOpen = true;
-              isAnimating = false;
-            });
-          } else {
-            scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-              doorMesh.checkCollisions = true;
-              isDoorOpen = false;
-              isAnimating = false;
-            }); // 닫힐 때만 애니메이션 완료 후 충돌 켬
-          }
-        })
-      );
-    }
-  });
-
+  
   // --- 냉장고 위치 및 배치 ---
   const old_fridgeWorldPos = new BABYLON.Vector3(11.20, 6.15, 14.5);
   const old_fridgeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_old_rusty_fridge_-_game_ready.glb", scene);
