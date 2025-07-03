@@ -18,6 +18,26 @@ export async function addRestroomObject(scene, parentMesh) {
       mesh.scaling = new BABYLON.Vector3(15, 15, 15);
       mesh.checkCollisions = true;
       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
+
+      const mesh2 = mesh.clone("toilet_clone");
+      mesh2.parent = parentMesh;
+      mesh2.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-29.26, 0.8, -3.88),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh2.scaling = new BABYLON.Vector3(15, 15, 15);
+      mesh2.checkCollisions = true;
+      mesh2.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
+
+      const mesh3 = mesh.clone("toilet_clone2");
+      mesh3.parent = parentMesh;
+      mesh3.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-27.26, 0.8, -3.88),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh3.scaling = new BABYLON.Vector3(15, 15, 15);
+      mesh3.checkCollisions = true;
+      mesh3.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
     }
   });
 }
