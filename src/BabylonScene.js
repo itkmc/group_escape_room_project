@@ -17,21 +17,21 @@ const BabylonScene = () => {
   const flashlightSpotLightRef = useRef(null);
   const rootFlashlightMeshRef = useRef(null);
   const flashlightHolderRef = useRef(null);
-  const isFlashlightHeldRef = useRef(false);
+  const [flashlightStatus, setFlashlightStatus] = useState("없음");
+  const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
 
-  // ⭐ 추가: 손전등 UI 상태를 위한 useState
-  const [flashlightStatus, setFlashlightStatus] = useState(" 없음"); // "손전등 없음", "손전등 있음 (꺼짐)", "손전등 있음 (켜짐)"
+  // 손전등 아이템 획득 여부를 Ref로 관리하여 useEffect 내부에서 최신 값 참조
+  const hasFlashlightItemRef = useRef(hasFlashlightItem);
 
-  // ⭐ 새로 추가된 퀴즈 및 아이템 관련 상태 ⭐
-  const [answerInput, setAnswerInput] = useState(''); // 사용자가 입력할 정답
-  const [quizMessage, setQuizMessage] = useState(''); // 퀴즈 결과 메시지
-  const [hasKeyItem, setHasKeyItem] = useState(false); // 키 아이템 획득 여부
-  const hasKeyItemRef = useRef(false); // 최신 키 아이템 상태를 위한 ref
+  const [answerInput, setAnswerInput] = useState('');
+  const [quizMessage, setQuizMessage] = useState('');
+  const [hasKeyItem, setHasKeyItem] = useState(false);
 
-  // 퀴즈 정답 정의 (컴포넌트 내부에 상수로 선언)
+  // 손전등 사용법 메시지 관련 상태 추가
+  const [showFlashlightTip, setShowFlashlightTip] = useState(false);
+  const [flashlightTipMessage, setFlashlightTipMessage] = useState("");
   const correctAnswer = "410";
 
-  // ⭐ 퀴즈 정답 제출 핸들러 함수 ⭐
   const handleAnswerSubmit = () => {
     if (answerInput === correctAnswer) {
       setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
@@ -40,11 +40,13 @@ const BabylonScene = () => {
       // 사용자가 '닫기' 버튼을 눌러 퀴즈를 종료하도록 유도합니다.
     } else {
       setQuizMessage("오답입니다. 다시 시도해 보세요.");
-      setAnswerInput(''); // 오답일 경우 입력 필드 초기화
+      setAnswerInput('');
     }
   };
 
-  // ⭐ renderKeyItem 함수는 더 이상 사용하지 않으므로 제거합니다. ⭐
+  useEffect(() => {
+    hasFlashlightItemRef.current = hasFlashlightItem;
+  }, [hasFlashlightItem]);
 
   useEffect(() => {
     hasKeyItemRef.current = hasKeyItem;
@@ -64,11 +66,13 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        new BABYLON.Vector3(-21, 15.5, 11.5),
+        //첫시작
+        new BABYLON.Vector3(-0.51, 7.85, 11.90),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
       camera.attachControl(canvasRef.current, true);
+      camera.inputs.addMouse();
       camera.checkCollisions = true;
       camera.applyGravity = true;
       camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
@@ -76,6 +80,7 @@ const BabylonScene = () => {
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
 
+      // 플레이어 이동 속도 조절
       const WALK_SPEED = 0.1;
       const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
@@ -108,23 +113,20 @@ const BabylonScene = () => {
       });
 
       if (parentMesh) {
-        // setShowQuiz(true)는 이 함수가 호출될 때 퀴즈를 띄웁니다.
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addOperatingRoom(scene, parentMesh);
         await addDoctorOffice(scene, parentMesh);
       }
 
-      // 수술실 조명
+      // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
       const lampMesh1 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0");
       if (lampMesh1 && lampMesh1.material) {
         const material = lampMesh1.material;
         if (material instanceof BABYLON.PBRMaterial) {
-          material.emissiveIntensity = 0.01;
+          material.emissiveIntensity = 0.01; // PBR 재질의 발광 강도
         } else if (material instanceof BABYLON.StandardMaterial) {
-          material.emissiveColor = material.emissiveColor.scale(0.01);
+          material.emissiveColor = material.emissiveColor.scale(0.01); // Standard 재질의 발광 색상
         }
-      } else {
-        console.warn("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0 메쉬 또는 재질을 찾을 수 없습니다.");
       }
 
       const lampMesh2 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_I_0");
@@ -136,44 +138,42 @@ const BabylonScene = () => {
         } else if (material instanceof BABYLON.StandardMaterial) {
           material.emissiveColor = material.emissiveColor.scale(0.01);
         }
-      } else {
-        console.warn("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_I_0 메쉬 또는 재질을 찾을 수 없습니다.");
       }
 
       const keysPressed = {};
 
-      //전체 씬조명
+      // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-
-      originalHemiLightIntensity = 0.2; // 씬의 기본 (평소) 밝기 강도 (0.0 ~ 1.0)
-
+      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
-      //수술실 조명 끔
-      const darkZoneCenter = new BABYLON.Vector3(6.8, 7.85, 12.85); //어둡게 할 영역 중심
-      const darkZoneRadius = 5; //반경
+      // 어두운 구역 설정
+      const darkZoneCenter = new BABYLON.Vector3(7,7,12);
+      const darkZoneRadius = 5.5;
+      originalSceneClearColor = new BABYLON.Color4(0.0001, 0.0001, 0.0001, 1); // 씬 배경색 초기값
 
-      originalSceneClearColor = new BABYLON.Color4(0.0001, 0.0001, 0.0001, 1);
-
-      const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flashlight.glb", scene);
-
-      rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
+      
+      // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
       if (!rootFlashlightMeshRef.current) {
+        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flashlight.glb", scene);
+
+        rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
+        if (!rootFlashlightMeshRef.current) {
           rootFlashlightMeshRef.current = flashResult.meshes[0];
           console.warn("flashlight.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
-      }
+        }
 
-      flashResult.animationGroups.forEach(ag => {
+        flashResult.animationGroups.forEach(ag => {
           ag.stop();
-      });
+        });
 
-      if (rootFlashlightMeshRef.current) {
+        if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
-          
+          // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
           flashlightHolderRef.current.position = new BABYLON.Vector3(-0.4, 7.5, 11.0);
           flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
           rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
           rootFlashlightMeshRef.current.position = BABYLON.Vector3.Zero();
@@ -181,32 +181,34 @@ const BabylonScene = () => {
           rootFlashlightMeshRef.current.rotationQuaternion = BABYLON.Quaternion.Identity();
 
           flashResult.meshes.forEach((mesh) => {
-              mesh.isPickable = true;
+            mesh.isPickable = true;
           });
 
-          // ⭐ 이곳에 더미 충돌체 생성 코드를 삽입합니다. ⭐
           const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.3 }, scene);
           flashlightCollisionBox.parent = flashlightHolderRef.current;
-          flashlightCollisionBox.position = new BABYLON.Vector3(2, 2, 2);
+          flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
           flashlightCollisionBox.visibility = 0;
           flashlightCollisionBox.checkCollisions = true;
 
           flashlightSpotLightRef.current = new BABYLON.SpotLight(
-              "flashlightSpotLight",
-              new BABYLON.Vector3(0, 0, -20),
-              new BABYLON.Vector3(0, 0, 1),
-              BABYLON.Tools.ToRadians(5), //손전등 반경
-              2,
-              scene
+            "flashlightSpotLight",
+            new BABYLON.Vector3(0, 0, 0),
+            new BABYLON.Vector3(0, 0, 1),
+            BABYLON.Tools.ToRadians(35), // 손전등 빛의 원뿔 각도 (값 낮을수록 좁아짐)
+            2, // 빛의 감쇠 속도 (값이 높을수록 빨리 어두워짐)
+            scene
           );
-          flashlightSpotLightRef.current.diffuse = new BABYLON.Color3(1, 1, 0.8);
-          flashlightSpotLightRef.current.specular = new BABYLON.Color3(1, 1, 1);
-          flashlightSpotLightRef.current.intensity = 0;
-          flashlightSpotLightRef.current.parent = flashlightHolderRef.current;
-          flashlightSpotLightRef.current.setEnabled(false);
-      }
+          flashlightSpotLightRef.current.diffuse = new BABYLON.Color3(1, 1, 0.8); // 손전등 빛의 색상
+          flashlightSpotLightRef.current.specular = new BABYLON.Color3(1, 1, 1); // 손전등 빛의 반사광 색상
+          flashlightSpotLightRef.current.intensity = 0; // 초기에는 꺼진 상태 (F키 누르면 100으로 설정)
+          flashlightSpotLightRef.current.parent = camera; // 손전등 조명을 카메라에 종속시킵니다.
 
-      // =======================
+          // 카메라에 부착된 손전등 조명의 상대적 위치 및 방향 조절
+          flashlightSpotLightRef.current.position = new BABYLON.Vector3(0.2, -0.2, 0.5); 
+          flashlightSpotLightRef.current.direction = new BABYLON.Vector3(0, -0.1, 1);
+          flashlightSpotLightRef.current.setEnabled(false); // 초기에는 비활성화 (꺼진 상태)
+        }
+      }
 
       scene.registerBeforeRender(() => {
         const nearSpecialPos = specialPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius);
@@ -234,15 +236,12 @@ const BabylonScene = () => {
 
         const distanceToDarkZone = BABYLON.Vector3.Distance(camera.position, darkZoneCenter);
 
-        // 수술실 조명 정도
+        // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-
-          // **어두워지는 영역 진입 시**
-          hemiLight.intensity = 0.005; // 영역 진입 시 씬의 밝기 강도 (0.001 ~ 0.3)
-          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
-
+          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
-          hemiLight.intensity = originalHemiLightIntensity;
+          hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
           scene.clearColor = originalSceneClearColor;
         }
       });
@@ -252,23 +251,30 @@ const BabylonScene = () => {
       camera.keysLeft.push(65);
       camera.keysRight.push(68);
       camera.minZ = 0.1;
-      camera.angularSensibility = 6000;
+      camera.angularSensibility = 6000; // 마우스 감도 조절
 
       const handleKeyDown = (evt) => {
         keysPressed[evt.key.toLowerCase()] = true;
 
-        if (evt.key.toLowerCase() === "f" && isFlashlightHeldRef.current) {
-            if (flashlightSpotLightRef.current) {
-                if (flashlightSpotLightRef.current.isEnabled()) {
-                    flashlightSpotLightRef.current.setEnabled(false);
-                    setFlashlightStatus("손전등 OFF");
-                } else {
-                    flashlightSpotLightRef.current.setEnabled(true);
-                    flashlightSpotLightRef.current.intensity = 100; //높을수록밝음
-                    flashlightSpotLightRef.current.exponent = 10; //높을수록 가장자리 선명
-                    setFlashlightStatus("손전등 ON");
-                }
+        if (evt.key.toLowerCase() === "f") {
+          if (!hasFlashlightItemRef.current) {
+            console.log("손전등 아이템을 획득해야 손전등을 켤 수 있습니다.");
+            return;
+          }
+
+          if (flashlightSpotLightRef.current) {
+            if (flashlightSpotLightRef.current.isEnabled()) {
+              flashlightSpotLightRef.current.setEnabled(false);
+              setFlashlightStatus("OFF");
+              console.log("손전등 OFF");
+            } else {
+              flashlightSpotLightRef.current.setEnabled(true);
+              flashlightSpotLightRef.current.intensity = 100; // 손전등 밝기 조절 (값 높을수록 밝아짐)
+              flashlightSpotLightRef.current.exponent = 10; // 손전등 빛의 중앙 집중도 조절 (값 높을수록 중앙에 집중)
+              setFlashlightStatus("ON");
+              console.log("손전등 ON");
             }
+          }
         }
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
         if (evt.key === 'e' || evt.key === 'E') {
@@ -301,41 +307,35 @@ const BabylonScene = () => {
         camera.position.addInPlace(forward.scale(delta));
       });
 
-     scene.onPointerObservable.add((pointerInfo) => {
-    if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-        const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-
-        if (pickResult.hit) {
-            if (rootFlashlightMeshRef.current && pickResult.pickedMesh.isDescendantOf(flashlightHolderRef.current)) {
-                if (isFlashlightHeldRef.current) {
-                   console.log("손전등은 이미 손에 있습니다.");
-                } else {
-                    
-                    flashlightHolderRef.current.parent = camera;
-                    flashlightHolderRef.current.position = new BABYLON.Vector3(0.1, -0.5, 1.5);
-                    flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
-                    flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.Identity();
-                    
-                    isFlashlightHeldRef.current = true;
-                    setFlashlightStatus("손전등 OFF");
-                }
-            } else if (pickResult.pickedMesh && pickResult.pickedMesh.name !== "__root__" && !pickResult.pickedMesh.actionManager) {
-                // 다른 클릭 가능한 메쉬 처리 (기존 로직 유지)
-            }
-        }
-    }
-});
-
       scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          // ActionManager가 있는 메쉬 (두루마리, 서랍, 문 등)는 각자 클릭 이벤트가 있으므로 여기서 일반적인 alert는 방지합니다.
-          // 또한 __root__ 메쉬는 일반적으로 클릭할 필요가 없습니다.
-          if (mesh && mesh.name !== "__root__" && !mesh.actionManager) {
-           alert(`Clicked mesh name: ${mesh.name}`); 
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+          const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+
+          if (pickResult.hit) {
+            // 손전등 아이템 획득 로직
+            if (flashlightHolderRef.current && pickResult.pickedMesh.isDescendantOf(flashlightHolderRef.current)) {
+              if (hasFlashlightItemRef.current) {
+                console.log("손전등은 이미 아이템으로 가지고 있습니다.");
+              } else {
+                setHasFlashlightItem(true);
+                setFlashlightStatus("OFF");
+                flashlightHolderRef.current.setEnabled(false);
+                console.log("손전등을 획득했습니다!");
+
+                // 손전등 사용법 메시지 표시
+                setFlashlightTipMessage("손전등을 획득했습니다! 'F' 키를 눌러 손전등을 켜고 끌 수 있습니다.");
+                setShowFlashlightTip(true);
+
+                
+              }
+            }
           }
         }
       });
+
+      // // Babylon.js Inspector 활성화 (개발 중 디버깅에 필수!)
+      // // 게임 실행 후 F12 (개발자 도구)를 열어 "Inspector" 탭 또는 "Babylon.js" 탭을 확인하세요.
+      // scene.debugLayer.show();
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
@@ -362,14 +362,12 @@ const BabylonScene = () => {
     };
 
     initScene();
-
-    const testKeydown = (evt) => {
+const testKeydown = (evt) => {
       console.log('[전역 테스트] keydown:', evt.key);
     };
     window.addEventListener('keydown', testKeydown);
 
   }, []);
-  
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
@@ -394,12 +392,11 @@ const BabylonScene = () => {
         <div>Z: {playerPos.z}</div>
       </div>
 
-      {/* ⭐ 새로 추가된 손전등 상태 UI ⭐ */}
       <div
         style={{
           position: "absolute",
           top: 10,
-          right: 10, // 오른쪽 상단으로 위치 변경
+          right: 10,
           padding: "8px 12px",
           backgroundColor: "rgba(0,0,0,0.6)",
           color: "white",
@@ -410,26 +407,81 @@ const BabylonScene = () => {
           zIndex: 1000,
         }}
       >
-        {hasKeyItem ? (
-          <>
-            <div>아이템</div>
-            <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <img
-                src="/key_with_tag.png"
-                alt="열쇠 아이템"
-                style={{ width: 50, height: 50, objectFit: 'contain' }}
-                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
-              />
-            </div>
-          </>
-        ) : (
-          <div>아이템 없음</div>
+        <div>{hasKeyItem ? "아이템" : "아이템 없음"}</div>
+        <span>{flashlightStatus}</span>
+        {hasKeyItem && (
+          <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <img
+              src="/key_with_tag.png"
+              alt="열쇠 아이템"
+              style={{ width: 50, height: 50, objectFit: 'contain' }}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
+            />
+            <span>열쇠</span>
+          </div>
+        )}
+        {hasFlashlightItem && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              src="flashLight.png"
+              alt="손전등 아이템"
+              style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/30x30/000000/FFFFFF?text=FL'; }}
+            />
+            <span>손전등 ({flashlightStatus})</span>
+          </div>
         )}
         {flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "" && flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "없음" ? (
           <span>{flashlightStatus}</span>
         ) : null}
       </div>
 
+      {/* 손전등 사용법 메시지 팝업 */}
+      {showFlashlightTip && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.7)", // 전체 오버레이는 반투명 검은색 유지
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000 // 퀴즈보다 낮은 z-index
+          }}
+        >
+          <div style={{
+            background: "rgba(0,0,0,0.6)", // 박스 배경색을 반투명 검은색으로 변경
+            padding: 24,
+            borderRadius: 12,
+            textAlign: "center",
+            minWidth: 320,
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+          }}>
+            <div style={{
+              fontSize: 20,
+              marginBottom: 16,
+              color: "white" // 글씨 색깔을 하얀색으로 변경
+            }}>
+              {flashlightTipMessage}
+            </div>
+            <button
+              onClick={() => {
+                setShowFlashlightTip(false);
+                setFlashlightTipMessage("");
+              }}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 퀴즈 팝업 */}
       {showQuiz && (
         <div style={{
           position: "fixed",
@@ -442,14 +494,12 @@ const BabylonScene = () => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 2000
+          zIndex: 2001 // 손전등 팁보다 높은 z-index로 퀴즈가 항상 위에 나타나도록 함
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
             <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
-            {/* 퀴즈 문제 이미지 경로 확인 (스크린샷 2025-07-03 09.34.28.png 또는 다른 이미지 사용 여부) */}
             <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
-            {/* 정답 입력 필드 */}
             <input
               type="text"
               value={answerInput}
@@ -457,7 +507,6 @@ const BabylonScene = () => {
               placeholder="정답을 입력하세요"
               style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
             />
-            {/* 정답 확인 버튼 */}
             <button
               onClick={handleAnswerSubmit}
               style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
@@ -466,9 +515,9 @@ const BabylonScene = () => {
             </button>
             <button
               onClick={() => {
-                setShowQuiz(false); // 퀴즈 창 닫기
-                setQuizMessage(''); // 메시지 초기화
-                setAnswerInput(''); // 입력 초기화
+                setShowQuiz(false);
+                setQuizMessage('');
+                setAnswerInput('');
               }}
               style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
             >
@@ -482,9 +531,6 @@ const BabylonScene = () => {
           </div>
         </div>
       )}
-
-      {/* renderKeyItem 함수는 더 이상 사용하지 않으므로 제거하거나 null 반환 */}
-      {/* {renderKeyItem()} */}
     </>
   );
 };
