@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@babylonjs/core": "^8.13.1",
+    "@babylonjs/core": "^8.14.2",
     "@babylonjs/inspector": "^8.14.1",
     "@babylonjs/loaders": "^8.13.1",
     "@babylonjs/serializers": "^8.14.1",
