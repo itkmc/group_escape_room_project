@@ -26,6 +26,7 @@ const BabylonScene = () => {
   const [answerInput, setAnswerInput] = useState(''); // 사용자가 입력할 정답
   const [quizMessage, setQuizMessage] = useState(''); // 퀴즈 결과 메시지
   const [hasKeyItem, setHasKeyItem] = useState(false); // 키 아이템 획득 여부
+  const hasKeyItemRef = useRef(false); // 최신 키 아이템 상태를 위한 ref
 
   // 퀴즈 정답 정의 (컴포넌트 내부에 상수로 선언)
   const correctAnswer = "410";
@@ -33,7 +34,7 @@ const BabylonScene = () => {
   // ⭐ 퀴즈 정답 제출 핸들러 함수 ⭐
   const handleAnswerSubmit = () => {
     if (answerInput === correctAnswer) {
-      setQuizMessage("정답입니다! 키 아이템을 획득했습니다.");
+      setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
       setHasKeyItem(true); // 키 아이템 획득 상태로 변경
       // 정답을 맞췄으므로 퀴즈 창을 바로 닫지 않고 메시지를 보여준 후,
       // 사용자가 '닫기' 버튼을 눌러 퀴즈를 종료하도록 유도합니다.
@@ -45,6 +46,9 @@ const BabylonScene = () => {
 
   // ⭐ renderKeyItem 함수는 더 이상 사용하지 않으므로 제거합니다. ⭐
 
+  useEffect(() => {
+    hasKeyItemRef.current = hasKeyItem;
+  }, [hasKeyItem]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -140,7 +144,9 @@ const BabylonScene = () => {
 
       //전체 씬조명
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 전체씬 0.2
+
+      originalHemiLightIntensity = 0.2; // 씬의 기본 (평소) 밝기 강도 (0.0 ~ 1.0)
+
       hemiLight.intensity = originalHemiLightIntensity;
 
       //수술실 조명 끔
@@ -230,8 +236,11 @@ const BabylonScene = () => {
 
         // 수술실 조명 정도
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.0001;
-          scene.clearColor = new BABYLON.Color4(0.0001, 0.0001, 0.0001, 1);
+
+          // **어두워지는 영역 진입 시**
+          hemiLight.intensity = 0.005; // 영역 진입 시 씬의 밝기 강도 (0.001 ~ 0.3)
+          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
+
         } else {
           hemiLight.intensity = originalHemiLightIntensity;
           scene.clearColor = originalSceneClearColor;
@@ -260,6 +269,21 @@ const BabylonScene = () => {
                     setFlashlightStatus("손전등 ON");
                 }
             }
+        }
+        // 열쇠를 획득한 후 E키를 누르면 문이 열리게
+        if (evt.key === 'e' || evt.key === 'E') {
+          console.log('[E키 입력] hasKeyItem:', hasKeyItemRef.current, 'window.openMainDoor:', typeof window.openMainDoor, window.openMainDoor);
+          if (hasKeyItemRef.current) {
+            if (window.openMainDoor) {
+              console.log('[E키] openMainDoor 함수 실행!');
+              window.openMainDoor();
+              setHasKeyItem(false); // 키 사용 후 소모!
+            } else {
+              console.log('[E키] window.openMainDoor가 정의되어 있지 않습니다.');
+            }
+          } else {
+            console.log('[E키] 아직 열쇠가 없습니다.');
+          }
         }
       };
 
@@ -302,7 +326,6 @@ const BabylonScene = () => {
     }
 });
 
-
       scene.onPointerObservable.add((pointerInfo) => {
         if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
           const mesh = pointerInfo.pickInfo?.pickedMesh;
@@ -340,8 +363,12 @@ const BabylonScene = () => {
 
     initScene();
 
-  }, []);
+    const testKeydown = (evt) => {
+      console.log('[전역 테스트] keydown:', evt.key);
+    };
+    window.addEventListener('keydown', testKeydown);
 
+  }, []);
 
   return (
     <>
@@ -383,18 +410,24 @@ const BabylonScene = () => {
           zIndex: 1000,
         }}
       >
-        <div>{hasKeyItem ? "아이템" : "아이템 없음"}</div>
-        <span>{flashlightStatus}</span>
-        {hasKeyItem && (
-          <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <img
-              src="/key_with_tag.png"
-              alt="열쇠 아이템"
-              style={{ width: 50, height: 50, objectFit: 'contain' }}
-              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
-            />
-          </div>
+        {hasKeyItem ? (
+          <>
+            <div>아이템</div>
+            <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <img
+                src="/key_with_tag.png"
+                alt="열쇠 아이템"
+                style={{ width: 50, height: 50, objectFit: 'contain' }}
+                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
+              />
+            </div>
+          </>
+        ) : (
+          <div>아이템 없음</div>
         )}
+        {flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "" && flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "없음" ? (
+          <span>{flashlightStatus}</span>
+        ) : null}
       </div>
 
       {showQuiz && (
