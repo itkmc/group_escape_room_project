@@ -115,7 +115,9 @@ const BabylonScene = () => {
 
       //전체 씬조명
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 씬의 기본 (평소) 밝기 강도 (0.0 ~ 1.0)
+
+      originalHemiLightIntensity = 0.7; // 전체씬 0.2
+
       hemiLight.intensity = originalHemiLightIntensity;
 
       //수술실 조명 끔
@@ -205,9 +207,8 @@ const BabylonScene = () => {
 
         // 수술실 조명 정도
         if (distanceToDarkZone < darkZoneRadius) {
-          // **어두워지는 영역 진입 시**
-          hemiLight.intensity = 0.5; // 영역 진입 시 씬의 밝기 강도 (수정 후 0.005로 맞추기)
-          // scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1); // 영역 진입 시 배경색 (R, G, B, Alpha)
+          hemiLight.intensity = 0.0001;
+          scene.clearColor = new BABYLON.Color4(0.0001, 0.0001, 0.0001, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity;
           scene.clearColor = originalSceneClearColor;
@@ -252,8 +253,8 @@ const BabylonScene = () => {
         const forward = camera.getDirection(BABYLON.Axis.Z);
         camera.position.addInPlace(forward.scale(delta));
       });
-      
-   scene.onPointerObservable.add((pointerInfo) => {
+
+     scene.onPointerObservable.add((pointerInfo) => {
     if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
         const pickResult = scene.pick(scene.pointerX, scene.pointerY);
 
@@ -316,7 +317,6 @@ const BabylonScene = () => {
     initScene();
 
   }, []);
-
 
   return (
     <>
