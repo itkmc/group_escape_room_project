@@ -17,7 +17,7 @@ const BabylonScene = () => {
   const flashlightSpotLightRef = useRef(null);
   const rootFlashlightMeshRef = useRef(null);
   const flashlightHolderRef = useRef(null);
-  const [flashlightStatus, setFlashlightStatus] = useState("없음");
+  const [flashlightStatus, setFlashlightStatus] = useState(null);
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
 
   // 손전등 아이템 획득 여부를 Ref로 관리하여 useEffect 내부에서 최신 값 참조
@@ -26,6 +26,7 @@ const BabylonScene = () => {
   const [answerInput, setAnswerInput] = useState('');
   const [quizMessage, setQuizMessage] = useState('');
   const [hasKeyItem, setHasKeyItem] = useState(false);
+  const hasKeyItemRef = useRef(false); // 최신 키 아이템 상태를 위한 ref
 
   // 손전등 사용법 메시지 관련 상태 추가
   const [showFlashlightTip, setShowFlashlightTip] = useState(false);
@@ -67,7 +68,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-0.51, 7.85, 11.90),
+        new BABYLON.Vector3(-21, 15.5, 11.90),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -144,7 +145,7 @@ const BabylonScene = () => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
@@ -318,7 +319,7 @@ const BabylonScene = () => {
                 console.log("손전등은 이미 아이템으로 가지고 있습니다.");
               } else {
                 setHasFlashlightItem(true);
-                setFlashlightStatus("OFF");
+                
                 flashlightHolderRef.current.setEnabled(false);
                 console.log("손전등을 획득했습니다!");
 
@@ -407,12 +408,11 @@ const testKeydown = (evt) => {
           zIndex: 1000,
         }}
       >
-        <div>{hasKeyItem ? "아이템" : "아이템 없음"}</div>
-        <span>{flashlightStatus}</span>
+        <div>{hasKeyItem ? "아이템" : "아이템"}</div>
         {hasKeyItem && (
           <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <img
-              src="/key_with_tag.png"
+              src="/key.png"
               alt="열쇠 아이템"
               style={{ width: 50, height: 50, objectFit: 'contain' }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
@@ -428,12 +428,9 @@ const testKeydown = (evt) => {
               style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/30x30/000000/FFFFFF?text=FL'; }}
             />
-            <span>손전등 ({flashlightStatus})</span>
+            <span>손전등 {flashlightStatus}</span>
           </div>
         )}
-        {flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "" && flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "없음" && flashlightStatus.trim() !== "없음" ? (
-          <span>{flashlightStatus}</span>
-        ) : null}
       </div>
 
       {/* 손전등 사용법 메시지 팝업 */}
