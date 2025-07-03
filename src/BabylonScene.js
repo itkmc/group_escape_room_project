@@ -7,6 +7,7 @@ import { addDoorAndChair } from "./rooms/looptop";
 import { addOperatingRoom } from "./rooms/op_room";
 import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
+import { addRestroomObject } from "./rooms/restroom";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -68,7 +69,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21, 15.5, 11.90),
+        new BABYLON.Vector3(-30.29, 2.26, -6.64),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -117,6 +118,7 @@ const BabylonScene = () => {
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addOperatingRoom(scene, parentMesh);
         await addDoctorOffice(scene, parentMesh);
+        await addRestroomObject(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
