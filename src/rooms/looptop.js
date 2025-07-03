@@ -7,8 +7,9 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene - Babylon.js Scene 객체
  * @param {BABYLON.AbstractMesh} parentMesh - parent로 사용할 메시 (ex: 건물 메시)
  * @param {Function} [onScrollClick] - 두루마리 클릭 시 호출될 콜백 함수 (선택 사항)
+ * @param {Function} [hasKeyItemFn] - 키 아이템이 있는지 확인할 함수 (선택 사항)
  */
-export async function addDoorAndChair(scene, parentMesh, onScrollClick) { // onScrollClick 매개변수 추가
+export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyItemFn) {
   if (!parentMesh) {
     console.warn("❗ parentMesh가 없습니다.");
     return;
@@ -64,9 +65,17 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick) { // onS
 
       let isDoorOpen = false;
       let isAnimating = false;
+      let isFirstOpen = false; // 첫 개방 여부
       doorMesh.actionManager = new BABYLON.ActionManager(scene);
       doorMesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+          if (!isFirstOpen) {
+            if (!hasKeyItemFn || !hasKeyItemFn()) {
+              alert("열쇠가 필요합니다!");
+              return;
+            }
+            isFirstOpen = true; // 첫 개방 이후엔 자유롭게 여닫기
+          }
           if (isAnimating) return; // 애니메이션 중이면 무시
           isAnimating = true;
           if (!isDoorOpen) {
