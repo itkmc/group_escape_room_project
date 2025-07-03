@@ -7,6 +7,7 @@ import { addDoorAndChair } from "./rooms/looptop";
 import { addOperatingRoom } from "./rooms/op_room";
 import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
+import { addRestroomObject } from "./rooms/restroom";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -117,6 +118,7 @@ const BabylonScene = () => {
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addOperatingRoom(scene, parentMesh);
         await addDoctorOffice(scene, parentMesh);
+        await addRestroomObject(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
