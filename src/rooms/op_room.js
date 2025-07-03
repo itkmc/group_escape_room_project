@@ -6,9 +6,8 @@ import "@babylonjs/loaders";
  * 수술실 내 오브젝트들 (모니터, 수술대, 사물함 등)을 Babylon.js 씬에 추가
  * @param {BABYLON.Scene} scene - Babylon.js Scene
  * @param {BABYLON.AbstractMesh} parentMesh - 건물 메시에 붙일 부모
- * @param {BABYLON.UniversalCamera} camera - 씬의 메인 카메라 객체
  */
-export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여기! camera 인자를 추가합니다.**
+export async function addOperatingRoom(scene, parentMesh) {
   if (!parentMesh) {
     console.warn("parentMesh가 없습니다.");
     return;
@@ -66,7 +65,7 @@ export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여
   });
 
   // 수술대 위치
-  const desiredOperatingWorldPos = new BABYLON.Vector3(10, 6.43, 12.37);
+  const desiredOperatingWorldPos = new BABYLON.Vector3(6.8, 6.43, 12.67);
   const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
   operating.meshes.forEach((operatingMesh) => {
     if (operatingMesh.name !== "__root__") {
@@ -82,32 +81,6 @@ export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여
     }
   });
 
-  // --- 손전등 위치 및 배치 ---
-  const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light.glb", scene);
-
-  let rootFlashlightMesh = null;
-  rootFlashlightMesh = flashResult.meshes.find(mesh => mesh.name === "__root__");
-
-  if (!rootFlashlightMesh) {
-      rootFlashlightMesh = flashResult.meshes[0];
-  }
-
-  flashResult.animationGroups.forEach(ag => {
-      ag.stop();
-  });
-
-  if (rootFlashlightMesh) {
-      rootFlashlightMesh.parent = scene.activeCamera; 
-      rootFlashlightMesh.position = new BABYLON.Vector3(0.1, -0.5, 1); 
-      rootFlashlightMesh.scaling = new BABYLON.Vector3(0.005, 0.005, 0.005);
-      rootFlashlightMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
-
-      flashResult.meshes.forEach((mesh) => {
-          mesh.isPickable = true;
-      });
-  }
-
   // --- 냉장고 위치 및 배치 ---
   const old_fridgeWorldPos = new BABYLON.Vector3(11.20, 6.15, 14.5);
   const old_fridgeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_old_rusty_fridge_-_game_ready.glb", scene);
@@ -118,7 +91,6 @@ export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여
   if (!rootFridgeMesh) {
     rootFridgeMesh = old_fridgeResult.meshes[0];
   }
-
 
   old_fridgeResult.animationGroups.forEach(ag => {
     ag.stop();
@@ -133,7 +105,6 @@ export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여
 
     rootFridgeMesh.scaling = new BABYLON.Vector3(17, 17, 17);
 
-
     rootFridgeMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
 
@@ -146,17 +117,17 @@ export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여
     rootFridgeMesh.checkCollisions = true;
   }
 
-    let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_6");
-    let isDoor6Open = false;
+  let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_6");
+  let isDoor6Open = false;
 
-    let door8Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_8");
-    let isDoor8Open = false;
+  let door8Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_8");
+  let isDoor8Open = false;
 
-    const closedRotation6 = door6Mesh ? door6Mesh.rotationQuaternion.clone() : BABYLON.Quaternion.Identity();
-    const openRotation6 = closedRotation6.multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+  const closedRotation6 = door6Mesh ? door6Mesh.rotationQuaternion.clone() : BABYLON.Quaternion.Identity();
+  const openRotation6 = closedRotation6.multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
-    const closedRotation8 = door8Mesh ? door8Mesh.rotationQuaternion.clone() : BABYLON.Quaternion.Identity();
-    const openRotation8 = closedRotation8.multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+  const closedRotation8 = door8Mesh ? door8Mesh.rotationQuaternion.clone() : BABYLON.Quaternion.Identity();
+  const openRotation8 = closedRotation8.multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
   if (door6Mesh) {
     door6Mesh.rotationQuaternion = closedRotation6.clone();
@@ -218,5 +189,4 @@ export async function addOperatingRoom(scene, parentMesh, camera) { // <-- **여
     );
   }
   // --- 냉장고 위치 및 배치 끝 ---
-
 }
