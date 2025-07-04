@@ -52,7 +52,14 @@ const BabylonScene = () => {
 
   useEffect(() => {
     hasKeyItemRef.current = hasKeyItem;
+    console.log('[디버그] hasKeyItem 상태:', hasKeyItem);
   }, [hasKeyItem]);
+
+  // 외부에서 setHasKeyItem을 쓸 수 있도록 window에 등록
+  useEffect(() => {
+    window.setHasKeyItem = setHasKeyItem;
+    window.hasKeyItemRef = hasKeyItemRef;
+  }, [setHasKeyItem]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -283,17 +290,37 @@ const BabylonScene = () => {
         }
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
         if (evt.key === 'e' || evt.key === 'E') {
-          console.log('[E키 입력] hasKeyItem:', hasKeyItemRef.current, 'window.openMainDoor:', typeof window.openMainDoor, window.openMainDoor);
-          if (hasKeyItemRef.current) {
-            if (window.openMainDoor) {
-              console.log('[E키] openMainDoor 함수 실행!');
-              window.openMainDoor();
-              setHasKeyItem(false); // 키 사용 후 소모!
-            } else {
-              console.log('[E키] window.openMainDoor가 정의되어 있지 않습니다.');
-            }
-          } else {
-            console.log('[E키] 아직 열쇠가 없습니다.');
+          if (!hasKeyItemRef.current) {
+            alert('열쇠를 먼저 찾으세요!');
+            return;
+          }
+          // 플레이어와 각 문 위치의 거리 계산
+          const playerPosVec = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
+          const mainDoorPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
+          const restroomDoorPos = new BABYLON.Vector3(-18.95, 2.5, -6.95);
+          // 수평(XZ) 거리 계산 함수
+          function horizontalDistance(a, b) {
+            return Math.sqrt(
+              Math.pow(a.x - b.x, 2) +
+              Math.pow(a.z - b.z, 2)
+            );
+          }
+          const distToMain = horizontalDistance(playerPosVec, mainDoorPos);
+          const distToRest = horizontalDistance(playerPosVec, restroomDoorPos);
+          const THRESHOLD = 10; // 거리 임계값(수평거리)
+
+          let opened = false;
+          if (distToMain < THRESHOLD && window.openMainDoor) {
+            window.openMainDoor();
+            setHasKeyItem(false);
+            opened = true;
+          } else if (distToRest < THRESHOLD && window.openRestroomDoor) {
+            window.openRestroomDoor();
+            setHasKeyItem(false);
+            opened = true;
+          }
+          if (!opened) {
+            alert('문 가까이에서 E키를 눌러주세요!');
           }
         }
       };
@@ -338,6 +365,17 @@ const BabylonScene = () => {
         }
       });
 
+      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
+
       // // Babylon.js Inspector 활성화 (개발 중 디버깅에 필수!)
       // // 게임 실행 후 F12 (개발자 도구)를 열어 "Inspector" 탭 또는 "Babylon.js" 탭을 확인하세요.
       // scene.debugLayer.show();
@@ -373,6 +411,8 @@ const testKeydown = (evt) => {
     window.addEventListener('keydown', testKeydown);
 
   }, []);
+
+  
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
@@ -412,7 +452,8 @@ const testKeydown = (evt) => {
           zIndex: 1000,
         }}
       >
-        <div>{hasKeyItem ? "아이템" : "아이템"}</div>
+        <div>아이템</div>
+        <div style={{ fontSize: 10, color: '#aaa' }}>hasKeyItem: {String(hasKeyItem)}</div>
         {hasKeyItem && (
           <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <img
@@ -421,7 +462,6 @@ const testKeydown = (evt) => {
               style={{ width: 50, height: 50, objectFit: 'contain' }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
-            <span>열쇠</span>
           </div>
         )}
         {hasFlashlightItem && (
