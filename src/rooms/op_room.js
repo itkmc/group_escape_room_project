@@ -49,7 +49,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
   }
 
   // --- 도구 위치 ---
-  const surgery_toolsWorldPos = new BABYLON.Vector3(6.10, 7.19, 11.08);
+  const surgery_toolsWorldPos = new BABYLON.Vector3(6.10, 7.19, 11.10);
   const surgery_toolsResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "first_aid_box_19_mb.glb", scene);
   const rootSurgeryToolsMesh = surgery_toolsResult.meshes[0]; 
   rootSurgeryToolsMesh.parent = parentMesh;
@@ -206,7 +206,6 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
       );
       alien_fetusMesh.scaling = new BABYLON.Vector3(50,50,50);
       alien_fetusMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2))
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2));
       alien_fetusMesh.checkCollisions = true;
     }
@@ -247,7 +246,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
 
   
   // 좀비 위치
-  const zombie_corpseWorldPos = new BABYLON.Vector3(5.7, 7.23, 12.67);
+  const zombie_corpseWorldPos = new BABYLON.Vector3(5.8, 7.325, 13.37);
   const zombie_corpse = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "zombie_corpse.glb", scene);
   zombie_corpse.meshes.forEach((zombie_corpseMesh) => {
     if (zombie_corpseMesh.name !== "__root__") {
@@ -259,7 +258,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
       zombie_corpseMesh.scaling = new BABYLON.Vector3(12,12,12);
       zombie_corpseMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI))
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/2))
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/3))
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
       zombie_corpseMesh.checkCollisions = true;
     }
