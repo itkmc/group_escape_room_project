@@ -95,7 +95,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(6.63,7.85,14.44),
+        new BABYLON.Vector3(-32.17, 2.265, -6.19),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -426,6 +426,12 @@ const BabylonScene = () => {
     initScene();
     
   }, [handleOperatingRoomScrollClick]);
+
+  useEffect(() => {
+    window.setHasKeyItem = setHasKeyItem;
+    window.hasKeyItemRef = hasKeyItemRef;
+  }, [setHasKeyItem]);
+
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
