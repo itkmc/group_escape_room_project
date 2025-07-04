@@ -453,7 +453,6 @@ const testKeydown = (evt) => {
         }}
       >
         <div>아이템</div>
-        <div style={{ fontSize: 10, color: '#aaa' }}>hasKeyItem: {String(hasKeyItem)}</div>
         {hasKeyItem && (
           <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <img
