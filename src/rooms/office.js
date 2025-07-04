@@ -70,18 +70,13 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
         mesh.isVisible = true; // 강제로 보이게 함
     });
 
-    // ===========================================
-    // === 🪑 antique_chair.glb 설정 시작 ===
-    // ===========================================
-
-    // 의자의 월드 위치 정의
-    // 각 의자의 위치를 조정하여 원하는 배열을 만드세요.
+    // === 🪑 의자
     const chairWorldPos1 = new BABYLON.Vector3(-20.05, 6.50, 2.85); // 테이블 앞 중앙
     const chairWorldPos2 = new BABYLON.Vector3(-19.95, 6.50, 6.95); // 테이블 앞 오른쪽
     const chairWorldPos3 = new BABYLON.Vector3(-19.55, 6.50, 3.15); // 테이블 앞 왼쪽
-    const chairWorldPos4 = new BABYLON.Vector3(-21.55, 6.50, 6.55); // 테이블 뒤 중앙
-    // const chairWorldPos5 = new BABYLON.Vector3(-22.55, 6.50, 3.7); // 테이블 뒤 오른쪽
-    // const chairWorldPos6 = new BABYLON.Vector3(-23.55, 6.50, 3.5); // 테이블 뒤 왼쪽
+    const chairWorldPos4 = new BABYLON.Vector3(-20.55, 6.50, 5.55); // 테이블 뒤 중앙
+    const chairWorldPos5 = new BABYLON.Vector3(-20.55, 6.50, 6.15); // 테이블 뒤 오른쪽
+    const chairWorldPos6 = new BABYLON.Vector3(-20.55, 6.50, 3.55); // 테이블 뒤 왼쪽
 
     async function loadAntiqueChair(worldPosition, parentMesh, scene, options = {}) {
         let chairResult;
@@ -124,28 +119,30 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
 
     // 각 의자를 로드하여 장면에 추가합니다.
     // 필요한 경우, 각 의자에 대해 개별 스케일이나 회전 옵션을 `options` 객체로 전달할 수 있습니다.
-    const chair1 = await loadAntiqueChair(chairWorldPos1, parentMesh, scene);
-    const chair2 = await loadAntiqueChair(chairWorldPos2, parentMesh, scene, {
+    await loadAntiqueChair(chairWorldPos1, parentMesh, scene);
+    await loadAntiqueChair(chairWorldPos2, parentMesh, scene, {
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 10)) // 0도로 설정하여 반대 방향을 보게 함
     });
-    const chair3 = await loadAntiqueChair(chairWorldPos3, parentMesh, scene, {
+    await loadAntiqueChair(chairWorldPos3, parentMesh, scene, {
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
     });
 
-    const chair4 = await loadAntiqueChair(chairWorldPos4, parentMesh, scene, {
+    await loadAntiqueChair(chairWorldPos4, parentMesh, scene, {
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2)) // 0도로 설정하여 반대 방향을 보게 함
     });
-    // const chair5 = await loadAntiqueChair(chairWorldPos5, parentMesh, scene, {
-    //     rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-    //         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, 0))
-    // });
-    // const chair6 = await loadAntiqueChair(chairWorldPos6, parentMesh, scene, {
-    //     rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-    //         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, 0))
-    // });
+    
+    await loadAntiqueChair(chairWorldPos5, parentMesh, scene, {
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
+    });
+    
+    await loadAntiqueChair(chairWorldPos6, parentMesh, scene, {
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
+    });
 
     // 🆔 ID 카드
     const defaultIdCardWorldPos = new BABYLON.Vector3(-20.50, 6.75, 5.21); // 사용자님이 설정하신 기본 위치 유지
@@ -182,48 +179,7 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
         mesh.isVisible = true; // 강제로 보이게 함
     });
 
-    // ===========================================
-    // === 🧪 laboratory_cabinet.glb 설정 시작 ===
-    // ===========================================
-
-    const defaultLaboratoryCabinetWorldPos = new BABYLON.Vector3(-18.16, 6.48, 11.55); // 예시 위치, 필요에 따라 조정
-    const finalLaboratoryCabinetWorldPos = laboratoryCabinetOptions.position || defaultLaboratoryCabinetWorldPos;
-
-    let laboratoryCabinetResult;
-    try {
-        laboratoryCabinetResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "laboratory_cabinet.glb", scene);
-    } catch (error) {
-        console.error("오류 상세: ", error);
-        return;
-    }
-
-    if (!laboratoryCabinetResult || !laboratoryCabinetResult.meshes || laboratoryCabinetResult.meshes.length === 0) {
-        return;
-    }
-
-    const rootLaboratoryCabinetMesh = laboratoryCabinetResult.meshes[0];
-
-    rootLaboratoryCabinetMesh.parent = parentMesh;
-    rootLaboratoryCabinetMesh.position = BABYLON.Vector3.TransformCoordinates(
-        finalLaboratoryCabinetWorldPos,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-    );
-    rootLaboratoryCabinetMesh.scaling = laboratoryCabinetOptions.scaling || new BABYLON.Vector3(130, 150, 100); // 스케일 조정 (기존 모델과 비슷하게)
-
-    // X축으로 90도 회전하여 세우고, Y축 회전은 필요에 따라 조정
-    rootLaboratoryCabinetMesh.rotationQuaternion = laboratoryCabinetOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI)); // 예시: 90도 회전 (문 방향 확인 후 조정)
-
-    laboratoryCabinetResult.meshes.forEach(mesh => {
-        mesh.checkCollisions = true;
-        mesh.isVisible = true; // 강제로 보이게 함
-    });
-
-    // ===========================================
-    // === 🧪 laboratory_cabinet.glb 설정 끝 ===
-    // ===========================================
-
-    // 캐비닛의 월드 위치 정의
+    // 메탈캐비닛
     const metalCabinetWorldPos1 = new BABYLON.Vector3(-21.85, 7.40, -2.15);
     const metalCabinetWorldPos2 = new BABYLON.Vector3(-23.25, 7.40, -2.15); // 두 번째 캐비닛의 위치 (조정됨)
 
@@ -268,10 +224,10 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
 
     // 각 캐비닛을 로드하여 장면에 추가합니다.
     // 개별 옵션이 필요하다면 세 번째 인자에 객체로 전달할 수 있습니다.
-    const cabinet1 = await loadMetalCabinet(metalCabinetWorldPos1, parentMesh, scene, {
+    await loadMetalCabinet(metalCabinetWorldPos1, parentMesh, scene, {
         // scaling: new BABYLON.Vector3(100, 200, 100), // 필요에 따라 개별 스케일 지정
         // rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2) // 필요에 따라 개별 회전 지정
     });
-    const cabinet2 = await loadMetalCabinet(metalCabinetWorldPos2, parentMesh, scene);
+    await loadMetalCabinet(metalCabinetWorldPos2, parentMesh, scene);
 
 }
