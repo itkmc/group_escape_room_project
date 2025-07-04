@@ -47,14 +47,16 @@ export async function addRestroomObject(scene, parentMesh) {
     if (mesh.name !== "__root__") {
       mesh.parent = parentMesh;
       mesh.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-28.5, 1.16, -8.35),
+        new BABYLON.Vector3(-36, 2.08, -3.50),
+        // -28.5, 1.16, -8.35
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
-      mesh.scaling = new BABYLON.Vector3(6, 6, 6);
+      mesh.scaling = new BABYLON.Vector3(10, 10, 10);
       mesh.checkCollisions = true;
       mesh.isPickable = true;
-      // 열쇠를 X축으로 90도 눕혀서 배치
-      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
+      // 열쇠를 Z축 -90도, Y축 180도 회전시켜 이미지처럼 배치
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2));
       // 클릭 시 window.setHasKeyItem(true) 호출
       mesh.actionManager = new BABYLON.ActionManager(scene);
       mesh.actionManager.registerAction(
@@ -62,6 +64,8 @@ export async function addRestroomObject(scene, parentMesh) {
           console.log('열쇠 클릭됨!');
           if (window.setHasKeyItem) window.setHasKeyItem(true);
           alert('열쇠를 획득했습니다! E키를 눌러 문을 여세요.');
+          // 열쇠를 획득하면 mesh를 씬에서 제거
+          mesh.dispose();
         })
       );
     }
