@@ -48,26 +48,27 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
     console.error("medical_table_-_17mb.glb의 모델 루트 메쉬를 찾을 수 없습니다. 모델 구조를 확인하세요.");
   }
 
-  // --- 도구 위치 ---
-  const surgery_toolsWorldPos = new BABYLON.Vector3(6.10, 7.19, 11.10);
-  const surgery_toolsResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "first_aid_box_19_mb.glb", scene);
-  const rootSurgeryToolsMesh = surgery_toolsResult.meshes[0]; 
-  rootSurgeryToolsMesh.parent = parentMesh;
-  rootSurgeryToolsMesh.position = BABYLON.Vector3.TransformCoordinates(
-      surgery_toolsWorldPos,
-      BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-  );
-  rootSurgeryToolsMesh.scaling = new BABYLON.Vector3(11,11,11);
-  rootSurgeryToolsMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); 
-  rootSurgeryToolsMesh.checkCollisions = true;
-  rootSurgeryToolsMesh.isPickable = true; 
+  // // --- 도구 위치 ---
+  // const surgery_toolsWorldPos = new BABYLON.Vector3(6.10, 7.19, 11.10);
+  // const surgery_toolsResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "first_aid_box_19_mb.glb", scene);
+  // const rootSurgeryToolsMesh = surgery_toolsResult.meshes[0]; 
+  // rootSurgeryToolsMesh.parent = parentMesh;
+  // rootSurgeryToolsMesh.position = BABYLON.Vector3.TransformCoordinates(
+  //     surgery_toolsWorldPos,
+  //     BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  // );
+  // rootSurgeryToolsMesh.scaling = new BABYLON.Vector3(11,11,11);
+  // rootSurgeryToolsMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+  //     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); 
+  // rootSurgeryToolsMesh.checkCollisions = true;
+  // rootSurgeryToolsMesh.isPickable = true; 
 
 
   // 벽안에 사람 월드 위치
   const dead_hazmat_femaleWorldPos1 = new BABYLON.Vector3(6.60, 6.55, 16.58);
   const dead_hazmat_femaleWorldPos2 = new BABYLON.Vector3(9.60, 6.55, 16.58);
-  const dead_hazmat_femaleWorldPos3 = new BABYLON.Vector3(3.60, 6.55, 16.58); 
+  const dead_hazmat_femaleWorldPos3 = new BABYLON.Vector3(3.60, 6.55, 16.58);
+   
 
   async function loadDeadHazmatFemale(worldPosition, parentMesh, scene) {
       const dead_hazmat_femaleResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "dead_hazmat_female.glb", scene);
@@ -86,16 +87,61 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
       rootMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
 
-      rootMesh.checkCollisions = true;
+      dead_hazmat_femaleResult.meshes.forEach(mesh => {
+          mesh.checkCollisions = true; // <-- 이 줄을 추가 또는 확인
+      });
   }
 
   // 각 모델을 로드하여 장면에 추가합니다.
   await loadDeadHazmatFemale(dead_hazmat_femaleWorldPos1, parentMesh, scene);
   await loadDeadHazmatFemale(dead_hazmat_femaleWorldPos2, parentMesh, scene);
   await loadDeadHazmatFemale(dead_hazmat_femaleWorldPos3, parentMesh, scene);
-
-
   
+
+   // --- 벽 위치 ---
+  const wall_low_polyWorldPos = new BABYLON.Vector3(-1.8,13,12.84);
+  const wall_low_polyResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "concrette_wall.glb", scene);
+  const wall_low_polyMesh = wall_low_polyResult.meshes[0]; 
+  wall_low_polyMesh.parent = parentMesh;
+  wall_low_polyMesh.position = BABYLON.Vector3.TransformCoordinates(
+      wall_low_polyWorldPos,
+      BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  );
+  wall_low_polyMesh.scaling = new BABYLON.Vector3(10,100,30);
+  wall_low_polyMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2)); 
+  wall_low_polyMesh.checkCollisions = true; 
+
+// const wall_low_polyWorldPos2 = new BABYLON.Vector3(-3, 13, 11.5); // <-- 새로운 위치
+// const wall_low_polyResult2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "concrette_wall.glb", scene);
+// const wall_low_polyMesh2 = wall_low_polyResult2.meshes[0]; 
+
+// wall_low_polyMesh2.parent = parentMesh;
+// wall_low_polyMesh2.position = BABYLON.Vector3.TransformCoordinates(
+//     wall_low_polyWorldPos2,
+//     BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+// );
+// wall_low_polyMesh2.scaling = new BABYLON.Vector3(10,100,30);
+// wall_low_polyMesh2.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+//     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2)); 
+// wall_low_polyMesh2.checkCollisions = true; 
+
+const wall_low_polyWorldPos3 = new BABYLON.Vector3(-1.3, 16.45, 11.5); // <-- 새로운 위치
+const wall_low_polyResult3 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "concrette_wall.glb", scene);
+const wall_low_polyMesh3 = wall_low_polyResult3.meshes[0]; 
+
+wall_low_polyMesh3.parent = parentMesh;
+wall_low_polyMesh3.position = BABYLON.Vector3.TransformCoordinates(
+    wall_low_polyWorldPos3,
+    BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+);
+wall_low_polyMesh3.scaling = new BABYLON.Vector3(100,100,100);
+wall_low_polyMesh3.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+    .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2)); 
+wall_low_polyMesh3.checkCollisions = true; 
+   
+
+
   //문
   const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
     door1.meshes.forEach((doorMesh) => {
@@ -106,16 +152,18 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
 
             doorMesh.parent = parentMesh;
             doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-                new BABYLON.Vector3(2,6.95,11.4), // 문짝의 월드 위치
+                new BABYLON.Vector3(0.9,6.9,11.4), // 문짝의 월드 위치
                 BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
             );
 
             // 문의 초기 회전 설정
             const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2));
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI /2))
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI /2))
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
             doorMesh.rotationQuaternion = baseRotation.clone();
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 문의 스케일
+            doorMesh.scaling = new BABYLON.Vector3(32, 31.8, 31.8); // 문의 스케일
             doorMesh.checkCollisions = true; // 문에 대한 충돌 감지 활성화
 
             // 문 열림/닫힘 애니메이션 정의
@@ -177,6 +225,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
         }
     });
 
+
   // 수술대 위치
   const desiredOperatingWorldPos = new BABYLON.Vector3(6.8, 6.43, 12.67);
   const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
@@ -195,7 +244,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
   });
 
   // 냉장고 안 애기 위치
-  const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.88, 14.5);
+  const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.67, 14.00);
   const alien_fetus = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "alien_fetus.glb", scene);
   alien_fetus.meshes.forEach((alien_fetusMesh) => {
     if (alien_fetusMesh.name !== "__root__") {
@@ -204,15 +253,15 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
         alien_fetusWorldPos,
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
-      alien_fetusMesh.scaling = new BABYLON.Vector3(50,50,50);
-      alien_fetusMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2));
+      alien_fetusMesh.scaling = new BABYLON.Vector3(40,40,40);
+      alien_fetusMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 3)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
       alien_fetusMesh.checkCollisions = true;
     }
   });
 
   // 문제 위치
-  const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.00, 8.6, 14.5);
+  const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.00, 8.23, 14.3);
   const old__ancient_scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
  
   old__ancient_scrollResult.meshes.forEach((mesh) => {
@@ -223,7 +272,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
               BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
           mesh.scaling = new BABYLON.Vector3(150, 150, 150); 
-          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
+          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
               .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); 
           
           mesh.checkCollisions = true; 
@@ -246,7 +295,7 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
 
   
   // 좀비 위치
-  const zombie_corpseWorldPos = new BABYLON.Vector3(5.8, 7.325, 13.37);
+  const zombie_corpseWorldPos = new BABYLON.Vector3(5.8, 7.30, 13.37);
   const zombie_corpse = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "zombie_corpse.glb", scene);
   zombie_corpse.meshes.forEach((zombie_corpseMesh) => {
     if (zombie_corpseMesh.name !== "__root__") {
