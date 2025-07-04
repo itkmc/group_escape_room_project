@@ -77,14 +77,7 @@ const BabylonScene = () => {
 
   useEffect(() => {
     hasKeyItemRef.current = hasKeyItem;
-    console.log('[디버그] hasKeyItem 상태:', hasKeyItem);
   }, [hasKeyItem]);
-
-  // 외부에서 setHasKeyItem을 쓸 수 있도록 window에 등록
-  useEffect(() => {
-    window.setHasKeyItem = setHasKeyItem;
-    window.hasKeyItemRef = hasKeyItemRef;
-  }, [setHasKeyItem]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -432,6 +425,7 @@ const BabylonScene = () => {
 
     initScene();
     
+  }, [handleOperatingRoomScrollClick]);
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
@@ -485,7 +479,7 @@ const BabylonScene = () => {
           </div>
         )}
         {hasCardItem && (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
               src="유희왕카드.png"
               alt="카드 아이템"
@@ -496,7 +490,7 @@ const BabylonScene = () => {
           </div>
         )}
         {hasFlashlightItem && (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
               src="flashLight.png"
               alt="손전등 아이템"
@@ -656,6 +650,6 @@ const BabylonScene = () => {
       )}
     </>
   );
-})};
+};
 
 export default BabylonScene;
