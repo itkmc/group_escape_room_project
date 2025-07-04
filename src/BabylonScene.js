@@ -310,7 +310,6 @@ const BabylonScene = () => {
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
         if (evt.key === 'e' || evt.key === 'E') {
           if (!hasKeyItemRef.current) {
-            alert('열쇠를 먼저 찾으세요!');
             return;
           }
           // 플레이어와 각 문 위치의 거리 계산
