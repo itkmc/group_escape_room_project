@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react"; 
 import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 import "@babylonjs/inspector";
@@ -14,37 +14,62 @@ const BabylonScene = () => {
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
-
   const flashlightSpotLightRef = useRef(null);
   const rootFlashlightMeshRef = useRef(null);
   const flashlightHolderRef = useRef(null);
   const [flashlightStatus, setFlashlightStatus] = useState(null);
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
 
-  // 손전등 아이템 획득 여부를 Ref로 관리하여 useEffect 내부에서 최신 값 참조
-  const hasFlashlightItemRef = useRef(hasFlashlightItem);
+  
 
+  //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
   const [quizMessage, setQuizMessage] = useState('');
   const [hasKeyItem, setHasKeyItem] = useState(false);
-  const hasKeyItemRef = useRef(false); // 최신 키 아이템 상태를 위한 ref
-
-  // 손전등 사용법 메시지 관련 상태 추가
-  const [showFlashlightTip, setShowFlashlightTip] = useState(false);
-  const [flashlightTipMessage, setFlashlightTipMessage] = useState("");
+  const hasKeyItemRef = useRef(false);
+  const [hasCardItem, setHasCardItem] = useState(false);
   const correctAnswer = "410";
 
   const handleAnswerSubmit = () => {
     if (answerInput === correctAnswer) {
       setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
-      setHasKeyItem(true); // 키 아이템 획득 상태로 변경
-      // 정답을 맞췄으므로 퀴즈 창을 바로 닫지 않고 메시지를 보여준 후,
-      // 사용자가 '닫기' 버튼을 눌러 퀴즈를 종료하도록 유도합니다.
+      setHasKeyItem(true); 
     } else {
       setQuizMessage("오답입니다. 다시 시도해 보세요.");
       setAnswerInput('');
     }
   };
+
+
+  //수술실 문제 코드
+  const [showQuiz2, setShowQuiz2] = useState(false);
+  const [answerInput2, setAnswerInput2] = useState('');
+  const [quizMessage2, setQuizMessage2] = useState('');
+  const correctAnswer2 = "72";
+
+  const handleAnswerSubmit2 = () => {
+    if (answerInput2 === correctAnswer2) {
+      setQuizMessage2("정답입니다! 카드 아이템을 획득했습니다. 방 안에서 한개의 카드를 더 찾으세요!");
+      setHasCardItem(true);
+    } else {
+      setQuizMessage2("오답입니다. 다시 시도해 보세요.");
+      setAnswerInput2('');
+    }
+  };
+
+  const handleOperatingRoomScrollClick = useCallback(() => {
+  setShowQuiz2(true); // 수술실 퀴즈 팝업을 띄움
+  setQuizMessage2(''); // 퀴즈 열릴 때 메시지 초기화
+  setAnswerInput2(''); // 퀴즈 열릴 때 입력값 초기화
+  console.log("React: 수술실 두루마리 클릭 감지, 퀴즈 팝업 표시.");
+}, []);
+
+  // 손전등 아이템
+  const hasFlashlightItemRef = useRef(hasFlashlightItem);
+  const [showFlashlightTip, setShowFlashlightTip] = useState(false);
+  const [flashlightTipMessage, setFlashlightTipMessage] = useState("");
+
+  
 
   useEffect(() => {
     hasFlashlightItemRef.current = hasFlashlightItem;
@@ -65,11 +90,12 @@ const BabylonScene = () => {
     let originalHemiLightIntensity;
     let originalSceneClearColor;
 
+    
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-32.17, 2.265, -6.19),
+        new BABYLON.Vector3(6.63,7.85,14.44),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -115,8 +141,8 @@ const BabylonScene = () => {
       });
 
       if (parentMesh) {
+        await addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick);
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
-        await addOperatingRoom(scene, parentMesh);
         await addDoctorOffice(scene, parentMesh);
         await addRestroomObject(scene, parentMesh);
       }
@@ -367,12 +393,8 @@ const BabylonScene = () => {
     };
 
     initScene();
-const testKeydown = (evt) => {
-      console.log('[전역 테스트] keydown:', evt.key);
-    };
-    window.addEventListener('keydown', testKeydown);
-
-  }, []);
+    
+  }, [handleOperatingRoomScrollClick]);
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
@@ -422,6 +444,17 @@ const testKeydown = (evt) => {
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
             <span>열쇠</span>
+          </div>
+        )}
+        {hasCardItem && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              src="유희왕카드.png"
+              alt="카드 아이템"
+              style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/30x30/000000/FFFFFF?text=FL'; }}
+            />
+            <span>카드</span>
           </div>
         )}
         {hasFlashlightItem && (
@@ -482,7 +515,58 @@ const testKeydown = (evt) => {
         </div>
       )}
 
-      {/* 퀴즈 팝업 */}
+      {/* 수술실 퀴즈 팝업 */}
+      {showQuiz2 && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.7)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2001 
+        }}>
+          <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 물음표에 들어갈 숫자를 구하시오</div>
+            <img src="/시계문제.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <br />
+            <input
+              type="text"
+              value={answerInput2}
+              onChange={(e) => setAnswerInput2(e.target.value)}
+              placeholder="정답을 입력하세요"
+              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
+            />
+            <button
+              onClick={handleAnswerSubmit2}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
+            >
+              정답 확인
+            </button>
+            <button
+              onClick={() => {
+                setShowQuiz2(false);
+                setQuizMessage2('');
+                setAnswerInput2('');
+              }}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+            >
+              닫기
+            </button>
+            {quizMessage2 && (
+              <div style={{ marginTop: 16, fontSize: 16, color: quizMessage2.includes("정답입니다") ? "green" : "red" }}>
+                {quizMessage2}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 옥상 퀴즈 팝업 */}
       {showQuiz && (
         <div style={{
           position: "fixed",
@@ -495,7 +579,7 @@ const testKeydown = (evt) => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 2001 // 손전등 팁보다 높은 z-index로 퀴즈가 항상 위에 나타나도록 함
+          zIndex: 2001 
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
             <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
