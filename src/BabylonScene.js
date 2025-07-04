@@ -95,7 +95,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-17.71, 7.85, 3.36),
+        new BABYLON.Vector3(-32.17, 2.265, -6.19),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -310,7 +310,6 @@ const BabylonScene = () => {
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
         if (evt.key === 'e' || evt.key === 'E') {
           if (!hasKeyItemRef.current) {
-            alert('열쇠를 먼저 찾으세요!');
             return;
           }
           // 플레이어와 각 문 위치의 거리 계산
