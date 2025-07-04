@@ -95,7 +95,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-17.71, 7.85, 3.36),
+        new BABYLON.Vector3(-0.45, 7.85, 11.67),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -178,7 +178,7 @@ const BabylonScene = () => {
 
       // 어두운 구역 설정
       const darkZoneCenter = new BABYLON.Vector3(7,7,12);
-      const darkZoneRadius = 5.5;
+      const darkZoneRadius = 7;
 
       
       originalSceneClearColor = new BABYLON.Color4(0.7, 0.7, 0.7, 1); // 씬 배경색 초기값
@@ -476,7 +476,7 @@ const BabylonScene = () => {
             <img
               src="/key.png"
               alt="열쇠 아이템"
-              style={{ width: 50, height: 50, objectFit: 'contain' }}
+              style={{ width: 30, height: 30, objectFit: 'contain' }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
             <span>열쇠</span>
