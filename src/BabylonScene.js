@@ -337,7 +337,7 @@ const handleCloseBoxPasswordInput = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.001; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
@@ -452,15 +452,15 @@ const handleCloseBoxPasswordInput = () => {
       });
 
       // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       // // Babylon.js Inspector 활성화 (개발 중 디버깅에 필수!)
       // // 게임 실행 후 F12 (개발자 도구)를 열어 "Inspector" 탭 또는 "Babylon.js" 탭을 확인하세요.
