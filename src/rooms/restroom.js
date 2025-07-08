@@ -220,4 +220,18 @@ if (frameMesh && doorMesh) {
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI));
     }
   });
+
+  // 🩸 잘린 손가락(severed_fingers_-_horror_game_asset.glb) 원래대로 추가
+  const fingersResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "severed_fingers_-_horror_game_asset.glb", scene);
+  fingersResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__") {
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-20, 2.26, -6.13),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(30, 30, 30);
+      mesh.checkCollisions = true;
+    }
+  });
 }
