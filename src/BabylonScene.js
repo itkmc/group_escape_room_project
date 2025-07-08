@@ -383,7 +383,7 @@ const BabylonScene = () => {
         }
       });
 
-      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
       // scene.onPointerObservable.add((pointerInfo) => {
       //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
       //     const mesh = pointerInfo.pickInfo?.pickedMesh;
