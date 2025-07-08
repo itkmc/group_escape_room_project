@@ -7,7 +7,7 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene - Babylon.js Scene
  * @param {BABYLON.AbstractMesh} parentMesh - 병원 건물 메시 등
  */
-export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doctorOfficeOptions = {}, laboratoryCabinetOptions = {}, metalCabinetOptions = {}) {
+export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doctorOfficeOptions = {}, laboratoryCabinetOptions = {}, metalCabinetOptions = {}, metalCupboardOptions = {}) {
     if (!parentMesh) {
         console.warn("❗ parentMesh가 없습니다.");
         return;
@@ -70,7 +70,7 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
         mesh.isVisible = true; // 강제로 보이게 함
     });
 
-    // === 🪑 의자
+    // --- 🪑 의자
     const chairWorldPos1 = new BABYLON.Vector3(-20.05, 6.50, 2.85); // 테이블 앞 중앙
     const chairWorldPos2 = new BABYLON.Vector3(-19.95, 6.50, 6.95); // 테이블 앞 오른쪽
     const chairWorldPos3 = new BABYLON.Vector3(-19.55, 6.50, 3.15); // 테이블 앞 왼쪽
@@ -118,11 +118,10 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
     }
 
     // 각 의자를 로드하여 장면에 추가합니다.
-    // 필요한 경우, 각 의자에 대해 개별 스케일이나 회전 옵션을 `options` 객체로 전달할 수 있습니다.
     await loadAntiqueChair(chairWorldPos1, parentMesh, scene);
     await loadAntiqueChair(chairWorldPos2, parentMesh, scene, {
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 10)) // 0도로 설정하여 반대 방향을 보게 함
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 10))
     });
     await loadAntiqueChair(chairWorldPos3, parentMesh, scene, {
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
@@ -131,7 +130,7 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
 
     await loadAntiqueChair(chairWorldPos4, parentMesh, scene, {
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2)) // 0도로 설정하여 반대 방향을 보게 함
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
     });
     
     await loadAntiqueChair(chairWorldPos5, parentMesh, scene, {
@@ -144,8 +143,8 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
     });
 
-    // 🆔 ID 카드
-    const defaultIdCardWorldPos = new BABYLON.Vector3(-20.50, 6.75, 5.21); // 사용자님이 설정하신 기본 위치 유지
+    // --- 🆔 ID 카드
+    const defaultIdCardWorldPos = new BABYLON.Vector3(-20.50, 6.75, 5.21);
     const finalIdCardWorldPos = idCardOptions.position || defaultIdCardWorldPos;
 
     let idCardResult;
@@ -160,28 +159,25 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
         return;
     }
 
-    const rootIdCardMesh = idCardResult.meshes[0]; // ID 카드의 루트 메쉬
+    const rootIdCardMesh = idCardResult.meshes[0];
 
     rootIdCardMesh.parent = parentMesh;
     rootIdCardMesh.position = BABYLON.Vector3.TransformCoordinates(
         finalIdCardWorldPos,
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
     );
-    // 스케일 및 회전도 옵션이 제공되면 사용, 아니면 기본값 사용
     rootIdCardMesh.scaling = idCardOptions.scaling || new BABYLON.Vector3(7, 7, 7);
-
-    // ID 카드가 테이블 위에 평평하게 놓이고 'R' 글자가 천장을 바라보도록 회전 조정
-    rootIdCardMesh.rotationQuaternion = idCardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI) // X축으로 -90도 회전하여 눕힘
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); // Y축 회전은 0으로 시작 (필요시 조정)
+    rootIdCardMesh.rotationQuaternion = idCardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
     idCardResult.meshes.forEach(mesh => {
         mesh.checkCollisions = true;
-        mesh.isVisible = true; // 강제로 보이게 함
+        mesh.isVisible = true;
     });
 
-    // 메탈캐비닛
+    // --- 메탈 캐비닛
     const metalCabinetWorldPos1 = new BABYLON.Vector3(-21.85, 7.40, -2.15);
-    const metalCabinetWorldPos2 = new BABYLON.Vector3(-23.25, 7.40, -2.15); // 두 번째 캐비닛의 위치 (조정됨)
+    const metalCabinetWorldPos2 = new BABYLON.Vector3(-23.25, 7.40, -2.15);
 
     async function loadMetalCabinet(worldPosition, parentMesh, scene, options = {}) {
         let metalCabinetResult;
@@ -189,7 +185,7 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
             metalCabinetResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cabinet.glb", scene);
         } catch (error) {
             console.error("오류 상세: ", error);
-            return null; // 로드 실패 시 null 반환
+            return null;
         }
 
         if (!metalCabinetResult || !metalCabinetResult.meshes || metalCabinetResult.meshes.length === 0) {
@@ -199,35 +195,175 @@ export async function addDoctorOffice(scene, parentMesh, idCardOptions = {}, doc
         const rootMetalCabinetMesh = metalCabinetResult.meshes[0];
 
         rootMetalCabinetMesh.parent = parentMesh;
-
-        // 월드 위치를 부모 메쉬의 로컬 좌표로 변환하여 적용
         rootMetalCabinetMesh.position = BABYLON.Vector3.TransformCoordinates(
             worldPosition,
             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
         );
-
-        // 스케일 적용 (옵션이 있으면 사용, 없으면 기본값)
         rootMetalCabinetMesh.scaling = options.scaling || new BABYLON.Vector3(130, 200, 100);
-
-        // 회전 적용 (옵션이 있으면 사용, 없으면 기본값)
         rootMetalCabinetMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 36));
 
-        // 모든 메쉬에 충돌 감지 및 가시성 설정
         metalCabinetResult.meshes.forEach(mesh => {
             mesh.checkCollisions = true;
             mesh.isVisible = true;
         });
 
-        return rootMetalCabinetMesh; // 생성된 루트 메쉬 반환 (필요시 추가 조작용)
+        return rootMetalCabinetMesh;
     }
 
-    // 각 캐비닛을 로드하여 장면에 추가합니다.
-    // 개별 옵션이 필요하다면 세 번째 인자에 객체로 전달할 수 있습니다.
-    await loadMetalCabinet(metalCabinetWorldPos1, parentMesh, scene, {
-        // scaling: new BABYLON.Vector3(100, 200, 100), // 필요에 따라 개별 스케일 지정
-        // rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2) // 필요에 따라 개별 회전 지정
-    });
+    await loadMetalCabinet(metalCabinetWorldPos1, parentMesh, scene);
     await loadMetalCabinet(metalCabinetWorldPos2, parentMesh, scene);
 
+    /// --- 메탈 찬장 (metal_cupboard.glb) 추가
+    const metalCupboardWorldPos = new BABYLON.Vector3(-17.95, 6.40, 11.42); // 찬장의 원하는 월드 위치 설정
+
+    async function loadMetalCupboard(worldPosition, parentMesh, scene, options = {}) {
+        let metalCupboardResult;
+        try {
+            console.log("[Cupboard Debug] Attempting to load metal_cupboard.glb...");
+            metalCupboardResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cupboard.glb", scene);
+            console.log("[Cupboard Debug] metal_cupboard.glb loaded successfully.");
+        } catch (error) {
+            console.error("[Cupboard Debug] Error loading metal_cupboard.glb: ", error);
+            return null;
+        }
+
+        if (!metalCupboardResult || !metalCupboardResult.meshes || metalCupboardResult.meshes.length === 0) {
+            console.warn("[Cupboard Debug] No meshes found in metal_cupboard.glb.");
+            return null;
+        }
+
+        const rootMetalCupboardMesh = metalCupboardResult.meshes[0];
+        console.log(`[Cupboard Debug] Root Cupboard Mesh: ${rootMetalCupboardMesh.name}`);
+
+        rootMetalCupboardMesh.parent = parentMesh;
+        rootMetalCupboardMesh.position = BABYLON.Vector3.TransformCoordinates(
+            worldPosition,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        rootMetalCupboardMesh.scaling = options.scaling || new BABYLON.Vector3(0.4, 0.4, 0.4);
+        rootMetalCupboardMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+
+        metalCupboardResult.meshes.forEach(mesh => {
+            mesh.checkCollisions = true;
+            mesh.isVisible = true;
+        });
+
+        // --- 모델 로드 후, 모든 기본 애니메이션 그룹 정지 (추가된 부분!) ---
+        if (metalCupboardResult.animationGroups && metalCupboardResult.animationGroups.length > 0) {
+            console.log(`[Cupboard Debug] Found ${metalCupboardResult.animationGroups.length} existing animation groups. Stopping them.`);
+            metalCupboardResult.animationGroups.forEach(group => {
+                group.stop();
+                console.log(`[Cupboard Debug] Stopped animation group: ${group.name}`);
+            });
+        }
+        // -----------------------------------------------------------
+
+        // --- 문 애니메이션 로직 시작 ---
+        const doorMeshNames = ["cupbord_1.001_Material.001_0", "cupbord_1.002_Material.001_0"]; 
+        const doorMeshes = doorMeshNames
+            .map(name => metalCupboardResult.meshes.find(mesh => mesh.name === name))
+            .filter(mesh => mesh !== undefined);
+
+        if (doorMeshes.length > 0) {
+            console.log(`[Cupboard Debug] Found ${doorMeshes.length} door meshes for animation.`);
+
+            const initialRotations = new Map();
+            doorMeshes.forEach(mesh => {
+                // Ensure quaternion exists before cloning or setting Identity
+                mesh.rotationQuaternion = mesh.rotationQuaternion || BABYLON.Quaternion.Identity();
+                initialRotations.set(mesh.name, mesh.rotationQuaternion.clone());
+                console.log(`[Cupboard Debug] Initial rotation for ${mesh.name}: ${initialRotations.get(mesh.name).toEulerAngles().y}`);
+            });
+            
+            let isDoorOpen = false;
+
+            doorMeshes.forEach(doorMesh => {
+                if (!doorMesh.actionManager) {
+                    doorMesh.actionManager = new BABYLON.ActionManager(scene);
+                    console.log(`[Cupboard Debug] ActionManager created for ${doorMesh.name}.`);
+                }
+
+                doorMesh.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(
+                        BABYLON.ActionManager.OnPickTrigger,
+                        function () {
+                            console.log(`[Cupboard Debug] Click detected on ${doorMesh.name}. Current isDoorOpen: ${isDoorOpen}`);
+
+                            const activeDoorAnimationGroup = scene.getAnimationGroupByName("cupboardDoorAnimationGroup");
+                            if (activeDoorAnimationGroup && activeDoorAnimationGroup.isPlaying) {
+                                console.log("[Cupboard Debug] Door animation already playing, ignoring new click.");
+                                return;
+                            }
+                            
+                            const animationGroup = new BABYLON.AnimationGroup("cupboardDoorAnimationGroup");
+
+                            doorMeshes.forEach(currentDoorMesh => {
+                                const startRotation = currentDoorMesh.rotationQuaternion.clone();
+                                let targetRotation;
+
+                                if (isDoorOpen) {
+                                    targetRotation = initialRotations.get(currentDoorMesh.name).clone();
+                                } else {
+                                    // 이 부분은 모델의 실제 문 구조와 회전축에 맞춰 세밀하게 조정해야 합니다.
+                                    // 001이 왼쪽 문, 002가 오른쪽 문이라고 가정합니다.
+                                    if (currentDoorMesh.name === "cupbord_1.001_Material.001_0") {
+                                        // 왼쪽 문: +Y (시계방향 또는 바깥쪽)으로 90도 회전
+                                        targetRotation = initialRotations.get(currentDoorMesh.name).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI))
+                                        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2)); 
+                                    } else if (currentDoorMesh.name === "cupbord_1.002_Material.001_0") {
+                                        // 오른쪽 문: -Y (반시계방향 또는 바깥쪽)으로 90도 회전
+                                        targetRotation = initialRotations.get(currentDoorMesh.name).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI))
+                                        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2)); 
+                                    } else {
+                                        // 만약을 위한 기본 동작
+                                        targetRotation = initialRotations.get(currentDoorMesh.name).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+                                    }
+                                }
+                                
+                                const doorAnimation = new BABYLON.Animation(
+                                    `doorRotation_${currentDoorMesh.name}`,
+                                    "rotationQuaternion",
+                                    30,
+                                    BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                                );
+
+                                const keys = [];
+                                keys.push({
+                                    frame: 0,
+                                    value: startRotation
+                                });
+                                keys.push({
+                                    frame: 60,
+                                    value: targetRotation
+                                });
+                                doorAnimation.setKeys(keys);
+                                animationGroup.addTargetedAnimation(doorAnimation, currentDoorMesh);
+                                console.log(`[Cupboard Debug] Added animation for ${currentDoorMesh.name}.`);
+                            }); // end of doorMeshes.forEach
+
+                            animationGroup.onAnimationGroupEndObservable.addOnce(() => {
+                                isDoorOpen = !isDoorOpen;
+                                console.log(`[Cupboard Debug] Animation finished. Door is now ${isDoorOpen ? 'OPEN' : 'CLOSED'}.`);
+                            });
+                            
+                            animationGroup.play(false);
+                            console.log(`[Cupboard Debug] Starting animation group.`);
+                        }
+                    )
+                ); // end of registerAction
+            }); // end of doorMeshes.forEach
+        } else {
+            console.warn(`❗ Metal Cupboard: 지정된 문 메쉬들 (${doorMeshNames.join(', ')}) 중 하나라도 찾을 수 없습니다. 문 애니메이션을 적용할 수 없습니다.`);
+            console.log("로드된 메쉬 목록:");
+            metalCupboardResult.meshes.forEach(mesh => console.log(`- Mesh Name: ${mesh.name}`));
+        }
+        // --- 문 애니메이션 로직 끝 ---
+
+        return rootMetalCupboardMesh;
+    }
+
+    await loadMetalCupboard(metalCupboardWorldPos, parentMesh, scene, metalCupboardOptions);
 }
