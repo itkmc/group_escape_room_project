@@ -19,7 +19,7 @@ const BabylonScene = () => {
   const flashlightHolderRef = useRef(null);
   const [flashlightStatus, setFlashlightStatus] = useState(null);
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
-
+  const [hasCardItem, setHasCardItem] = useState(false);
   
 
   //옥상문제코드
@@ -27,8 +27,8 @@ const BabylonScene = () => {
   const [quizMessage, setQuizMessage] = useState('');
   const [hasKeyItem, setHasKeyItem] = useState(false);
   const hasKeyItemRef = useRef(false);
-  const [hasCardItem, setHasCardItem] = useState(false);
-  const correctAnswer = "410";
+
+  const correctAnswer = "72";
 
   const handleAnswerSubmit = () => {
     if (answerInput === correctAnswer) {
@@ -45,12 +45,11 @@ const BabylonScene = () => {
   const [showQuiz2, setShowQuiz2] = useState(false);
   const [answerInput2, setAnswerInput2] = useState('');
   const [quizMessage2, setQuizMessage2] = useState('');
-  const correctAnswer2 = "72";
+  const correctAnswer2 = "410";
 
   const handleAnswerSubmit2 = () => {
     if (answerInput2 === correctAnswer2) {
-      setQuizMessage2("정답입니다! 카드 아이템을 획득했습니다. 방 안에서 한개의 카드를 더 찾으세요!");
-      setHasCardItem(true);
+      setQuizMessage2("정답입니다! 방 안의 자물쇠를 풀어주세요!");
     } else {
       setQuizMessage2("오답입니다. 다시 시도해 보세요.");
       setAnswerInput2('');
@@ -68,9 +67,67 @@ const BabylonScene = () => {
   const hasFlashlightItemRef = useRef(hasFlashlightItem);
   const [showFlashlightTip, setShowFlashlightTip] = useState(false);
   const [flashlightTipMessage, setFlashlightTipMessage] = useState("");
+// --- 상자 비밀번호 관련 상태 추가 ---
+const [showBoxPasswordInput, setShowBoxPasswordInput] = useState(false);
+const [boxPasswordInput, setBoxPasswordInput] = useState('');
+const [boxPasswordMessage, setBoxPasswordMessage] = useState('');
+const boxCorrectPassword = "410"; // 상자 비밀번호
 
-  
+// Promise를 해결할 함수를 저장할 useRef
+// 리렌더링 시에도 값이 유지되어야 합니다.
+const resolveBoxPasswordPromiseRef = useRef(null); 
 
+// 상자 클릭 시 op_room.js에서 호출될 콜백 함수
+const handleSurgeryBoxClick = useCallback(() => {
+    console.log("handleSurgeryBoxClick 호출됨: 비밀번호 입력 UI 띄울 준비");
+    return new Promise(resolve => {
+        setShowBoxPasswordInput(true); // 비밀번호 입력 UI를 띄움
+        setBoxPasswordInput(''); // 입력 필드 초기화
+        setBoxPasswordMessage("자물쇠 비밀번호를 입력하세요!"); // 메시지 설정
+        
+        // Promise resolve 함수를 useRef에 저장
+        resolveBoxPasswordPromiseRef.current = resolve; 
+        console.log("resolveBoxPasswordPromiseRef.current 저장됨:", resolveBoxPasswordPromiseRef.current);
+    });
+}, []); // 의존성 배열 비워둠: 이 함수 자체는 변하지 않음
+
+// 비밀번호 입력 팝업에서 "확인" 버튼 클릭 시
+const handleBoxPasswordSubmit = () => {
+    console.log("handleBoxPasswordSubmit 호출됨. 입력된 비밀번호:", boxPasswordInput);
+    if (boxPasswordInput === boxCorrectPassword) {
+        setBoxPasswordMessage("정답입니다! 상자 문이 열립니다.");
+        setShowBoxPasswordInput(false); // 팝업 닫기
+        if (resolveBoxPasswordPromiseRef.current) {
+            console.log("Promise 해결 시도: true");
+            resolveBoxPasswordPromiseRef.current(true); // op_room.js로 true 반환
+            resolveBoxPasswordPromiseRef.current = null; // 사용 후 초기화
+        }
+    } else {
+        setBoxPasswordMessage("비밀번호가 틀렸습니다!");
+        setBoxPasswordInput(''); // 입력 필드 초기화
+        if (resolveBoxPasswordPromiseRef.current) {
+            console.log("Promise 해결 시도: false (비밀번호 틀림)");
+            resolveBoxPasswordPromiseRef.current(false); // op_room.js로 false 반환
+            // 비밀번호 틀렸을 때는 resolveBoxPasswordPromiseRef.current를 null로 만들지 않아서
+            // 사용자가 다시 시도할 수 있도록 유지할 수 있습니다.
+            // 필요에 따라 이 부분을 null로 초기화할 수도 있습니다.
+            // resolveBoxPasswordPromiseRef.current = null; 
+        }
+    }
+};
+
+// 비밀번호 입력 팝업에서 "닫기" 버튼 클릭 시
+const handleCloseBoxPasswordInput = () => {
+    console.log("handleCloseBoxPasswordInput 호출됨.");
+    setShowBoxPasswordInput(false);
+    setBoxPasswordInput('');
+    setBoxPasswordMessage('');
+    if (resolveBoxPasswordPromiseRef.current) {
+        console.log("Promise 해결 시도: false (닫기 버튼)");
+        resolveBoxPasswordPromiseRef.current(false); // 닫기 버튼 눌러도 실패로 간주하여 op_room에 false 반환
+        resolveBoxPasswordPromiseRef.current = null; // 사용 후 초기화
+    }
+};
   useEffect(() => {
     hasFlashlightItemRef.current = hasFlashlightItem;
   }, [hasFlashlightItem]);
@@ -88,7 +145,7 @@ const BabylonScene = () => {
 
     let hemiLight;
     let originalHemiLightIntensity;
-    let originalSceneClearColor;
+    // let originalSceneClearColor;
 
     
     const initScene = async () => {
@@ -141,7 +198,16 @@ const BabylonScene = () => {
       });
 
       if (parentMesh) {
-        await addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick);
+        await addOperatingRoom(
+                scene,
+                parentMesh,
+                handleOperatingRoomScrollClick, // 수술실 두루마리 클릭 핸들러
+                () => { // 카드 클릭 시 호출될 콜백 함수
+                    setHasCardItem(true);
+                    console.log("scene.js: 카드 아이템을 획득했습니다!");
+                },
+                handleSurgeryBoxClick 
+            );
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addDoctorOffice(scene, parentMesh);
         await addRestroomObject(scene, parentMesh);
@@ -173,15 +239,15 @@ const BabylonScene = () => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
       const darkZoneCenter = new BABYLON.Vector3(7,7,12);
-      const darkZoneRadius = 7;
+      const darkZoneRadius = 14;
 
       
-      originalSceneClearColor = new BABYLON.Color4(0.7, 0.7, 0.7, 1); // 씬 배경색 초기값
+      // originalSceneClearColor = new BABYLON.Color4(0.7, 0.7, 0.7, 1); // 씬 배경색 초기값
 
       
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
@@ -201,7 +267,7 @@ const BabylonScene = () => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-0.4, 7.5, 11.0);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-2.01,7.85,7.02);
           flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
@@ -269,11 +335,11 @@ const BabylonScene = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.5; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
-          scene.clearColor = originalSceneClearColor;
+          // scene.clearColor = originalSceneClearColor;
         }
       });
 
@@ -384,15 +450,15 @@ const BabylonScene = () => {
       });
 
       // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       // // Babylon.js Inspector 활성화 (개발 중 디버깅에 필수!)
       // // 게임 실행 후 F12 (개발자 도구)를 열어 "Inspector" 탭 또는 "Babylon.js" 탭을 확인하세요.
@@ -424,7 +490,7 @@ const BabylonScene = () => {
 
     initScene();
     
-  }, [handleOperatingRoomScrollClick]);
+  }, [handleOperatingRoomScrollClick, handleSurgeryBoxClick]);
 
   useEffect(() => {
     window.setHasKeyItem = setHasKeyItem;
@@ -472,7 +538,7 @@ const BabylonScene = () => {
       >
         <div>아이템</div>
         {hasKeyItem && (
-          <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
               src="/key.png"
               alt="열쇠 아이템"
@@ -485,12 +551,12 @@ const BabylonScene = () => {
         {hasCardItem && (
           <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
-              src="유희왕카드.png"
-              alt="카드 아이템"
+              src="망치.png"
+              alt="망치 아이템"
               style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/30x30/000000/FFFFFF?text=FL'; }}
             />
-            <span>카드</span>
+            <span>망치</span>
           </div>
         )}
         {hasFlashlightItem && (
@@ -505,6 +571,47 @@ const BabylonScene = () => {
           </div>
         )}
       </div>
+
+{/* --- 상자 비밀번호 입력 팝업 --- */}
+            {showBoxPasswordInput && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.7)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 2002 // 다른 팝업보다 높은 z-index
+                }}>
+                    <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
+                        <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>{boxPasswordMessage}</div>
+                        <input
+                            type="password" // 비밀번호 필드로 설정하여 입력 내용이 *로 표시되게 할 수 있습니다.
+                            value={boxPasswordInput}
+                            onChange={(e) => setBoxPasswordInput(e.target.value)}
+                            placeholder="비밀번호 입력"
+                            style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
+                        />
+                        <button
+                            onClick={handleBoxPasswordSubmit}
+                            style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
+                        >
+                            확인
+                        </button>
+                        <button
+                            onClick={handleCloseBoxPasswordInput}
+                            style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+                        >
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* ----------------------------- */}
 
       {/* 손전등 사용법 메시지 팝업 */}
       {showFlashlightTip && (
@@ -551,6 +658,8 @@ const BabylonScene = () => {
         </div>
       )}
 
+      
+
       {/* 수술실 퀴즈 팝업 */}
       {showQuiz2 && (
         <div style={{
@@ -567,8 +676,8 @@ const BabylonScene = () => {
           zIndex: 2001 
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
-            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 물음표에 들어갈 숫자를 구하시오</div>
-            <img src="/시계문제.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
+            <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
             <input
               type="text"
@@ -618,8 +727,8 @@ const BabylonScene = () => {
           zIndex: 2001 
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
-            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
-            <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 물음표에 들어갈 숫자를 구하시오</div>
+            <img src="/시계문제.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
             <input
               type="text"
