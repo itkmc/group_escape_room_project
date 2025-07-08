@@ -95,7 +95,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-0.45, 7.85, 11.67),
+        new BABYLON.Vector3(-32.17, 2.265, -6.19),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -383,7 +383,7 @@ const BabylonScene = () => {
         }
       });
 
-      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
       // scene.onPointerObservable.add((pointerInfo) => {
       //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
       //     const mesh = pointerInfo.pickInfo?.pickedMesh;
