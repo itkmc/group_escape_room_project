@@ -8,6 +8,7 @@ import { addOperatingRoom } from "./rooms/op_room";
 import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
+import { addInformation } from "./rooms/information";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -152,7 +153,7 @@ const handleCloseBoxPasswordInput = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-32.17, 2.265, -6.19),
+        new BABYLON.Vector3(-9.47, 7.85, -8.24),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -211,6 +212,7 @@ const handleCloseBoxPasswordInput = () => {
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addDoctorOffice(scene, parentMesh);
         await addRestroomObject(scene, parentMesh);
+        await addInformation(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -449,7 +451,7 @@ const handleCloseBoxPasswordInput = () => {
         }
       });
 
-      // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
       // scene.onPointerObservable.add((pointerInfo) => {
       //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
       //     const mesh = pointerInfo.pickInfo?.pickedMesh;
