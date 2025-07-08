@@ -8,6 +8,7 @@ import { addOperatingRoom } from "./rooms/op_room";
 import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
+import { addInformation } from "./rooms/information";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -152,7 +153,7 @@ const handleCloseBoxPasswordInput = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21, 15.5, 11.5),
+        new BABYLON.Vector3(-9.47, 7.85, -8.24),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -211,6 +212,7 @@ const handleCloseBoxPasswordInput = () => {
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItem);
         await addDoctorOffice(scene, parentMesh);
         await addRestroomObject(scene, parentMesh);
+        await addInformation(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -239,7 +241,7 @@ const handleCloseBoxPasswordInput = () => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
@@ -450,15 +452,15 @@ const handleCloseBoxPasswordInput = () => {
       });
 
       // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       // // Babylon.js Inspector 활성화 (개발 중 디버깅에 필수!)
       // // 게임 실행 후 F12 (개발자 도구)를 열어 "Inspector" 탭 또는 "Babylon.js" 탭을 확인하세요.
