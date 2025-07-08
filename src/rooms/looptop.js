@@ -338,4 +338,17 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyIt
       );
     }
   });
+
+  // 🕒 시계(clock-2.glb) __root__만 parentMesh에 붙임
+  const clockResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "clock-2.glb", scene);
+  const clockRoot = clockResult.meshes.find(m => m.name === "__root__");
+  if (clockRoot) {
+    clockRoot.parent = parentMesh;
+    clockRoot.position = BABYLON.Vector3.TransformCoordinates(
+      new BABYLON.Vector3(-23.53, 15.4, 9.5),
+      BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+    );
+    clockRoot.scaling = new BABYLON.Vector3(200, 200, 200);
+    clockRoot.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
+  }
 }

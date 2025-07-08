@@ -152,7 +152,7 @@ const handleCloseBoxPasswordInput = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-0.45, 7.85, 11.67),
+        new BABYLON.Vector3(-21, 15.5, 11.5),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -449,16 +449,16 @@ const handleCloseBoxPasswordInput = () => {
         }
       });
 
-      // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       // // Babylon.js Inspector 활성화 (개발 중 디버깅에 필수!)
       // // 게임 실행 후 F12 (개발자 도구)를 열어 "Inspector" 탭 또는 "Babylon.js" 탭을 확인하세요.
@@ -538,7 +538,7 @@ const handleCloseBoxPasswordInput = () => {
       >
         <div>아이템</div>
         {hasKeyItem && (
-          <div style={{ marginTop: 5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
               src="/key.png"
               alt="열쇠 아이템"
@@ -676,7 +676,7 @@ const handleCloseBoxPasswordInput = () => {
           zIndex: 2001 
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
-            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 물음표에 들어갈 숫자를 구하시오</div>
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
             <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
             <input
@@ -727,7 +727,7 @@ const handleCloseBoxPasswordInput = () => {
           zIndex: 2001 
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
-            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 물음표에 들어갈 숫자를 구하시오</div>
             <img src="/시계문제.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
             <input
