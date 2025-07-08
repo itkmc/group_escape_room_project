@@ -8,10 +8,7 @@ import { addOperatingRoom } from "./rooms/op_room";
 import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
-
-// 물리 엔진을 위한 임포트 (Physics not enabled 오류 해결용)
-import { HavokPlugin } from "@babylonjs/core/Physics/v2/havokPlugin";
-import HavokPhysics from "@babylonjs/havok"; // HavokPhysics 로더
+import { addInformation } from "./rooms/information";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -212,7 +209,7 @@ const BabylonScene = () => {
     const initScene = async () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        // 첫 시작 위치
+        //첫시작
         new BABYLON.Vector3(-18.05, 7.55, 3.44),
         scene
       );
@@ -274,6 +271,7 @@ const BabylonScene = () => {
         // onCupboardClickForQuiz는 찬장 클릭 시 퀴즈를 띄우고, onIdCardAcquired는 ID 카드 획득 시 호출
         await addDoctorOffice(scene, parentMesh, handleDoctorOfficeCupboardClick, setHasIdCardItem, isOfficeCupboardUnlocked); // **isOfficeCupboardUnlocked 추가 전달**
         await addRestroomObject(scene, parentMesh);
+        await addInformation(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -302,7 +300,7 @@ const BabylonScene = () => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
@@ -398,7 +396,7 @@ const BabylonScene = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.001; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
