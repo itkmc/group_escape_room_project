@@ -152,7 +152,7 @@ const handleCloseBoxPasswordInput = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21, 15.5, 11.5),
+        new BABYLON.Vector3(-32.17, 2.265, -6.19),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -335,7 +335,7 @@ const handleCloseBoxPasswordInput = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.001; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
@@ -449,7 +449,7 @@ const handleCloseBoxPasswordInput = () => {
         }
       });
 
-      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
       // scene.onPointerObservable.add((pointerInfo) => {
       //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
       //     const mesh = pointerInfo.pickInfo?.pickedMesh;
