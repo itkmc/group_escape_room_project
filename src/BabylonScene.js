@@ -239,7 +239,7 @@ const handleCloseBoxPasswordInput = () => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
@@ -335,7 +335,7 @@ const handleCloseBoxPasswordInput = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.001; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.7; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
