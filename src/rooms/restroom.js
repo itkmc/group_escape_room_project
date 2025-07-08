@@ -8,26 +8,32 @@ import "@babylonjs/loaders";
  */
 export async function addRestroomObject(scene, parentMesh) {
   const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "dirty_toilet.glb", scene);
-  result.meshes.forEach((mesh) => {
+  for (const mesh of result.meshes) {
     if (mesh.name !== "__root__") {
       mesh.parent = parentMesh;
       mesh.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-31.26, 0.8, -3.88),
+        new BABYLON.Vector3(-30.71, 0.8, -3.88),
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
       mesh.scaling = new BABYLON.Vector3(15, 15, 15);
       mesh.checkCollisions = true;
       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
 
-      const mesh2 = mesh.clone("toilet_clone");
-      mesh2.parent = parentMesh;
-      mesh2.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-29.26, 0.8, -3.88),
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-      mesh2.scaling = new BABYLON.Vector3(15, 15, 15);
-      mesh2.checkCollisions = true;
-      mesh2.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
+      // 두 번째 변기 - giant_skibidi_toilet_rigged.glb 사용
+      const skibidiResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "giant_skibidi_toilet_rigged.glb", scene);
+      skibidiResult.meshes.forEach((skibidiMesh) => {
+        if (skibidiMesh.name !== "__root__") {
+          skibidiMesh.parent = parentMesh;
+          skibidiMesh.position = BABYLON.Vector3.TransformCoordinates(
+            new BABYLON.Vector3(-28.56, 1.0, -3.88),
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          skibidiMesh.scaling = new BABYLON.Vector3(45, 45, 45);
+          skibidiMesh.checkCollisions = true;
+          skibidiMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
+        }
+      });
 
       const mesh3 = mesh.clone("toilet_clone2");
       mesh3.parent = parentMesh;
@@ -39,7 +45,7 @@ export async function addRestroomObject(scene, parentMesh) {
       mesh3.checkCollisions = true;
       mesh3.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
     }
-  });
+  }
 
   // 🔑 화장실에 door_key.glb 추가
   const keyResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_key.glb", scene);
@@ -197,4 +203,21 @@ if (frameMesh && doorMesh) {
     });
   };
 }
+
+  // 🚧 화장실 칸막이 추가
+  const partitionResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "toilet_partition.glb", scene);
+  partitionResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__") {
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-26.85, 0.8, -4.62),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(80, 80, 80);
+      mesh.checkCollisions = true;
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI));
+    }
+  });
 }
