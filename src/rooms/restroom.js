@@ -156,18 +156,14 @@ if (frameMesh && doorMesh) {
 
   let isDoorOpen = false;
   let isAnimating = false;
-  let isFirstOpen = false; // 한 번이라도 열렸는지 여부
+  let isFirstOpen = false; // 한 번이라도 E키로 열렸는지 여부(문 클릭 이벤트와 공유)
 
   doorMesh.actionManager = new BABYLON.ActionManager(scene);
   doorMesh.actionManager.registerAction(
     new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-      // 🔑 한 번도 안 열렸으면 열쇠 필요, 한 번 열렸으면 자유롭게 열고 닫기
       if (!isFirstOpen) {
-        if (!window.hasKeyItemRef || !window.hasKeyItemRef.current) {
-          alert('열쇠를 먼저 찾으세요!');
-          return;
-        }
-        isFirstOpen = true;
+        alert('열쇠를 먼저 획득하세요');
+        return;
       }
       if (isAnimating) return;
       isAnimating = true;
@@ -187,7 +183,6 @@ if (frameMesh && doorMesh) {
 
   // E키로 문 열기용 함수 등록
   window.openRestroomDoor = function() {
-    // 🔑 한 번도 안 열렸으면 열쇠 필요, 한 번 열렸으면 자유롭게 열고 닫기
     if (!isFirstOpen) {
       if (!window.hasKeyItemRef || !window.hasKeyItemRef.current) {
         alert('열쇠를 먼저 찾으세요!');
@@ -223,15 +218,52 @@ if (frameMesh && doorMesh) {
 
   // 🩸 잘린 손가락(severed_fingers_-_horror_game_asset.glb) 원래대로 추가
   const fingersResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "severed_fingers_-_horror_game_asset.glb", scene);
+
+  // 손가락 각각 원하는 위치에 배치
+  const fingerPositions = {
+    "Object001_M_BrokenFingers_0": new BABYLON.Vector3(-30.2, 1.2, -4.55),
+    "Object002_M_BrokenFingers_0": new BABYLON.Vector3(-24.40, 1.63, -5.3),
+    "Object003_M_BrokenFingers_0": new BABYLON.Vector3(-22.74, 1.63, -5.3),
+    "finger_low_M_BrokenFingers_0": new BABYLON.Vector3(-21.35, 1.63, -5.3)
+  };
   fingersResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__" && fingerPositions[mesh.name]) {
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        fingerPositions[mesh.name],
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(3, 3, 3);
+      mesh.checkCollisions = true;
+    }
+  });
+
+  // 💧 물 애니메이션(water_animation.glb) 추가
+  const waterResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "water_animation.glb", scene);
+  waterResult.meshes.forEach((mesh) => {
     if (mesh.name !== "__root__") {
       mesh.parent = parentMesh;
       mesh.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-20, 2.26, -6.13),
+        new BABYLON.Vector3(-30.2, 1.2, -4.55),
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
       mesh.scaling = new BABYLON.Vector3(30, 30, 30);
+      mesh.checkCollisions = false;
+    }
+  });
+
+  // 🧟 시체(death_forest_-_stranger.glb) 추가
+  const corpseResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "death_forest_-_stranger.glb", scene);
+  corpseResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__") {
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-31.87, 2.0, -3.68),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(11, 11, 11);
       mesh.checkCollisions = true;
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/2);
     }
   });
 }
