@@ -11,7 +11,7 @@ export async function addInformation(scene, parentMesh) {
 
 
     // 벽 위치 정의
-    const wallWorldPos1 = new BABYLON.Vector3(-14.42, 7, -8.70);
+    const wallWorldPos1 = new BABYLON.Vector3(-15, 7, -8.70);
     const wallWorldPos2 = new BABYLON.Vector3(-0, 7, -8.70);
     const wallWorldPos3 = new BABYLON.Vector3(-2.42, 7, -13.5);
     const wallWorldPos4 = new BABYLON.Vector3(-10.42, 7, -13.5);

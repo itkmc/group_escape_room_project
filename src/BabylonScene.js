@@ -9,6 +9,7 @@ import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
+import { addUnderground } from "./rooms/underground";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -176,7 +177,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-9.47, 7.85, -8.24),
+        new BABYLON.Vector3(2.24, 7.85, 5.45),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -248,6 +249,7 @@ const BabylonScene = () => {
 
         await addRestroomObject(scene, parentMesh);
         await addInformation(scene, parentMesh);
+        await addUnderground(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -479,6 +481,17 @@ const BabylonScene = () => {
 
               }
             }
+          }
+        }
+      });
+
+      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
           }
         }
       });
