@@ -9,6 +9,7 @@ import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
+import { addUnderground } from "./rooms/underground";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -176,7 +177,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-9.47, 7.85, -8.24),
+        new BABYLON.Vector3(2.24, 7.85, 5.45),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -248,6 +249,7 @@ const BabylonScene = () => {
 
         await addRestroomObject(scene, parentMesh);
         await addInformation(scene, parentMesh);
+        await addUnderground(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -483,6 +485,17 @@ const BabylonScene = () => {
         }
       });
 
+      // // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
+
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
           GLTF2Export.GLBAsync(scene, "saved_scene").then((glb) => {
@@ -705,7 +718,7 @@ const BabylonScene = () => {
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
             <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
-            <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <img src="/수술실문제410.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
             <input
               type="text"
