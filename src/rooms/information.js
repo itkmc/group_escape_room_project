@@ -11,7 +11,7 @@ export async function addInformation(scene, parentMesh) {
 
 
     // 벽 위치 정의
-    const wallWorldPos1 = new BABYLON.Vector3(-14.42, 7, -8.70);
+    const wallWorldPos1 = new BABYLON.Vector3(-15, 7, -8.70);
     const wallWorldPos2 = new BABYLON.Vector3(-0, 7, -8.70);
     const wallWorldPos3 = new BABYLON.Vector3(-2.42, 7, -13.5);
     const wallWorldPos4 = new BABYLON.Vector3(-10.42, 7, -13.5);
@@ -239,21 +239,21 @@ const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
     );
   }
 
-//   // 🧠 인간 뇌(human_brain.glb) 추가
-//   const brainResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "human_brain.glb", scene);
-//   brainResult.meshes.forEach((mesh) => {
-//     if (mesh.name !== "__root__") {
-//       mesh.parent = parentMesh;
-//       mesh.position = BABYLON.Vector3.TransformCoordinates(
-//         new BABYLON.Vector3(-18.51, 8.18, -11.95),
-//         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-//       );
-//       mesh.scaling = new BABYLON.Vector3(5, 5, 5);
-//       mesh.checkCollisions = true;
-//       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2)
-//         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
-//     }
-//   });
+ // 얼굴
+  const faceResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "face_f2.glb", scene);
+  faceResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__") {
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-18.49, 8.4, -11.95),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(15, 15, 15);
+      mesh.checkCollisions = true;
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
+    }
+  });
 
 // // 눈
 //  const eyeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "procedural_eye.glb", scene);
@@ -303,19 +303,19 @@ const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
 //     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI));
 // });
 
-// const liverResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "human_liver.glb", scene);
-//   liverResult.meshes.forEach((mesh) => {
-//     if (mesh.name !== "__root__") {
-//       mesh.parent = parentMesh;
-//       mesh.position = BABYLON.Vector3.TransformCoordinates(
-//         new BABYLON.Vector3(-18.51, 7.2, -11.8),
-//         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-//       );
-//       mesh.scaling = new BABYLON.Vector3(11, 11, 11);
-//       mesh.checkCollisions = true;
-//       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2)
-//         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
-//     }
-//   });
+const liverResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "human_liver.glb", scene);
+  liverResult.meshes.forEach((mesh) => {
+    if (mesh.name !== "__root__") {
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        new BABYLON.Vector3(-18.51, 7.2, -11.8),
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(11, 11, 11);
+      mesh.checkCollisions = true;
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
+    }
+  });
 
 }
