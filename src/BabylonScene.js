@@ -9,6 +9,7 @@ import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
+import { addVillain } from "./rooms/villain";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -248,6 +249,7 @@ const BabylonScene = () => {
 
         await addRestroomObject(scene, parentMesh);
         await addInformation(scene, parentMesh);
+        await addVillain(scene, parentMesh);
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
