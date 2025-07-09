@@ -679,7 +679,7 @@ const handleCloseBoxPasswordInput = () => {
         }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
             <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
-            <img src="/스크린샷 2025-07-03 09.34.28.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <img src="/수술실문제410.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
             <br />
             <input
               type="text"
