@@ -238,8 +238,7 @@ const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
       })
     );
   }
-
- // 얼굴
+  // 얼굴
   const faceResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "face_f2.glb", scene);
   faceResult.meshes.forEach((mesh) => {
     if (mesh.name !== "__root__") {
@@ -255,54 +254,55 @@ const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
     }
   });
 
-// // 눈
-//  const eyeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "procedural_eye.glb", scene);
-//  const eyeMeshes = eyeResult.meshes.filter(mesh => mesh.name !== "__root__");
+// 눈
+ const eyeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "procedural_eye.glb", scene);
+ const eyeMeshes = eyeResult.meshes.filter(mesh => mesh.name !== "__root__");
 
-// // 1. 이름에서 그룹 키 추출 (예: Eye_A.001)
-// function getGroupKey(name) {
-//   // Eye_A.001 → Eye_A.001, Eye_Eye_0/Iris_0 → Eye_0
-//   const match = name.match(/^Eye_A\.\d+/);
-//   if (match) return match[0];
-//   const match2 = name.match(/^Eye_(Eye|Iris)_0/);
-//   if (match2) return "Eye_0";
-//   return name;
-// }
+// 1. 이름에서 그룹 키 추출 (예: Eye_A.001)
+function getGroupKey(name) {
+  // Eye_A.001 → Eye_A.001, Eye_Eye_0/Iris_0 → Eye_0
+  const match = name.match(/^Eye_A\.\d+/);
+  if (match) return match[0];
+  const match2 = name.match(/^Eye_(Eye|Iris)_0/);
+  if (match2) return "Eye_0";
+  return name;
+}
 
-// // 2. 그룹핑
-// const eyeGroups = {};
-// eyeMeshes.forEach(mesh => {
-//   const key = getGroupKey(mesh.name);
-//   if (!eyeGroups[key]) eyeGroups[key] = [];
-//   eyeGroups[key].push(mesh);
-// });
+// 2. 그룹핑
+const eyeGroups = {};
+eyeMeshes.forEach(mesh => {
+  const key = getGroupKey(mesh.name);
+  if (!eyeGroups[key]) eyeGroups[key] = [];
+  eyeGroups[key].push(mesh);
+});
 
-// // 3. 각 그룹별 TransformNode 생성 및 위치/회전/스케일 적용
-// const basePos = new BABYLON.Vector3(-18.51, 7.74, -11.95);
-// const sphereRadius = 0.1;
-// const count = Object.keys(eyeGroups).length;
-// const rotationMatrix = BABYLON.Matrix.RotationX(Math.PI / 2);
+// 3. 각 그룹별 TransformNode 생성 및 위치/회전/스케일 적용
+const basePos = new BABYLON.Vector3(-18.51, 7.74, -11.95);
+const sphereRadius = 0.1;
+const count = Object.keys(eyeGroups).length;
+const rotationMatrix = BABYLON.Matrix.RotationX(Math.PI / 2);
 
-// Object.values(eyeGroups).forEach((group, i) => {
-//   const node = new BABYLON.TransformNode(`eyeGroup_${i}`, scene);
-//   group.forEach(mesh => mesh.parent = node);
+Object.values(eyeGroups).forEach((group, i) => {
+  const node = new BABYLON.TransformNode(`eyeGroup_${i}`, scene);
+  group.forEach(mesh => mesh.parent = node);
 
-//   // 골든 섹션 스파이럴(구 표면에 고르게 분포)
-//   const phi = Math.acos(-1 + (2 * i) / (count - 1));
-//   const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-//   let x = sphereRadius * Math.cos(theta) * Math.sin(phi);
-//   let y = sphereRadius * Math.sin(theta) * Math.sin(phi);
-//   let z = sphereRadius * Math.cos(phi);
-//   const rotated = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(x, y, z), rotationMatrix);
-//   x = basePos.x + rotated.x;
-//   y = basePos.y + rotated.y;
-//   z = basePos.z + rotated.z;
-//   node.position = new BABYLON.Vector3(x, y, z);
-//   node.scaling = new BABYLON.Vector3(0.04, 0.04, 0.04);
-//   node.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI/2)
-//     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI));
-// });
+  // 골든 섹션 스파이럴(구 표면에 고르게 분포)
+  const phi = Math.acos(-1 + (2 * i) / (count - 1));
+  const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+  let x = sphereRadius * Math.cos(theta) * Math.sin(phi);
+  let y = sphereRadius * Math.sin(theta) * Math.sin(phi);
+  let z = sphereRadius * Math.cos(phi);
+  const rotated = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(x, y, z), rotationMatrix);
+  x = basePos.x + rotated.x;
+  y = basePos.y + rotated.y;
+  z = basePos.z + rotated.z;
+  node.position = new BABYLON.Vector3(x, y, z);
+  node.scaling = new BABYLON.Vector3(0.04, 0.04, 0.04);
+  node.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI/2)
+    .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI));
+});
 
+// 간
 const liverResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "human_liver.glb", scene);
   liverResult.meshes.forEach((mesh) => {
     if (mesh.name !== "__root__") {
