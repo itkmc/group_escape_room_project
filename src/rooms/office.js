@@ -175,19 +175,35 @@ export async function addDoctorOffice(
             rootIdCardMesh = idCardResult.meshes[0];
             rootIdCardMesh.parent = parentMesh;
             rootIdCardMesh.position = BABYLON.Vector3.TransformCoordinates(
-                finalIdCardWorldPos,
+                new BABYLON.Vector3(-17.85, 6.60, 11.20),
                 BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
             );
-            rootIdCardMesh.scaling = idCardOptions.scaling || new BABYLON.Vector3(7, 7, 7);
+            rootIdCardMesh.scaling = idCardOptions.scaling || new BABYLON.Vector3(7,7,7);
             rootIdCardMesh.rotationQuaternion = idCardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
                 .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-            // ⭐ ID 카드 초기 숨김 및 픽 비활성화 (찬장 안에 있으므로)
-            // 초기 로드 시에는 항상 숨겨야 함 (획득 전이므로)
+            // 모든 mesh에 대해 pickable/actionManager 등록
             idCardResult.meshes.forEach(mesh => {
-                mesh.checkCollisions = true;
-                mesh.isPickable = false; // 초기에는 클릭하여 주울 수 없게 설정
-                mesh.setEnabled(false); // 초기에는 씬에서 비활성화 (숨김)
+                if (mesh && mesh.name !== "__root__") {
+                    mesh.checkCollisions = true;
+                    mesh.isPickable = true;
+                    mesh.setEnabled(true);
+                    mesh.actionManager = new BABYLON.ActionManager(scene);
+                    mesh.actionManager.registerAction(
+                      new BABYLON.ExecuteCodeAction(
+                        BABYLON.ActionManager.OnPickTrigger,
+                        function() {
+                          console.log("🎉 ID 카드 획득! (클릭 이벤트 발생, 모든 mesh에 등록)");
+                          if (onIdCardAcquired) {
+                            onIdCardAcquired(true);
+                            mesh.setEnabled(false);
+                            mesh.isPickable = false;
+                          }
+                        }
+                      )
+                    );
+                    console.log("ID카드 액션매니저 등록됨(모든 mesh):", mesh.name, !!mesh.actionManager);
+                }
             });
         }
     } catch (error) {
@@ -201,7 +217,7 @@ export async function addDoctorOffice(
             new BABYLON.ExecuteCodeAction(
                 BABYLON.ActionManager.OnPickTrigger,
                 function() {
-                    console.log("🎉 ID 카드 획득!");
+                    console.log("🎉 ID 카드 획득! (클릭 이벤트 발생)");
                     if (onIdCardAcquired) {
                         onIdCardAcquired(true); // React의 setHasIdCardItem(true) 콜백 호출
                         rootIdCardMesh.setEnabled(false); // 아이템 획득 후 씬에서 완전히 숨김 (재활성화되지 않음)
@@ -210,6 +226,7 @@ export async function addDoctorOffice(
                 }
             )
         );
+        console.log("ID카드 액션매니저 등록됨:", !!rootIdCardMesh.actionManager);
     }
 
     // --- 메탈 찬장 (metal_cupboard.glb) 추가 및 상호작용 로직 ---
@@ -332,13 +349,21 @@ export async function addDoctorOffice(
                                             // onIdCardAcquired(true)가 호출되면 ID 카드가 setEnabled(false)되므로 중복 활성화 방지
                                             rootIdCardMesh.setEnabled(true);
                                             rootIdCardMesh.isPickable = true;
-                                            console.log("✅ ID 카드 활성화됨: 찬장이 열렸고 잠금 해제되었습니다.");
+                                            console.log("✅ ID 카드 활성화됨: 찬장이 열렸고 잠금 해제되었습니다.", {
+                                                enabled: rootIdCardMesh.isEnabled(),
+                                                pickable: rootIdCardMesh.isPickable,
+                                                actionManager: !!rootIdCardMesh.actionManager
+                                            });
                                         } else { // 문이 닫히거나, 찬장이 잠금 해제되지 않은 경우
                                             // ID 카드가 획득되지 않은 상태에서 문이 닫히거나, 찬장이 잠금 해제되지 않았다면 숨김
                                             // onIdCardAcquired(true)가 호출되어 이미 ID 카드가 비활성화되었다면, 이 로직은 영향을 주지 않음
                                             rootIdCardMesh.setEnabled(false);
                                             rootIdCardMesh.isPickable = false;
-                                            console.log("⛔️ ID 카드 비활성화됨: 찬장이 닫혔거나 잠금 해제되지 않았습니다.");
+                                            console.log("⛔️ ID 카드 비활성화됨: 찬장이 닫혔거나 잠금 해제되지 않았습니다.", {
+                                                enabled: rootIdCardMesh.isEnabled(),
+                                                pickable: rootIdCardMesh.isPickable,
+                                                actionManager: !!rootIdCardMesh.actionManager
+                                            });
                                         }
                                     }
                                     animationGroup.dispose(); // 애니메이션 그룹 사용 완료 후 해제
