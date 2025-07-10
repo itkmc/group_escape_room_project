@@ -32,6 +32,121 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     }
   });
 
+  // 시신
+  // const bodyBagPositions = [
+  //   new BABYLON.Vector3(14.08, 6.03, 2)
+  // ];
+  // for (const pos of bodyBagPositions) {
+  //   const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "smartinius_body_bag_3d_asset.glb", scene);
+  //   for (const mesh of result.meshes) {
+  //     if (mesh.name !== "__root__") {
+  //       mesh.parent = parentMesh;
+  //       mesh.position = BABYLON.Vector3.TransformCoordinates(
+  //         pos,
+  //         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  //       );
+  //       mesh.scaling = new BABYLON.Vector3(0.8, 0.8, 0.8);
+  //       mesh.checkCollisions = true;
+  //     }
+  //   }
+  // }
+
+  // 사슴 시체(deer_dead_body) 배치
+  const deerDeadBodyPositions = [
+    new BABYLON.Vector3(18.89, 6.18, 2.5)
+  ];
+  for (const pos of deerDeadBodyPositions) {
+    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "deer_dead_body.glb", scene);
+    console.log("deer_dead_body.glb 로드됨:", result.meshes.map(m => m.name));
+    const root = result.meshes.find(m => m.name === "__root__");
+    if (root) {
+      root.parent = parentMesh;
+      root.position = BABYLON.Vector3.TransformCoordinates(
+        pos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      root.scaling = new BABYLON.Vector3(100, 100, 100);
+      root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2); // X축으로 눕힘
+      console.log("deer_dead_body __root__ 배치:", {
+        position: root.position,
+        scaling: root.scaling
+      });
+    }
+  }
+
+  
+   // 미라
+  const mummyBodyPositions = [
+    new BABYLON.Vector3(11.4, 6, 7.8)
+  ];
+  for (const pos of mummyBodyPositions) {
+    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "zombie_smoke_mummy_character_12_mb.glb", scene);
+    console.log("deer_dead_body.glb 로드됨:", result.meshes.map(m => m.name));
+    const root = result.meshes.find(m => m.name === "__root__");
+    if (root) {
+      root.parent = parentMesh;
+      root.position = BABYLON.Vector3.TransformCoordinates(
+        pos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      root.scaling = new BABYLON.Vector3(100, 100, 100);
+      root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2)); // X축 90도, Y축 90도 순서로 회전
+      console.log("deer_dead_body __root__ 배치:", {
+        position: root.position,
+        scaling: root.scaling
+      });
+    }
+  }
+
+  // 시체 서랍
+  const morgueBodyPositions = [
+    new BABYLON.Vector3(16.3, 6.4, 7.8)
+  ];
+  for (const pos of morgueBodyPositions) {
+    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "morgue_refrigerator-12mb.glb", scene);
+    console.log("deer_dead_body.glb 로드됨:", result.meshes.map(m => m.name));
+    const root = result.meshes.find(m => m.name === "__root__");
+    if (root) {
+      root.parent = parentMesh;
+      root.position = BABYLON.Vector3.TransformCoordinates(
+        pos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      root.scaling = new BABYLON.Vector3(70, 90, 70);
+      root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)); // X축 90도, Y축 90도 순서로 회전
+      console.log("deer_dead_body __root__ 배치:", {
+        position: root.position,
+        scaling: root.scaling
+      });
+    }
+  }
+  
+// 시체 table
+  const tableBodyPositions = [
+    new BABYLON.Vector3(16.3, 6, 3.9)
+  ];
+  for (const pos of tableBodyPositions) {
+    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "autopsy_table.glb", scene);
+    console.log("deer_dead_body.glb 로드됨:", result.meshes.map(m => m.name));
+    const root = result.meshes.find(m => m.name === "__root__");
+    if (root) {
+      root.parent = parentMesh;
+      root.position = BABYLON.Vector3.TransformCoordinates(
+        pos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      root.scaling = new BABYLON.Vector3(5, 5, 5);
+      root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)); // X축 90도, Y축 90도 순서로 회전
+      console.log("deer_dead_body __root__ 배치:", {
+        position: root.position,
+        scaling: root.scaling
+      });
+    }
+  }
+
   // 문 열기/닫기 애니메이션 함수
   const toggleDoor = () => {
     // 한 번이라도 열렸으면 isUnlocked = true
