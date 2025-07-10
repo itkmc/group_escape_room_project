@@ -136,10 +136,7 @@ const BabylonScene = () => {
       if (resolveBoxPasswordPromiseRef.current) {
         console.log("Promise 해결 시도: false (비밀번호 틀림)");
         resolveBoxPasswordPromiseRef.current(false); // op_room.js로 false 반환
-        // 비밀번호 틀렸을 때는 resolveBoxPasswordPromiseRef.current를 null로 만들지 않아서
-        // 사용자가 다시 시도할 수 있도록 유지할 수 있습니다.
-        // 필요에 따라 이 부분을 null로 초기화할 수도 있습니다.
-        // resolveBoxPasswordPromiseRef.current = null;
+      
       }
     }
   };
@@ -179,7 +176,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(2.24, 7.85, 5.45),
+        new BABYLON.Vector3(-5.84,7.85,-9.34),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -489,15 +486,15 @@ const BabylonScene = () => {
         }
       });
          // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
