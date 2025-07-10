@@ -323,7 +323,6 @@ await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.
           })
       );
   }
-
   // 얼굴
   const faceResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "face_f2.glb", scene);
   for (const mesh of faceResult.meshes) { 
