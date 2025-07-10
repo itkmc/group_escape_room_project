@@ -25,12 +25,19 @@ const BabylonScene = () => {
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
   const [hasCardItem, setHasCardItem] = useState(false);
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
+  const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
+  const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
   const [quizMessage, setQuizMessage] = useState('');
   const [hasKeyItem, setHasKeyItem] = useState(false);
   const hasKeyItemRef = useRef(false);
+  
+  // underground 문 상호작용 관련 상태
+  const [undergroundDoorMessage, setUndergroundDoorMessage] = useState('');
+  const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
+  const undergroundDoorRef = useRef(null);
 
   const correctAnswer = "72";
 
@@ -60,10 +67,8 @@ const BabylonScene = () => {
   const handleAnswerSubmit3 = () => {
     // 정답 비교 시 대소문자 무시
     if (answerInput3.toLowerCase() === correctAnswer3) {
-      setQuizMessage3("정답입니다! 아이템을 획득하세요!");
-      setHasIdCardItem(true); // ID 카드 획득 상태를 true로 설정
-      // 퀴즈 팝업을 바로 닫지 않고 메시지를 보여줄 수도 있습니다.
-      // setShowOfficeQuiz(true); // 필요에 따라 퀴즈 닫기
+      setQuizMessage3("정답입니다! 이제 찬장을 열 수 있습니다.");
+      setIsOfficeCupboardUnlocked(true); // ID카드 획득이 아니라 찬장만 열림
     } else {
       setQuizMessage3("오답입니다. 다시 시도해 보세요.");
       setAnswerInput3('');
@@ -166,6 +171,10 @@ const BabylonScene = () => {
   }, [hasKeyItem]);
 
   useEffect(() => {
+    isOfficeCupboardUnlockedRef.current = isOfficeCupboardUnlocked;
+  }, [isOfficeCupboardUnlocked]);
+
+  useEffect(() => {
     if (!canvasRef.current) return;
 
     const engine = new BABYLON.Engine(canvasRef.current, true);
@@ -244,15 +253,31 @@ const BabylonScene = () => {
         await addDoctorOffice(
           scene,
           parentMesh,
-          () => setShowOfficeQuiz(true), // 찬장 클릭 시 showOfficeQuiz 상태를 true로 변경
-          (status) => setHasIdCardItem(status), // ID 카드 획득 상태 업데이트 (true/false)
-          () => hasIdCardItemRef.current // office.js에 현재 hasIdCardItem 상태를 전달
+          () => setShowOfficeQuiz(true), // 찬장 클릭 시 퀴즈
+          (status) => {
+            console.log("setHasIdCardItem 호출됨:", status);
+            setHasIdCardItem(status);
+          }, // ID카드 획득 시
+          () => isOfficeCupboardUnlockedRef.current // 항상 최신값 반환
         );
 
         await addRestroomObject(scene, parentMesh);
         await addInformation(scene, parentMesh);
         await addVillain(scene, parentMesh);
-        await addUnderground(scene, parentMesh);
+        
+        // underground 문 추가 및 상호작용 설정
+        const undergroundDoor = await addUnderground(
+          scene, 
+          parentMesh,
+          (message) => {
+            setUndergroundDoorMessage(message);
+            setShowUndergroundDoorMessage(true);
+            // 3초 후 메시지 숨기기
+            setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+          },
+          () => hasIdCardItemRef.current
+        );
+        undergroundDoorRef.current = undergroundDoor;
 
       }
 
@@ -375,7 +400,7 @@ const BabylonScene = () => {
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
         if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+          hemiLight.intensity = 0.5; // 어두운 구역에서는 배경 조명 어둡게
           scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
         } else {
           hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
@@ -415,13 +440,12 @@ const BabylonScene = () => {
         }
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
         if (evt.key === 'e' || evt.key === 'E') {
-          if (!hasKeyItemRef.current) {
-            return;
-          }
           // 플레이어와 각 문 위치의 거리 계산
           const playerPosVec = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
           const mainDoorPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
           const restroomDoorPos = new BABYLON.Vector3(-18.95, 2.5, -6.95);
+          const undergroundDoorPos = new BABYLON.Vector3(7, 6.4, 5.1);
+          
           // 수평(XZ) 거리 계산 함수
           function horizontalDistance(a, b) {
             return Math.sqrt(
@@ -431,18 +455,30 @@ const BabylonScene = () => {
           }
           const distToMain = horizontalDistance(playerPosVec, mainDoorPos);
           const distToRest = horizontalDistance(playerPosVec, restroomDoorPos);
+          const distToUnderground = horizontalDistance(playerPosVec, undergroundDoorPos);
           const THRESHOLD = 10; // 거리 임계값(수평거리)
 
           let opened = false;
-          if (distToMain < THRESHOLD && window.openMainDoor) {
-            window.openMainDoor();
-            setHasKeyItem(false);
-            opened = true;
-          } else if (distToRest < THRESHOLD && window.openRestroomDoor) {
-            window.openRestroomDoor();
-            setHasKeyItem(false);
+          
+          // 기존 문들 (열쇠 필요)
+          if (hasKeyItemRef.current) {
+            if (distToMain < THRESHOLD && window.openMainDoor) {
+              window.openMainDoor();
+              setHasKeyItem(false);
+              opened = true;
+            } else if (distToRest < THRESHOLD && window.openRestroomDoor) {
+              window.openRestroomDoor();
+              setHasKeyItem(false);
+              opened = true;
+            }
+          }
+          
+          // underground 문 (ID 카드 필요)
+          if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
+            undergroundDoorRef.current.toggleDoor();
             opened = true;
           }
+          
           if (!opened) {
             alert('문 가까이에서 E키를 눌러주세요!');
           }
@@ -857,6 +893,27 @@ const BabylonScene = () => {
         </div>
       )}
       {/* -------------------------------------------------- */}
+      
+      {/* Underground 문 상호작용 메시지 */}
+      {showUndergroundDoorMessage && (
+        <div style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "rgba(0,0,0,0.8)",
+          color: "white",
+          padding: "16px 24px",
+          borderRadius: "8px",
+          fontSize: "18px",
+          fontWeight: "bold",
+          zIndex: 1500,
+          textAlign: "center",
+          minWidth: "300px"
+        }}>
+          {undergroundDoorMessage}
+        </div>
+      )}
     </>
   );
 };
