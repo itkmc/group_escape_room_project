@@ -9,10 +9,9 @@ import { addDoctorOffice } from "./rooms/office";
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
-import { addVillain } from "./rooms/villain";
 import { addUnderground } from "./rooms/underground";
 
-
+import { addVillain } from "./rooms/villain";
 const BabylonScene = () => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
@@ -264,7 +263,8 @@ const BabylonScene = () => {
         await addRestroomObject(scene, parentMesh);
         await addInformation(scene, parentMesh);
         await addVillain(scene, parentMesh);
-        
+        await addUnderground(scene, parentMesh);
+
         // underground 문 추가 및 상호작용 설정
         const undergroundDoor = await addUnderground(
           scene, 
@@ -278,7 +278,6 @@ const BabylonScene = () => {
           () => hasIdCardItemRef.current
         );
         undergroundDoorRef.current = undergroundDoor;
-
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -332,8 +331,8 @@ const BabylonScene = () => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-2.01, 7.85, 7.02);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(0.91, 7.85, -10.48);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(1, 1, 1);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 

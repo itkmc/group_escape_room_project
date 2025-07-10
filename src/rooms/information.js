@@ -238,7 +238,6 @@ const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
       })
     );
   }
-
   // 얼굴
   const faceResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "face_f2.glb", scene);
   faceResult.meshes.forEach((mesh) => {
