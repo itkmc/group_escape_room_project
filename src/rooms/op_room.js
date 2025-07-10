@@ -163,10 +163,10 @@ if (lidMainMesh instanceof BABYLON.AbstractMesh && lidHandleMesh instanceof BABY
 }
 
 // 나머지 메시들에 대한 물리 Impostor 설정 (뚜껑 관련 메시 제외)
-surgery_toolsResult.meshes.forEach(mesh => {
+for (const mesh of surgery_toolsResult.meshes) {
     // 뚜껑 본체, 손잡이, 그리고 뚜껑 그룹 부모는 물리 Impostor에서 제외 (회전 애니메이션 위함)
     if (mesh.name === "01_01_0" || mesh.name === "01_2_4_01_0" || mesh.name === "lidGroupParent") {
-        return; 
+        continue; 
     }
 
     if (mesh.isReady()) {
@@ -176,7 +176,7 @@ surgery_toolsResult.meshes.forEach(mesh => {
             mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
         });
     }
-});
+}
 
   // --- 의료용 테이블 배치 ---
   const desiredMedicalTableWorldPos = new BABYLON.Vector3(6.10, 6.47, 11.37);
@@ -199,54 +199,57 @@ surgery_toolsResult.meshes.forEach(mesh => {
     rootMedicalTableMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
-    medicalTableResult.meshes.forEach((mesh) => {
-      mesh.checkCollisions = true;
-      if (mesh.isReady()) { 
-          mesh.physicsImpostor = new BABYLON.PhysicsImpostor(
-              mesh,
-              BABYLON.PhysicsImpostor.BoxImpostor, 
-              { mass: 0, restitution: 0.1, friction: 0.5 }, 
-              scene
-          );
-      } else {
-          mesh.onReadyObservable.addOnce(() => {
-              mesh.physicsImpostor = new BABYLON.PhysicsImpostor(
-                  mesh,
-                  BABYLON.PhysicsImpostor.BoxImpostor,
-                  { mass: 0, restitution: 0.1, friction: 0.5 },
-                  scene
-              );
-          });
-      }
-    });
+    for (const mesh of medicalTableResult.meshes) {
+    mesh.checkCollisions = true;
+    if (mesh.isReady()) { 
+        mesh.physicsImpostor = new BABYLON.PhysicsImpostor(
+            mesh,
+            BABYLON.PhysicsImpostor.BoxImpostor, 
+            { mass: 0, restitution: 0.1, friction: 0.5 }, 
+            scene
+        );
+    } else {
+        mesh.onReadyObservable.addOnce(() => {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(
+                mesh,
+                BABYLON.PhysicsImpostor.BoxImpostor,
+                { mass: 0, restitution: 0.1, friction: 0.5 },
+                scene
+            );
+        });
+    }
+};
 
     console.log("medical_table_-_17mb.glb 모델 전체가 성공적으로 배치되었습니다.");
   } else {
     console.error("medical_table_-_17mb.glb의 모델 루트 메쉬를 찾을 수 없습니다. 모델 구조를 확인하세요.");
   }
-    // 자물쇠 위치
-  const combination_padlockWorldPos = new BABYLON.Vector3(6.95, 7.19, 11.21);
-  const combination_padlock = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "combination_padlock.glb", scene);
-  combination_padlock.meshes.forEach((combination_padlock) => {
-    if (combination_padlock.name !== "__root__") {
-      combination_padlock.parent = parentMesh;
-      combination_padlock.position = BABYLON.Vector3.TransformCoordinates(
-        combination_padlockWorldPos,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-      combination_padlock.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
-      combination_padlock.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-      combination_padlock.checkCollisions = true;
-      if (combination_padlock.isReady()) {
-          combination_padlock.physicsImpostor = new BABYLON.PhysicsImpostor(combination_padlock, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-      } else {
-          combination_padlock.onReadyObservable.addOnce(() => {
-              combination_padlock.physicsImpostor = new BABYLON.PhysicsImpostor(combination_padlock, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          });
-      }
+  
+  // 자물쇠 위치
+const combination_padlockWorldPos = new BABYLON.Vector3(6.95, 7.19, 11.21);
+const combination_padlock = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "combination_padlock.glb", scene);
+
+// 루프 변수 이름을 'mesh'로 변경하여 충돌 방지
+for (const mesh of combination_padlock.meshes) {
+    if (mesh.name !== "__root__") {
+        mesh.parent = parentMesh;
+        mesh.position = BABYLON.Vector3.TransformCoordinates(
+            combination_padlockWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        mesh.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+        mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+        mesh.checkCollisions = true;
+        if (mesh.isReady()) {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            mesh.onReadyObservable.addOnce(() => {
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+            });
+        }
     }
-  });
+}
 
   // 벽안에 사람 월드 위치
   const dead_hazmat_femaleWorldPos1 = new BABYLON.Vector3(6.60, 6.55, 16.58);
@@ -270,16 +273,16 @@ surgery_toolsResult.meshes.forEach(mesh => {
       rootMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
 
-      dead_hazmat_femaleResult.meshes.forEach(mesh => {
-          mesh.checkCollisions = true;
-          if (mesh.isReady()) {
-              mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          } else {
-              mesh.onReadyObservable.addOnce(() => {
-                  mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-              });
-          }
-      });
+      for (const mesh of dead_hazmat_femaleResult.meshes) {
+    mesh.checkCollisions = true;
+    if (mesh.isReady()) {
+        mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+    } else {
+        mesh.onReadyObservable.addOnce(() => {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        });
+    }
+};
   }
 
   // 각 모델을 로드하여 장면에 추가합니다.
@@ -287,263 +290,265 @@ surgery_toolsResult.meshes.forEach(mesh => {
   await loadDeadHazmatFemale(dead_hazmat_femaleWorldPos2, parentMesh, scene);
   await loadDeadHazmatFemale(dead_hazmat_femaleWorldPos3, parentMesh, scene);
   
-  //문
-  const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
-    door1.meshes.forEach((doorMesh) => {
-        // "Cube.002_Cube.000_My_Ui_0"은 문짝 메쉬의 실제 이름에 따라 다를 수 있습니다.
-        if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") {
-            const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정
-            doorMesh.setPivotPoint(pivot);
+  // 문
+const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
 
-            doorMesh.parent = parentMesh;
-            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-                new BABYLON.Vector3(2,6.95,12.5), // 문짝의 월드 위치
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
+for (const doorMesh of door1.meshes) {
+    // "Cube.002_Cube.000_My_Ui_0"은 문짝 메쉬의 실제 이름에 따라 다를 수 있습니다.
+    if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") {
+        const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정
+        doorMesh.setPivotPoint(pivot);
 
-            // 문의 초기 회전 설정
-            const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2))
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));;
+        doorMesh.parent = parentMesh;
+        doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+            new BABYLON.Vector3(2, 6.95, 12.5), // 문짝의 월드 위치
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
 
-            doorMesh.rotationQuaternion = baseRotation.clone();
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 문의 스케일
-            doorMesh.checkCollisions = true; // 문에 대한 충돌 감지 활성화
+        // 문의 초기 회전 설정
+        const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2))
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));;
 
-            // 문 열림/닫힘 애니메이션 정의
-            const startRotation = doorMesh.rotationQuaternion.clone();
-            const openAngle = Math.PI / 2; // 문이 열리는 각도 (90도)
-            const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+        doorMesh.rotationQuaternion = baseRotation.clone();
+        doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 문의 스케일
+        doorMesh.checkCollisions = true; // 문에 대한 충돌 감지 활성화
 
-            const openAnim = new BABYLON.Animation(
-                "doorOpen",
-                "rotationQuaternion",
-                30, // FPS
-                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-            );
-            openAnim.setKeys([
-                { frame: 0, value: startRotation },
-                { frame: 30, value: endRotation },
-            ]);
+        // 문 열림/닫힘 애니메이션 정의
+        const startRotation = doorMesh.rotationQuaternion.clone();
+        const openAngle = Math.PI / 2; // 문이 열리는 각도 (90도)
+        const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
 
-            const closeAnim = new BABYLON.Animation(
-                "doorClose",
-                "rotationQuaternion",
-                30, // FPS
-                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-            );
-            closeAnim.setKeys([
-                { frame: 0, value: endRotation },
-                { frame: 30, value: startRotation },
-            ]);
+        const openAnim = new BABYLON.Animation(
+            "doorOpen",
+            "rotationQuaternion",
+            30, // FPS
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+        openAnim.setKeys([
+            { frame: 0, value: startRotation },
+            { frame: 30, value: endRotation },
+        ]);
 
-            let isDoorOpen = false;    // 문의 현재 상태 (열림/닫힘)
-            let isAnimating = false;   // 애니메이션 진행 여부
+        const closeAnim = new BABYLON.Animation(
+            "doorClose",
+            "rotationQuaternion",
+            30, // FPS
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+        closeAnim.setKeys([
+            { frame: 0, value: endRotation },
+            { frame: 30, value: startRotation },
+        ]);
 
-            // 마우스 클릭 시 문 열고 닫는 로직
-            doorMesh.actionManager = new BABYLON.ActionManager(scene);
-            doorMesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                    if (isAnimating) return; // 애니메이션 중이면 중복 클릭 무시
-                    isAnimating = true;
+        let isDoorOpen = false; // 문의 현재 상태 (열림/닫힘)
+        let isAnimating = false; // 애니메이션 진행 여부
 
-                    if (!isDoorOpen) {
-                        // 문 닫힘 -> 열기
-                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 비활성화
-                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                            isDoorOpen = true;
-                            isAnimating = false;
-                        });
-                    } else {
-                        // 문 열림 -> 닫기
-                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                            doorMesh.checkCollisions = true; // 문이 완전히 닫히면 충돌 다시 활성화
-                            isDoorOpen = false;
-                            isAnimating = false;
-                        });
-                    }
-                })
-            );
-        }
-    });
+        // 마우스 클릭 시 문 열고 닫는 로직
+        doorMesh.actionManager = new BABYLON.ActionManager(scene);
+        doorMesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                if (isAnimating) return; // 애니메이션 중이면 중복 클릭 무시
+                isAnimating = true;
+
+                if (!isDoorOpen) {
+                    // 문 닫힘 -> 열기
+                    doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 비활성화
+                    scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                        isDoorOpen = true;
+                        isAnimating = false;
+                    });
+                } else {
+                    // 문 열림 -> 닫기
+                    scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                        doorMesh.checkCollisions = true; // 문이 완전히 닫히면 충돌 다시 활성화
+                        isDoorOpen = false;
+                        isAnimating = false;
+                    });
+                }
+            })
+        );
+    }
+}
 
   // 수술대 위치
   const desiredOperatingWorldPos = new BABYLON.Vector3(6.8, 6.43, 12.67);
   const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
-  operating.meshes.forEach((operatingMesh) => {
+  for (const operatingMesh of operating.meshes) {
     if (operatingMesh.name !== "__root__") {
-      operatingMesh.parent = parentMesh;
-      operatingMesh.position = BABYLON.Vector3.TransformCoordinates(
-        desiredOperatingWorldPos,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-      operatingMesh.scaling = new BABYLON.Vector3(20, 20, 20);
-      operatingMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
-      operatingMesh.checkCollisions = true;
-      if (operatingMesh.isReady()) {
-          operatingMesh.physicsImpostor = new BABYLON.PhysicsImpostor(operatingMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-      } else {
-          operatingMesh.onReadyObservable.addOnce(() => {
-              operatingMesh.physicsImpostor = new BABYLON.PhysicsImpostor(operatingMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          });
-      }
+        operatingMesh.parent = parentMesh;
+        operatingMesh.position = BABYLON.Vector3.TransformCoordinates(
+            desiredOperatingWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        operatingMesh.scaling = new BABYLON.Vector3(20, 20, 20);
+        operatingMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
+        operatingMesh.checkCollisions = true;
+        if (operatingMesh.isReady()) {
+            operatingMesh.physicsImpostor = new BABYLON.PhysicsImpostor(operatingMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            operatingMesh.onReadyObservable.addOnce(() => {
+                operatingMesh.physicsImpostor = new BABYLON.PhysicsImpostor(operatingMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+            });
+        }
     }
-  });
+};
 
   // 냉장고 안 애기 위치
   const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.67, 14.00);
   const alien_fetus = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "alien_fetus.glb", scene);
-  alien_fetus.meshes.forEach((alien_fetusMesh) => {
+  for (const alien_fetusMesh of alien_fetus.meshes) {
     if (alien_fetusMesh.name !== "__root__") {
-      alien_fetusMesh.parent = parentMesh;
-      alien_fetusMesh.position = BABYLON.Vector3.TransformCoordinates(
-        alien_fetusWorldPos,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-      alien_fetusMesh.scaling = new BABYLON.Vector3(40,40,40);
-      alien_fetusMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 3)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-      alien_fetusMesh.checkCollisions = true;
-      if (alien_fetusMesh.isReady()) {
-          alien_fetusMesh.physicsImpostor = new BABYLON.PhysicsImpostor(alien_fetusMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-      } else {
-          alien_fetusMesh.onReadyObservable.addOnce(() => {
-              alien_fetusMesh.physicsImpostor = new BABYLON.PhysicsImpostor(alien_fetusMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          });
-      }
+        alien_fetusMesh.parent = parentMesh;
+        alien_fetusMesh.position = BABYLON.Vector3.TransformCoordinates(
+            alien_fetusWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        alien_fetusMesh.scaling = new BABYLON.Vector3(40, 40, 40);
+        alien_fetusMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 3)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+        alien_fetusMesh.checkCollisions = true;
+        if (alien_fetusMesh.isReady()) {
+            alien_fetusMesh.physicsImpostor = new BABYLON.PhysicsImpostor(alien_fetusMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            alien_fetusMesh.onReadyObservable.addOnce(() => {
+                alien_fetusMesh.physicsImpostor = new BABYLON.PhysicsImpostor(alien_fetusMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+            });
+        }
     }
-  });
+};
 
 
-  // 망치 위치
-    const dirty_tube__melee_weaponWorldPos = new BABYLON.Vector3(7.05, 7.22, 11.10);
-    const dirty_tube__melee_weaponResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "dirty_tube__melee_weapon.glb", scene);
+// 망치 위치
+const dirty_tube__melee_weaponWorldPos = new BABYLON.Vector3(7.05, 7.22, 11.10);
+const dirty_tube__melee_weaponResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "dirty_tube__melee_weapon.glb", scene);
 
-    dirty_tube__melee_weaponResult.meshes.forEach((mesh) => { 
-        if (mesh.name !== "__root__") {
-            mesh.parent = parentMesh;
-            mesh.position = BABYLON.Vector3.TransformCoordinates(
-                dirty_tube__melee_weaponWorldPos,
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
+for (const mesh of dirty_tube__melee_weaponResult.meshes) {
+    if (mesh.name !== "__root__") {
+        mesh.parent = parentMesh;
+        mesh.position = BABYLON.Vector3.TransformCoordinates(
+            dirty_tube__melee_weaponWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
 
-            if (mesh.name === "Object_2") {
-                mesh.scaling = new BABYLON.Vector3(0.001, 0.001, 0.001); // Object_2의 스케일을 1로 설정 (예시 값)
-                console.log(`Object_2 메시의 스케일이 ${mesh.scaling}으로 설정되었습니다.`);
-            } else {
-                // Object_2가 아닌 다른 메시들 (Object_3 포함)은 기존 스케일 적용
-                mesh.scaling = new BABYLON.Vector3(2, 2, 2); 
-            }
+        if (mesh.name === "Object_2") {
+            mesh.scaling = new BABYLON.Vector3(0.001, 0.001, 0.001); // Object_2의 스케일을 1로 설정 (예시 값)
+            console.log(`Object_2 메시의 스케일이 ${mesh.scaling}으로 설정되었습니다.`);
+        } else {
+            // Object_2가 아닌 다른 메시들 (Object_3 포함)은 기존 스케일 적용
+            mesh.scaling = new BABYLON.Vector3(2, 2, 2);
+        }
 
-            mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
-            mesh.checkCollisions = true;
+        mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
+        mesh.checkCollisions = true;
 
-            if (mesh.isReady()) {
+        if (mesh.isReady()) {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            mesh.onReadyObservable.addOnce(() => {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-            } else {
-                mesh.onReadyObservable.addOnce(() => {
-                    mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-                });
-            }
-            // --- 망치 클릭 이벤트 리스너 추가 ---
-            mesh.actionManager = new BABYLON.ActionManager(scene);
-            mesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                    BABYLON.ActionManager.OnPickTrigger,
-                    function (evt) {
-                        const pickedMesh = evt.source;
-                        if (pickedMesh === mesh) {
-                            console.log("망치가 클릭되었습니다! (op_room에서)");
+            });
+        }
+        // --- 망치 클릭 이벤트 리스너 추가 ---
+        mesh.actionManager = new BABYLON.ActionManager(scene);
+        mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPickTrigger,
+                function (evt) {
+                    const pickedMesh = evt.source;
+                    if (pickedMesh === mesh) {
+                        console.log("망치가 클릭되었습니다! (op_room에서)");
 
-                            if (pickedMesh.physicsImpostor) {
-                                pickedMesh.physicsImpostor.dispose();
-                                pickedMesh.physicsImpostor = null;
-                            }
-                            pickedMesh.isPickable = false; 
-                            pickedMesh.setEnabled(false);
+                        if (pickedMesh.physicsImpostor) {
+                            pickedMesh.physicsImpostor.dispose();
+                            pickedMesh.physicsImpostor = null;
+                        }
+                        pickedMesh.isPickable = false;
+                        pickedMesh.setEnabled(false);
 
-                            if (typeof onCardPickedCallback === 'function') {
-                                onCardPickedCallback(); 
-                            } else {
-                                console.warn("onCardPickedCallback 함수가 제공되지 않았습니다. UI 상태가 업데이트되지 않을 수 있습니다.");
-                            }
+                        if (typeof onCardPickedCallback === 'function') {
+                            onCardPickedCallback();
+                        } else {
+                            console.warn("onCardPickedCallback 함수가 제공되지 않았습니다. UI 상태가 업데이트되지 않을 수 있습니다.");
                         }
                     }
-                )
-            );
+                }
+            )
+        );
+    }
+}
+
+// 문제 위치 (두루마리)
+const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.2, 7.53, 14.5);
+const old__ancient_scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
+
+for (const mesh of old__ancient_scrollResult.meshes) {
+    if (mesh.name !== "__root__") {
+        mesh.parent = parentMesh;
+        mesh.position = BABYLON.Vector3.TransformCoordinates(
+            old__ancient_scrollWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        mesh.scaling = new BABYLON.Vector3(120, 120, 120);
+        mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+
+        mesh.checkCollisions = true;
+        mesh.isPickable = true;
+        if (mesh.isReady()) {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            mesh.onReadyObservable.addOnce(() => {
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+            });
         }
-    });
 
-  // 문제 위치 (두루마리)
-  const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.2, 7.53, 14.5);
-  const old__ancient_scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
- 
-  old__ancient_scrollResult.meshes.forEach((mesh) => {
-      if (mesh.name !== "__root__") { 
-          mesh.parent = parentMesh; 
-          mesh.position = BABYLON.Vector3.TransformCoordinates(
-              old__ancient_scrollWorldPos,
-              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-          );
-          mesh.scaling = new BABYLON.Vector3(120, 120, 120); 
-          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); 
-          
-          mesh.checkCollisions = true; 
-          mesh.isPickable = true; 
-          if (mesh.isReady()) {
-              mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          } else {
-              mesh.onReadyObservable.addOnce(() => {
-                  mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-              });
-          }
+        if (!mesh.actionManager) {
+            mesh.actionManager = new BABYLON.ActionManager(scene);
+        }
+        mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                console.log("두루마리가 클릭되었습니다! 퀴즈를 표시합니다.");
 
-          if (!mesh.actionManager) {
-              mesh.actionManager = new BABYLON.ActionManager(scene);
-          }
-          mesh.actionManager.registerAction(
-              new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                  console.log("두루마리가 클릭되었습니다! 퀴즈를 표시합니다.");
-                  
-                  if (handleOperatingRoomScrollClick) { 
-                      handleOperatingRoomScrollClick(); 
-                  }
-              })
-          );
-      }
-  });
+                if (handleOperatingRoomScrollClick) {
+                    handleOperatingRoomScrollClick();
+                }
+            })
+        );
+    }
+}
 
   
-  // 좀비 위치
-  const zombie_corpseWorldPos = new BABYLON.Vector3(5.8, 7.28, 13.37);
-  const zombie_corpse = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "zombie_corpse.glb", scene);
-  zombie_corpse.meshes.forEach((zombie_corpseMesh) => {
+// 좀비 위치
+const zombie_corpseWorldPos = new BABYLON.Vector3(5.8, 7.28, 13.37);
+const zombie_corpse = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "zombie_corpse.glb", scene);
+
+for (const zombie_corpseMesh of zombie_corpse.meshes) {
     if (zombie_corpseMesh.name !== "__root__") {
-      zombie_corpseMesh.parent = parentMesh;
-      zombie_corpseMesh.position = BABYLON.Vector3.TransformCoordinates(
-        zombie_corpseWorldPos,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-      );
-      zombie_corpseMesh.scaling = new BABYLON.Vector3(12,12,12);
-      zombie_corpseMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI))
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/3))
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
-      zombie_corpseMesh.checkCollisions = true;
-      if (zombie_corpseMesh.isReady()) {
-          zombie_corpseMesh.physicsImpostor = new BABYLON.PhysicsImpostor(zombie_corpseMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-      } else {
-          zombie_corpseMesh.onReadyObservable.addOnce(() => {
-              zombie_corpseMesh.physicsImpostor = new BABYLON.PhysicsImpostor(zombie_corpseMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          });
-      }
+        zombie_corpseMesh.parent = parentMesh;
+        zombie_corpseMesh.position = BABYLON.Vector3.TransformCoordinates(
+            zombie_corpseWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        zombie_corpseMesh.scaling = new BABYLON.Vector3(12, 12, 12);
+        zombie_corpseMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI))
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 3))
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
+        zombie_corpseMesh.checkCollisions = true;
+        if (zombie_corpseMesh.isReady()) {
+            zombie_corpseMesh.physicsImpostor = new BABYLON.PhysicsImpostor(zombie_corpseMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            zombie_corpseMesh.onReadyObservable.addOnce(() => {
+                zombie_corpseMesh.physicsImpostor = new BABYLON.PhysicsImpostor(zombie_corpseMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+            });
+        }
     }
-  });
+}
 
   
 
@@ -574,17 +579,17 @@ surgery_toolsResult.meshes.forEach(mesh => {
     rootFridgeMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
 
-    old_fridgeResult.meshes.forEach((mesh) => {
-      mesh.checkCollisions = true; 
-      mesh.isPickable = true;
-      if (mesh.isReady()) {
-          mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-      } else {
-          mesh.onReadyObservable.addOnce(() => {
-              mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
-          });
-      }
-    });
+    for (const mesh of old_fridgeResult.meshes) {
+    mesh.checkCollisions = true;
+    mesh.isPickable = true;
+    if (mesh.isReady()) {
+        mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+    } else {
+        mesh.onReadyObservable.addOnce(() => {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        });
+    }
+};
   }
 
   let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_6");
