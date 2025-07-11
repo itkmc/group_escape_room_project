@@ -109,7 +109,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
 
   // 시체 서랍
   const morgueBodyPositions = [
-    new BABYLON.Vector3(16.3, 6.4, 7.8)
+    new BABYLON.Vector3(16.3, 6.4, 8.1)
   ];
   for (const pos of morgueBodyPositions) {
     const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "morgue_refrigerator-12mb.glb", scene);

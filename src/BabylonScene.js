@@ -476,9 +476,9 @@ const BabylonScene = () => {
             opened = true;
           }
           
-          if (!opened) {
-            alert('문 가까이에서 E키를 눌러주세요!');
-          }
+          // if (!opened) {
+          //   alert('문 가까이에서 E키를 눌러주세요!');
+          // }
         }
       };
 
