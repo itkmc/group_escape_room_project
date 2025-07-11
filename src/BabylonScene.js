@@ -472,12 +472,13 @@ const BabylonScene = () => {
           // underground 문 (ID 카드 필요)
           if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
             undergroundDoorRef.current.toggleDoor();
+            setHasIdCardItem(false); // E키로 문을 열면 ID카드 아이템을 UI에서 제거
             opened = true;
           }
           
-          if (!opened) {
-            alert('문 가까이에서 E키를 눌러주세요!');
-          }
+          // if (!opened) {
+          //   alert('문 가까이에서 E키를 눌러주세요!');
+          // }
         }
       };
 
@@ -521,15 +522,15 @@ const BabylonScene = () => {
         }
       });
          // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
