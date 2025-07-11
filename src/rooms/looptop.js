@@ -112,6 +112,7 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyIt
   const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
   door2.meshes.forEach((mesh) => {
     if (mesh.name !== "__root__") {
+      mesh.name = "looptop_" + mesh.name; // 이름 유니크하게 변경
       mesh.parent = parentMesh;
       mesh.position = BABYLON.Vector3.TransformCoordinates(
         desiredDoor2WorldPos,
