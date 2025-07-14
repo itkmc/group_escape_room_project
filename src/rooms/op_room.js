@@ -558,7 +558,52 @@ for (const zombie_corpseMesh of zombie_corpse.meshes) {
     }
 }
 
-  
+ // --- 천장 사람 위치 ---
+const kpWorldPos = new BABYLON.Vector3(3.3, 9.15, 12.15);
+const kpResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "lady_of_the_asylum.glb", scene);
+
+let rootKpMesh = null;
+
+rootKpMesh = kpResult.meshes.find(mesh => mesh.name === "__root__");
+
+if (!rootKpMesh) {
+    rootKpMesh = kpResult.meshes[0];
+}
+
+kpResult.meshes.forEach(mesh => {
+    if (mesh !== rootKpMesh && !mesh.parent) { 
+        mesh.parent = rootKpMesh;
+    }
+});
+
+kpResult.animationGroups.forEach(ag => {
+    ag.stop();
+});
+
+if (rootKpMesh) {
+    rootKpMesh.parent = parentMesh; 
+    rootKpMesh.position = BABYLON.Vector3.TransformCoordinates(
+        kpWorldPos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+    );
+
+    rootKpMesh.scaling = new BABYLON.Vector3(80,80,80);
+
+    rootKpMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI/2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2));
+
+    for (const mesh of kpResult.meshes) {
+        mesh.checkCollisions = true;
+        mesh.isPickable = true; 
+        if (mesh.isReady()) {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+        } else {
+            mesh.onReadyObservable.addOnce(() => {
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
+            });
+        }
+    }
+}
 
   // --- 냉장고 위치 및 배치 ---
   const old_fridgeWorldPos = new BABYLON.Vector3(11.20, 6.65, 14.5);

@@ -6,7 +6,7 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene 
  * @param {BABYLON.AbstractMesh} parentMesh 
  */
-export async function addInformation(scene, parentMesh) {
+export async function addInformation(scene, parentMesh,onDoorInteraction, getHasIdCardItem) {
 
 
 
@@ -15,8 +15,9 @@ export async function addInformation(scene, parentMesh) {
     const wallWorldPos2 = new BABYLON.Vector3(-0, 7, -8.70);
     const wallWorldPos3 = new BABYLON.Vector3(-2.42, 7, -13.5);
     const wallWorldPos4 = new BABYLON.Vector3(-9, 7, -14.2);
-    const wallWorldPos5 = new BABYLON.Vector3(-9, 7, -9.85);
+    const wallWorldPos5 = new BABYLON.Vector3(-9, 7, -9.85); // 입원실 문 벽
     const wallWorldPos6 = new BABYLON.Vector3(-9, 10, -11.7);
+    const wallWorldPos7 = new BABYLON.Vector3(-2.5, 10, -9.55);
 
     async function wall(worldPosition, parentMesh, scene, rotationQuaternion = null, scalingVector = null) {
         const wall = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "gallery_bare_concrete_wall.glb", scene);
@@ -45,7 +46,7 @@ export async function addInformation(scene, parentMesh) {
    
     await wall(wallWorldPos1, parentMesh, scene);
 
-    const wallWorldPos2CustomScaling = new BABYLON.Vector3(100, 100, 70); 
+    const wallWorldPos2CustomScaling = new BABYLON.Vector3(100, 61, 70); 
     await wall(wallWorldPos2, parentMesh, scene, null, wallWorldPos2CustomScaling);
 
     const wallWorldPos3CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
@@ -71,9 +72,15 @@ export async function addInformation(scene, parentMesh) {
     const wallWorldPos6CustomScaling = new BABYLON.Vector3(20, 20, -10); //높이, 길이, ?
     
     await wall(wallWorldPos6, parentMesh, scene, wallWorldPos6CustomRotation, wallWorldPos6CustomScaling);
+    
+    const wallWorldPos7CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI /2));
+    const wallWorldPos7CustomScaling = new BABYLON.Vector3(13.5, 18.8, -10); //높이, 길이, ?
+    
+    await wall(wallWorldPos7, parentMesh, scene, wallWorldPos7CustomRotation, wallWorldPos7CustomScaling);
 
 
-     // 문
+     // 입원실 문
     const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);
     
     let frameMesh = null;
@@ -196,161 +203,293 @@ export async function addInformation(scene, parentMesh) {
         }
     }
 
-// 커튼 관련 전역 변수들 (기존 코드와 동일)
-// const curtainWorldPos1 = new BABYLON.Vector3(-19.2, 6.2, -8.7);
-const curtainWorldPos2 = new BABYLON.Vector3(-14.5, 6.2, -8.7);
-const curtainWorldPos3 = new BABYLON.Vector3(-18, 6.2, -17);
-// const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15);
+    
+  //누워있는 사람 위치
+  const kpWorldPos = new BABYLON.Vector3(-12.7, 7, -9.5);
+  const kp = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "clinical_bed_kp.glb", scene);
 
-/**
- * 커튼 모델을 로드하고 설정합니다.
- * @param worldPosition - 커튼이 배치될 월드 좌표계 위치.
- * @param parentMesh - 커튼이 연결될 부모 메쉬.
- * @param scene - 현재 Babylon.js 씬.
- * @param rotationQuaternion - 커튼의 회전 쿼터니언 (선택 사항).
- * @param scaling - 커튼의 스케일 (선택 사항).
- * @param texturePath - 커튼에 적용할 새로운 텍스처 이미지의 경로 (선택 사항, 추가된 부분).
- */
-async function curtain(
-    worldPosition,
-    parentMesh,
-    scene,
-    rotationQuaternion = null,
-    scaling = null,
-    texturePath = null // <-- 여기에 texturePath 매개변수 추가
-) {
-    const curtainResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "curtain_kp_closing.glb", scene);
+  for (const mesh of kp.meshes) { 
+      if (mesh.name !== "__root__") {
+          mesh.parent = parentMesh;
+          mesh.position = BABYLON.Vector3.TransformCoordinates(
+              kpWorldPos,
+              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          mesh.scaling = new BABYLON.Vector3(1,1,1)
+          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI/2));
+          mesh.checkCollisions = true;
+      }
+  }
 
-    const rootMesh = curtainResult.meshes[0];
-    rootMesh.parent = parentMesh;
+  // // 수술실 가는 문
 
-    let interactiveMesh = curtainResult.meshes.find(mesh => mesh.name === "Object_9");
+  // const desiredDoor2WorldPos = new BABYLON.Vector3(0.20,7.85,-4.15);
+  //   let doorMeshes = [];
+  //   let isDoorOpen = false;
+  //   let initialDoorRotations = new Map();
+  //   let isUnlocked = false; // 한 번 열리면 true
+  
+  //   ["Object_4", "Object_8"].forEach(name => {
+  //     scene.meshes.filter(m => m.name === name).forEach(m => m.dispose());
+  //   });
+  
+  //   const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
+  //   console.log("[DEBUG] door2.meshes:", door2.meshes.map(m => m.name)); // 추가: 문 모델의 mesh 이름 전체 출력
+  //   door2.meshes.forEach((mesh) => {
+  //     if (mesh.name === "Object_4" || mesh.name === "Object_8") { // Object_4, Object_8만 남김
+  //       mesh.parent = parentMesh;
+  //       mesh.position = BABYLON.Vector3.TransformCoordinates(
+  //         desiredDoor2WorldPos,
+  //         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  //       );
+  //       mesh.scaling = new BABYLON.Vector3(150, 160, 155);
+  //       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+  //         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+  //       mesh.checkCollisions = true;
+  //       doorMeshes.push(mesh);
+  //       initialDoorRotations.set(mesh.name, mesh.rotationQuaternion.clone());
+  //     } else if (mesh.name !== "__root__") {
+  //       mesh.setEnabled(false); // 필요 없는 부품 숨기기
+  //     }
+  //   });
+  //   // 문 열기/닫기 애니메이션 함수
+  //     const toggleDoor = () => {
+  //       // 한 번이라도 열렸으면 isUnlocked = true
+  //       if (!isUnlocked) {
+  //         if (!getHasIdCardItem || !getHasIdCardItem()) {
+  //           if (onDoorInteraction) onDoorInteraction("열쇠가 필요합니다!");
+  //           return;
+  //         }
+  //         isUnlocked = true; // E키로 한 번 열면 해제
+  //       }
+  //       const animationGroup = new BABYLON.AnimationGroup("undergroundDoorAnimationGroup");
+  //       doorMeshes.forEach((doorMesh) => {
+  //         const startRotation = doorMesh.rotationQuaternion.clone();
+  //         let targetRotation;
+  //         if (isDoorOpen) {
+  //           targetRotation = initialDoorRotations.get(doorMesh.name).clone();
+  //         } else {
+  //           targetRotation = initialDoorRotations.get(doorMesh.name)
+  //             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+  //         }
+  //         const doorAnimation = new BABYLON.Animation(
+  //           `doorRotation_${doorMesh.name}`,
+  //           "rotationQuaternion",
+  //           30,
+  //           BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+  //           BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+  //         );
+  //         doorAnimation.setKeys([
+  //           { frame: 0, value: startRotation },
+  //           { frame: 60, value: targetRotation }
+  //         ]);
+  //         animationGroup.addTargetedAnimation(doorAnimation, doorMesh);
+  //       });
+  //       animationGroup.onAnimationGroupEndObservable.addOnce(() => {
+  //         isDoorOpen = !isDoorOpen;
+  //         animationGroup.dispose();
+  //       });
+  //       animationGroup.play(false);
+  //     };
+    
+  //     // 모든 doorMeshes에 클릭 이벤트 등록
+  //     doorMeshes.forEach((mesh) => {
+  //       mesh.isPickable = true;
+  //       mesh.actionManager = new BABYLON.ActionManager(scene);
+  //       mesh.actionManager.registerAction(
+  //         new BABYLON.ExecuteCodeAction(
+  //           BABYLON.ActionManager.OnPickTrigger,
+  //           () => toggleDoor()
+  //         )
+  //       );
+  //     });
+    
+   
+    
 
-    if (!interactiveMesh) {
-        console.error("오류: 'Object_9' 메시를 GLB 파일에서 찾을 수 없습니다. 클릭 이벤트가 작동하지 않을 수 있습니다.");
-        interactiveMesh = rootMesh;
-    }
+  // 커튼 관련 전역 변수들 (기존 코드와 동일)
+  const curtainWorldPos1 = new BABYLON.Vector3(-18.5, 6.2, -8.6);
+  const curtainWorldPos2 = new BABYLON.Vector3(-14.5, 6.2, -8.7);
+  const curtainWorldPos3 = new BABYLON.Vector3(-18, 6.2, -15.7);
+  // const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15);
 
-    rootMesh.position = BABYLON.Vector3.TransformCoordinates(
-        worldPosition,
-        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-    );
+  /**
+   * 커튼 모델을 로드하고 설정합니다.
+   * @param worldPosition - 커튼이 배치될 월드 좌표계 위치.
+   * @param parentMesh - 커튼이 연결될 부모 메쉬.
+   * @param scene - 현재 Babylon.js 씬.
+   * @param rotationQuaternion - 커튼의 회전 쿼터니언 (선택 사항).
+   * @param scaling - 커튼의 스케일 (선택 사항).
+   * @param texturePath - 커튼에 적용할 새로운 텍스처 이미지의 경로 (선택 사항, 추가된 부분).
+   */
+  async function curtain(
+      worldPosition,
+      parentMesh,
+      scene,
+      rotationQuaternion = null,
+      scaling = null,
+      texturePath = null // <-- 여기에 texturePath 매개변수 추가
+  ) {
+      const curtainResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "curtain_kp_closing.glb", scene);
 
-    rootMesh.scaling = scaling || new BABYLON.Vector3(70.5, 70, 35.5);
-    rootMesh.rotationQuaternion = rotationQuaternion || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+      const rootMesh = curtainResult.meshes[0];
+      rootMesh.parent = parentMesh;
 
-    // --- 텍스처 변경 로직 시작 ---
-    if (texturePath) {
-        // 로드된 모든 메쉬를 순회하며 재질을 찾고 텍스처를 변경합니다.
-        for (const mesh of curtainResult.meshes) {
-            if (mesh.material) {
-                // 재질이 PBRMaterial인 경우 albedoTexture를 설정합니다.
-                if (mesh.material instanceof BABYLON.PBRMaterial) {
-                    mesh.material.albedoTexture = new BABYLON.Texture(texturePath, scene);
-                    console.log(`메쉬 '${mesh.name}'의 텍스처를 '${texturePath}'로 변경했습니다.`);
-                }
-                // 만약 StandardMaterial을 사용한다면 diffuseTexture를 설정합니다.
-                else if (mesh.material instanceof BABYLON.StandardMaterial) {
-                    mesh.material.diffuseTexture = new BABYLON.Texture(texturePath, scene);
-                    console.log(`메쉬 '${mesh.name}'의 텍스처를 (StandardMaterial) '${texturePath}'로 변경했습니다.`);
-                }
-                // 다른 종류의 재질이거나 특정 메쉬만 변경하고 싶다면 여기에 추가 로직을 넣습니다.
-            }
-        }
-    }
-    // --- 텍스처 변경 로직 끝 ---
+      let interactiveMesh = curtainResult.meshes.find(mesh => mesh.name === "Object_9");
 
-    for (const mesh of curtainResult.meshes) {
-        mesh.checkCollisions = true;
-        // physicsImpostor는 메쉬가 준비된 후에 설정하는 것이 안전합니다.
-        if (mesh.isReady()) {
-            if (!mesh.physicsImpostor) { // 중복 생성 방지
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-                    mass: 0,
-                    restitution: 0.1,
-                    friction: 0.5
-                }, scene);
-            }
-        } else {
-            mesh.onReadyObservable.addOnce(() => {
-                if (!mesh.physicsImpostor) { // 중복 생성 방지
-                    mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-                        mass: 0,
-                        restitution: 0.1,
-                        friction: 0.5
-                    }, scene);
-                }
-            });
-        }
-    }
+      if (!interactiveMesh) {
+          console.error("오류: 'Object_9' 메시를 GLB 파일에서 찾을 수 없습니다. 클릭 이벤트가 작동하지 않을 수 있습니다.");
+          interactiveMesh = rootMesh;
+      }
 
-    const animGroups = curtainResult.animationGroups;
-    if (animGroups.length > 0) {
-        const curtainAnim = animGroups[0];
+      rootMesh.position = BABYLON.Vector3.TransformCoordinates(
+          worldPosition,
+          BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
 
-        curtainAnim.goToFrame(curtainAnim.to);
-        curtainAnim.stop();
+      rootMesh.scaling = scaling || new BABYLON.Vector3(65, 55, 35);
+      rootMesh.rotationQuaternion = rotationQuaternion || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-        let isOpen = false;
+      // --- 텍스처 변경 로직 시작 ---
+      if (texturePath) {
+          // 로드된 모든 메쉬를 순회하며 재질을 찾고 텍스처를 변경합니다.
+          for (const mesh of curtainResult.meshes) {
+              if (mesh.material) {
+                  if (mesh.material instanceof BABYLON.PBRMaterial) {
+                      mesh.material.albedoTexture = new BABYLON.Texture(texturePath, scene);
+                      console.log(`메쉬 '${mesh.name}'의 텍스처를 '${texturePath}'로 변경했습니다.`);
+                  }
+                  else if (mesh.material instanceof BABYLON.StandardMaterial) {
+                      mesh.material.diffuseTexture = new BABYLON.Texture(texturePath, scene);
+                      console.log(`메쉬 '${mesh.name}'의 텍스처를 (StandardMaterial) '${texturePath}'로 변경했습니다.`);
+                  }
+              }
+          }
+      }
+      // --- 텍스처 변경 로직 끝 ---
 
-        if (!interactiveMesh.actionManager) { // ActionManager가 없으면 생성
-            interactiveMesh.actionManager = new BABYLON.ActionManager(scene);
-        }
-        interactiveMesh.isPickable = true;
+      for (const mesh of curtainResult.meshes) {
+          mesh.checkCollisions = true;
+          if (mesh.isReady()) {
+              if (!mesh.physicsImpostor) {
+                  mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+                      mass: 0,
+                      restitution: 0.1,
+                      friction: 0.5
+                  }, scene);
+              }
+          } else {
+              mesh.onReadyObservable.addOnce(() => {
+                  if (!mesh.physicsImpostor) { 
+                      mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+                          mass: 0,
+                          restitution: 0.1,
+                          friction: 0.5
+                      }, scene);
+                  }
+              });
+          }
+      }
 
-        interactiveMesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
-            BABYLON.ActionManager.OnPickTrigger,
-            () => {
-                console.log(`커튼 (${interactiveMesh.name})이 클릭되었습니다! 현재 열림 상태: ${isOpen}`);
+      const animGroups = curtainResult.animationGroups;
+      if (animGroups.length > 0) {
+          const curtainAnim = animGroups[0];
 
-                if (!isOpen) {
-                    curtainAnim.start(false, 5, curtainAnim.to, curtainAnim.from, false);
-                    isOpen = true;
-                } else {
-                    curtainAnim.start(false, 5, curtainAnim.from, curtainAnim.to, false);
-                    isOpen = false;
-                }
-            }
-        ));
-    } else {
-        console.warn("경고: 로드된 커튼 모델에 애니메이션 그룹이 없습니다.");
-    }
-}
+          curtainAnim.goToFrame(curtainAnim.to);
+          curtainAnim.stop();
 
-// --- 정의된 회전값 (기존과 동일) ---
-const commonRotation3 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-    .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
-    .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+          let isOpen = false;
 
-// const customRotation4 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-//     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
-//     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+          if (!interactiveMesh.actionManager) { 
+              interactiveMesh.actionManager = new BABYLON.ActionManager(scene);
+          }
+          interactiveMesh.isPickable = true;
 
-// --- 새로운 텍스처 경로 예시 (실제 이미지 파일 경로로 변경해야 합니다!) ---
-// const myCurtainTexture1 = "/asdfasdf.jpg"; 
-const myCurtainTexture2 = "/asdfasdf.jpg"; 
-const myCurtainTexture3 = "/asdfasdf.jpg"; 
-// const myCurtainTexture4 = "/asdfasdf.jpg"; 
+          interactiveMesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
+              BABYLON.ActionManager.OnPickTrigger,
+              () => {
+                  console.log(`커튼 (${interactiveMesh.name})이 클릭되었습니다! 현재 열림 상태: ${isOpen}`);
 
-(async () => {
-    // curtainWorldPos1 위치에 빨간색 텍스처 커튼
-    // await curtain(curtainWorldPos1, parentMesh, scene, null, null, myCurtainTexture1);
+                  if (!isOpen) {
+                      curtainAnim.start(false, 5, curtainAnim.to, curtainAnim.from, false);
+                      isOpen = true;
+                  } else {
+                      curtainAnim.start(false, 5, curtainAnim.from, curtainAnim.to, false);
+                      isOpen = false;
+                  }
+              }
+          ));
+      } else {
+          console.warn("경고: 로드된 커튼 모델에 애니메이션 그룹이 없습니다.");
+      }
+  }
 
-    // curtainWorldPos2 위치에 파란색 텍스처 커튼
-    await curtain(curtainWorldPos2, parentMesh, scene, null, null, myCurtainTexture2);
+  const commonRotation3 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-    // curtainWorldPos3 위치에 특정 회전, 스케일, 패턴 텍스처 커튼
-    await curtain(curtainWorldPos3, parentMesh, scene, commonRotation3, new BABYLON.Vector3(80, 70, 60), myCurtainTexture3);
+  // const customRotation4 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+  //     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+  //     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-    // curtainWorldPos4 위치에 사용자 정의 회전, 스케일, 초록색 텍스처 커튼
-    // await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.Vector3(80, 55, 40), myCurtainTexture4);
-})();
+  const myCurtainTexture1 = "/asdfasdf.jpg"; 
+  const myCurtainTexture2 = "/asdfasdf.jpg"; 
+  const myCurtainTexture3 = "/asdfasdf.jpg"; 
+  // const myCurtainTexture4 = "/asdfasdf.jpg"; 
+
+  (async () => {
+      await curtain(curtainWorldPos1, parentMesh, scene, null, null, myCurtainTexture1);
+      await curtain(curtainWorldPos2, parentMesh, scene, null, null, myCurtainTexture2);
+      await curtain(curtainWorldPos3, parentMesh, scene, commonRotation3, new BABYLON.Vector3(55, 55, 40), myCurtainTexture3);
+      // await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.Vector3(80, 55, 40), myCurtainTexture4);
+  })();
+
+  // 의자
+      const chairWorldPos = [
+          new BABYLON.Vector3(-7.16, 6.50, -11.5), 
+          new BABYLON.Vector3(-4.14, 6.50, -12.67), 
+          new BABYLON.Vector3(-6.13, 6.50, -11.45)
+      ];
+  
+      // 의자 모델을 로드하고 설정하는 비동기 헬퍼 함수
+      async function loadAntiqueChair(worldPosition, parentMesh, scene, options = {}) {
+          try {
+              const chairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "antique_chair.glb", scene);
+              if (!chairResult || !chairResult.meshes || chairResult.meshes.length === 0) {
+                  return null;
+              }
+  
+              const rootChairMesh = chairResult.meshes[0];
+              rootChairMesh.parent = parentMesh;
+              rootChairMesh.position = BABYLON.Vector3.TransformCoordinates(
+                  worldPosition,
+                  BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+              );
+              rootChairMesh.scaling = options.scaling || new BABYLON.Vector3(8,8,8);
+              rootChairMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+                  .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+              chairResult.meshes.forEach(mesh => {
+                  mesh.checkCollisions = true;
+                  mesh.isVisible = true;
+              });
+              return rootChairMesh;
+          } catch (error) {
+              console.error("antique_chair.glb 로드 오류: ", error);
+              return null;
+          }
+      }
+  
+      // 정의된 위치에 의자들을 로드하고 배치합니다.
+      await loadAntiqueChair(chairWorldPos[0], parentMesh, scene);
+      await loadAntiqueChair(chairWorldPos[1], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2)) });
+      await loadAntiqueChair(chairWorldPos[2], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)) });
 
 // 침대 
-    const bedWorldPos1 = new BABYLON.Vector3(-17, 6.5, -9.4);
-    const bedWorldPos2 = new BABYLON.Vector3(-12.5, 6.5, -9.5);
-    const bedWorldPos3 = new BABYLON.Vector3(-17, 6.5, -14.7); 
+    const bedWorldPos1 = new BABYLON.Vector3(-16.7, 6.5, -9.4);
+    const bedWorldPos2 = new BABYLON.Vector3(-12.6, 6.5, -9.5);
+    const bedWorldPos3 = new BABYLON.Vector3(-17, 6.5, -14); 
     const bedWorldPos4 = new BABYLON.Vector3(-11.5, 6.5, -14.7);
 
     async function bed(worldPosition, parentMesh, scene, rotationQuaternion = null) {
