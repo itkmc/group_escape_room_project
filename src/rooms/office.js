@@ -33,6 +33,93 @@ export async function addDoctorOffice(
         return;
     }
 
+
+// --- 2. door.glb (문) 모델 배치 및 로직 ---
+    const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+    door2.meshes.forEach((doorMesh) => {
+        if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
+            const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
+            doorMesh.setPivotPoint(pivot);
+
+            doorMesh.parent = parentMesh;
+            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+                new BABYLON.Vector3(-19.52, 6.95, -2.05), // 이 월드 위치는 유지
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+
+            const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+
+            doorMesh.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
+            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 원본 스케일 유지
+            doorMesh.checkCollisions = true;
+
+            const startRotation = doorMesh.rotationQuaternion.clone();
+            const openAngle = Math.PI / 2;
+            const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+
+            const openAnim = new BABYLON.Animation(
+                "doorOpen",
+                "rotationQuaternion",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            openAnim.setKeys([
+                { frame: 0, value: startRotation },
+                { frame: 30, value: endRotation },
+            ]);
+
+            const closeAnim = new BABYLON.Animation(
+                "doorClose",
+                "rotationQuaternion",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            closeAnim.setKeys([
+                { frame: 0, value: endRotation },
+                { frame: 30, value: startRotation },
+            ]);
+
+            let isDoorOpen = false;
+            let isAnimating = false;
+            // isFirstOpen 변수 제거
+
+            doorMesh.actionManager = new BABYLON.ActionManager(scene);
+            doorMesh.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    if (isAnimating) return; // 애니메이션 중이면 무시
+                    isAnimating = true;
+                    if (!isDoorOpen) {
+                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                            isDoorOpen = true;
+                            isAnimating = false;
+                        });
+                    } else {
+                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                            doorMesh.checkCollisions = true; // 문이 닫힐 때 충돌 다시 켜기
+                            isDoorOpen = false;
+                            isAnimating = false;
+                        });
+                    }
+                })
+            );
+            // 🔑 E키로 문 열기용 함수 등록!
+            // 이 함수는 전역 window 객체에 추가됩니다.
+            window.openMainDoor = function() {
+                if (isAnimating || isDoorOpen) return; // 이미 애니메이션 중이거나 열려있으면 무시
+                isAnimating = true;
+                doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                    isDoorOpen = true;
+                    isAnimating = false;
+                });
+            };
+        }
+    });
+
     // --- 📚 책장 (wooden_book.glb) 로드 및 설정 ---
     const desiredBookcaseWorldPos = new BABYLON.Vector3(-24.05, 6.45, 11.85);
     try {
