@@ -3,13 +3,14 @@ import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 
 /**
- * @param {BABYLON.Scene} scene 
- * @param {BABYLON.AbstractMesh} parentMesh 
+ * @param {BABYLON.Scene} scene
+ * @param {BABYLON.AbstractMesh} parentMesh
+ * @param {function(): boolean} hasKeyItemFn - (사용되지 않음) 플레이어가 열쇠 아이템을 가지고 있는지 확인하는 함수
+ * @returns {Promise<BABYLON.AbstractMesh | undefined>} 빌런의 루트 메쉬를 반환 (또는 다른 중요한 메쉬)
  */
-
-export async function addVillain(scene, parentMesh) {
+export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     if (!parentMesh) {
-        console.warn("❗ parentMesh가 없습니다. Villain 오브젝트를 로드할 수 없습니다.");
+        console.warn("❗ parentMesh가 없습니다. 오브젝트를 로드할 수 없습니다.");
         return;
     }
 
@@ -23,7 +24,7 @@ export async function addVillain(scene, parentMesh) {
 
         if (villainResult && villainResult.meshes && villainResult.meshes.length > 0) {
             rootVillainMesh = villainResult.meshes[0];
-            
+
             rootVillainMesh.parent = parentMesh;
             rootVillainMesh.position = BABYLON.Vector3.TransformCoordinates(
                 villainWorldPos,
@@ -31,13 +32,13 @@ export async function addVillain(scene, parentMesh) {
             );
             rootVillainMesh.scaling = new BABYLON.Vector3(30, 30, 30);
             rootVillainMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)); 
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2));
 
             // for...of 루프를 사용하여 모든 자식 메쉬에 대해 설정
             for (const mesh of villainResult.meshes) {
                 mesh.checkCollisions = true; // 빌런과의 충돌 감지 여부
-                mesh.isVisible = true;      // 모델이 보이도록 설정
-                mesh.isPickable = false;    // 빌런은 클릭 대상이 아니라고 가정 (필요시 true로 변경)
+                mesh.isVisible = true;       // 모델이 보이도록 설정
+                mesh.isPickable = false;     // 빌런은 클릭 대상이 아니라고 가정 (필요시 true로 변경)
             }
 
             if (villainResult.animationGroups && villainResult.animationGroups.length > 0) {
@@ -52,7 +53,110 @@ export async function addVillain(scene, parentMesh) {
         console.error("❌ horror_xqc.glb 로드 오류: ", error);
     }
 
-    // --- 2. old_board.glb (오래된 판자) 모델 배치 (첫 번째 인스턴스) ---
+    // 문
+        const door2Result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);
+        
+        let frame2Mesh = null;
+        let door2Mesh = null;
+        let handle2Mesh = null;
+        
+        door2Result.meshes.forEach((mesh) => {
+          if (mesh.name === "DoorFrame_MAT_Door_0") {
+            frame2Mesh = mesh;
+          }
+          if (mesh.name === "Door_MAT_Door_0") {
+            door2Mesh = mesh;
+          }
+          if (mesh.name === "Handle_Back_MAT_Handle_0") {
+            handle2Mesh = mesh;
+          }
+        });
+        
+        if (frame2Mesh && door2Mesh) {
+          // 전체 문 어셈블리의 부모 역할을 할 TransformNode 생성
+          const door2Group = new BABYLON.TransformNode("doorGroup", scene);
+          door2Group.parent = parentMesh;
+          door2Group.position = BABYLON.Vector3.TransformCoordinates(
+            new BABYLON.Vector3(-2.55, 7.85, -10.25),
+            
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          door2Group.scaling = new BABYLON.Vector3(180, 140, 150);
+          door2Group.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
+        
+          // 문짝을 doorGroup에 직접 붙임
+          door2Mesh.parent = door2Group;
+          door2Mesh.position = BABYLON.Vector3.Zero();
+          door2Mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+          door2Mesh.rotationQuaternion = null;
+          door2Mesh.isPickable = true;
+          door2Mesh.checkCollisions = true;
+          // 피벗을 z축 한쪽 끝으로 미세 조정 (닫힐 때 항상 같은 자리)
+          door2Mesh.setPivotPoint(new BABYLON.Vector3(0, 0, -1.05));
+        
+          if (handle2Mesh) {
+            handle2Mesh.parent = door2Mesh;
+            handle2Mesh.position = BABYLON.Vector3.Zero();
+            handle2Mesh.scaling = new BABYLON.Vector3(0, 0, 1);
+            handle2Mesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+            handle2Mesh.checkCollisions = true;
+          }
+        
+          // 쿼터니언 회전 애니메이션(열림/닫힘)
+          const startRotation = BABYLON.Quaternion.Identity();
+          const openAngle = Math.PI / 2;
+          const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+        
+          const openAnim = new BABYLON.Animation(
+            "doorOpen",
+            "rotationQuaternion",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+          );
+          openAnim.setKeys([
+            { frame: 0, value: startRotation },
+            { frame: 30, value: endRotation },
+          ]);
+        
+          const closeAnim = new BABYLON.Animation(
+            "doorClose",
+            "rotationQuaternion",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+          );
+          closeAnim.setKeys([
+            { frame: 0, value: endRotation },
+            { frame: 30, value: startRotation },
+          ]);
+        
+          let isDoorOpen = false;
+          let isAnimating = false;
+        
+          door2Mesh.actionManager = new BABYLON.ActionManager(scene);
+          door2Mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+              if (isAnimating) return;
+              isAnimating = true;
+              if (!isDoorOpen) {
+                scene.beginDirectAnimation(door2Mesh, [openAnim], 0, 30, false, 1.0, () => {
+                  isDoorOpen = true;
+                  isAnimating = false;
+                });
+              } else {
+                scene.beginDirectAnimation(door2Mesh, [closeAnim], 0, 30, false, 1.0, () => {
+                  isDoorOpen = false;
+                  isAnimating = false;
+                });
+              }
+            })
+          );
+        
+        }
+
+    // --- 3. old_board.glb (오래된 판자) 모델 배치 (첫 번째 인스턴스) ---
     const oldBoardWorldPos = new BABYLON.Vector3(2.55, 8.10, -10.35); // 예시 위치, 필요에 따라 조정하세요.
     try {
         console.log("🛠️ Old Board 모델 (wooden_panel_board.glb) 로드 시작...");
@@ -83,7 +187,7 @@ export async function addVillain(scene, parentMesh) {
         console.error("❌ wooden_panel_board.glb 로드 오류: ", error);
     }
 
-    // --- 3. old_board.glb (오래된 판자) 모델 배치 (두 번째 인스턴스) ---
+    // --- 4. old_board.glb (오래된 판자) 모델 배치 (두 번째 인스턴스) ---
     const oldBoardWorldPos2 = new BABYLON.Vector3(2.55, 8.10, -12.55); // 두 번째 판자의 예시 위치, 필요에 따라 조정하세요.
     try {
         console.log("🛠️ Old Board 모델 (wooden_panel_board.glb) 두 번째 인스턴스 로드 시작...");
@@ -114,7 +218,7 @@ export async function addVillain(scene, parentMesh) {
         console.error("❌ wooden_panel_board.glb 두 번째 인스턴스 로드 오류: ", error);
     }
 
-    // --- 4. old_board.glb (오래된 판자) 모델 배치 (세 번째 인스턴스) ---
+    // --- 5. old_board.glb (오래된 판자) 모델 배치 (세 번째 인스턴스) ---
     const oldBoardWorldPos3 = new BABYLON.Vector3(2.55, 8.10, -14.75); // 세 번째 판자의 예시 위치, 필요에 따라 조정하세요.
     try {
         console.log("🛠️ Old Board 모델 (wooden_panel_board.glb) 세 번째 인스턴스 로드 시작...");
@@ -145,7 +249,7 @@ export async function addVillain(scene, parentMesh) {
         console.error("❌ wooden_panel_board.glb 세 번째 인스턴스 로드 오류: ", error);
     }
 
-    // --- 5. chainsaw.glb (전기톱) 모델 배치 ---
+    // --- 6. chainsaw.glb (전기톱) 모델 배치 ---
     const chainsawWorldPos = new BABYLON.Vector3(2.35, 8.35, -9.85); // 예시 위치, 필요에 따라 조정하세요.
     try {
         const chainsawResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "chainsaw.glb", scene);
@@ -174,7 +278,7 @@ export async function addVillain(scene, parentMesh) {
         console.error("❌ chainsaw.glb 로드 오류: ", error); // 콘솔 메시지 수정
     }
 
-    // --- 6. baseball_bat.glb (야구 방망이) 모델 배치 ---
+    // --- 7. baseball_bat.glb (야구 방망이) 모델 배치 ---
     const baseballBatWorldPos = new BABYLON.Vector3(2.45, 8.10, -12.00); // 예시 위치, 필요에 따라 조정하세요.
     try {
         console.log("🛠️ Baseball Bat 모델 (baseball_bat.glb) 로드 시작...");
@@ -205,7 +309,7 @@ export async function addVillain(scene, parentMesh) {
         console.error("❌ baseball_bat.glb 로드 오류: ", error);
     }
 
-    // 눈
+    // --- 8. procedural_eye.glb (눈) 모델 배치 ---
     const eyeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "procedural_eye.glb", scene);
     const eyeMeshes = eyeResult.meshes.filter(mesh => mesh.name !== "__root__");
 
@@ -221,7 +325,7 @@ export async function addVillain(scene, parentMesh) {
 
     // 2. 그룹핑
     const eyeGroups = {};
-    for (const mesh of eyeMeshes) { // forEach를 for...of로 변경
+    for (const mesh of eyeMeshes) {
         const key = getGroupKey(mesh.name);
         if (!eyeGroups[key]) eyeGroups[key] = [];
         eyeGroups[key].push(mesh);
@@ -233,12 +337,11 @@ export async function addVillain(scene, parentMesh) {
     const count = Object.keys(eyeGroups).length;
     const rotationMatrix = BABYLON.Matrix.RotationX(Math.PI / 2);
 
-    // Object.entries를 사용하여 키(groupKey)와 값(group)을 동시에 가져옴
     let i = 0; // 인덱스를 수동으로 관리
-    for (const [groupKey, group] of Object.entries(eyeGroups)) { // forEach를 for...of로 변경
+    for (const [groupKey, group] of Object.entries(eyeGroups)) {
         const node = new BABYLON.TransformNode(`eyeGroup_${i}`, scene);
-        
-        for (const mesh of group) { // 중첩 forEach를 for...of로 변경
+
+        for (const mesh of group) {
             mesh.parent = node;
         }
 
