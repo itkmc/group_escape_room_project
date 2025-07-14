@@ -53,6 +53,109 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
         console.error("❌ horror_xqc.glb 로드 오류: ", error);
     }
 
+    // 문
+        const door2Result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);
+        
+        let frame2Mesh = null;
+        let door2Mesh = null;
+        let handle2Mesh = null;
+        
+        door2Result.meshes.forEach((mesh) => {
+          if (mesh.name === "DoorFrame_MAT_Door_0") {
+            frame2Mesh = mesh;
+          }
+          if (mesh.name === "Door_MAT_Door_0") {
+            door2Mesh = mesh;
+          }
+          if (mesh.name === "Handle_Back_MAT_Handle_0") {
+            handle2Mesh = mesh;
+          }
+        });
+        
+        if (frame2Mesh && door2Mesh) {
+          // 전체 문 어셈블리의 부모 역할을 할 TransformNode 생성
+          const door2Group = new BABYLON.TransformNode("doorGroup", scene);
+          door2Group.parent = parentMesh;
+          door2Group.position = BABYLON.Vector3.TransformCoordinates(
+            new BABYLON.Vector3(-2.55, 7.85, -10.25),
+            
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          door2Group.scaling = new BABYLON.Vector3(180, 140, 150);
+          door2Group.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
+        
+          // 문짝을 doorGroup에 직접 붙임
+          door2Mesh.parent = door2Group;
+          door2Mesh.position = BABYLON.Vector3.Zero();
+          door2Mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+          door2Mesh.rotationQuaternion = null;
+          door2Mesh.isPickable = true;
+          door2Mesh.checkCollisions = true;
+          // 피벗을 z축 한쪽 끝으로 미세 조정 (닫힐 때 항상 같은 자리)
+          door2Mesh.setPivotPoint(new BABYLON.Vector3(0, 0, -1.05));
+        
+          if (handle2Mesh) {
+            handle2Mesh.parent = door2Mesh;
+            handle2Mesh.position = BABYLON.Vector3.Zero();
+            handle2Mesh.scaling = new BABYLON.Vector3(0, 0, 1);
+            handle2Mesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+            handle2Mesh.checkCollisions = true;
+          }
+        
+          // 쿼터니언 회전 애니메이션(열림/닫힘)
+          const startRotation = BABYLON.Quaternion.Identity();
+          const openAngle = Math.PI / 2;
+          const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+        
+          const openAnim = new BABYLON.Animation(
+            "doorOpen",
+            "rotationQuaternion",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+          );
+          openAnim.setKeys([
+            { frame: 0, value: startRotation },
+            { frame: 30, value: endRotation },
+          ]);
+        
+          const closeAnim = new BABYLON.Animation(
+            "doorClose",
+            "rotationQuaternion",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+          );
+          closeAnim.setKeys([
+            { frame: 0, value: endRotation },
+            { frame: 30, value: startRotation },
+          ]);
+        
+          let isDoorOpen = false;
+          let isAnimating = false;
+        
+          door2Mesh.actionManager = new BABYLON.ActionManager(scene);
+          door2Mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+              if (isAnimating) return;
+              isAnimating = true;
+              if (!isDoorOpen) {
+                scene.beginDirectAnimation(door2Mesh, [openAnim], 0, 30, false, 1.0, () => {
+                  isDoorOpen = true;
+                  isAnimating = false;
+                });
+              } else {
+                scene.beginDirectAnimation(door2Mesh, [closeAnim], 0, 30, false, 1.0, () => {
+                  isDoorOpen = false;
+                  isAnimating = false;
+                });
+              }
+            })
+          );
+        
+        }
+
     // --- 3. old_board.glb (오래된 판자) 모델 배치 (첫 번째 인스턴스) ---
     const oldBoardWorldPos = new BABYLON.Vector3(2.55, 8.10, -10.35); // 예시 위치, 필요에 따라 조정하세요.
     try {
