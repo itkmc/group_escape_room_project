@@ -77,11 +77,11 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
           const door2Group = new BABYLON.TransformNode("doorGroup", scene);
           door2Group.parent = parentMesh;
           door2Group.position = BABYLON.Vector3.TransformCoordinates(
-            new BABYLON.Vector3(-2.55, 7.85, -10.25),
+            new BABYLON.Vector3(-2.5, 8, -10.27),
             
             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
-          door2Group.scaling = new BABYLON.Vector3(180, 140, 150);
+          door2Group.scaling = new BABYLON.Vector3(178, 140, 150);
           door2Group.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
         
