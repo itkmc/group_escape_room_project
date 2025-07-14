@@ -15,8 +15,9 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
     const wallWorldPos2 = new BABYLON.Vector3(-0, 7, -8.70);
     const wallWorldPos3 = new BABYLON.Vector3(-2.42, 7, -13.5);
     const wallWorldPos4 = new BABYLON.Vector3(-9, 7, -14.2);
-    const wallWorldPos5 = new BABYLON.Vector3(-9, 7, -9.85);
+    const wallWorldPos5 = new BABYLON.Vector3(-9, 7, -9.85); // 입원실 문 벽
     const wallWorldPos6 = new BABYLON.Vector3(-9, 10, -11.7);
+    const wallWorldPos7 = new BABYLON.Vector3(-2.5, 10, -9.55);
 
     async function wall(worldPosition, parentMesh, scene, rotationQuaternion = null, scalingVector = null) {
         const wall = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "gallery_bare_concrete_wall.glb", scene);
@@ -45,7 +46,7 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
    
     await wall(wallWorldPos1, parentMesh, scene);
 
-    const wallWorldPos2CustomScaling = new BABYLON.Vector3(100, 100, 70); 
+    const wallWorldPos2CustomScaling = new BABYLON.Vector3(100, 61, 70); 
     await wall(wallWorldPos2, parentMesh, scene, null, wallWorldPos2CustomScaling);
 
     const wallWorldPos3CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
@@ -71,6 +72,12 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
     const wallWorldPos6CustomScaling = new BABYLON.Vector3(20, 20, -10); //높이, 길이, ?
     
     await wall(wallWorldPos6, parentMesh, scene, wallWorldPos6CustomRotation, wallWorldPos6CustomScaling);
+    
+    const wallWorldPos7CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI /2));
+    const wallWorldPos7CustomScaling = new BABYLON.Vector3(13.5, 18.8, -10); //높이, 길이, ?
+    
+    await wall(wallWorldPos7, parentMesh, scene, wallWorldPos7CustomRotation, wallWorldPos7CustomScaling);
 
 
      // 입원실 문
