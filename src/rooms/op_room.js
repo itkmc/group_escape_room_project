@@ -293,9 +293,17 @@ for (const mesh of combination_padlock.meshes) {
   // 문
 const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
 
+// op_room에서만 사용하는 prefix 추가
+const doorPrefix = "op_room_door_";
+
+// 모든 mesh 이름에 prefix 추가
+door1.meshes.forEach(mesh => {
+  mesh.name = doorPrefix + mesh.name;
+});
+
 for (const doorMesh of door1.meshes) {
     // "Cube.002_Cube.000_My_Ui_0"은 문짝 메쉬의 실제 이름에 따라 다를 수 있습니다.
-    if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") {
+    if (doorMesh.name === doorPrefix + "Cube.002_Cube.000_My_Ui_0") {
         const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정
         doorMesh.setPivotPoint(pivot);
 
@@ -320,7 +328,7 @@ for (const doorMesh of door1.meshes) {
         const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
 
         const openAnim = new BABYLON.Animation(
-            "doorOpen",
+            "doorOpen_op_room",
             "rotationQuaternion",
             30, // FPS
             BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
@@ -332,7 +340,7 @@ for (const doorMesh of door1.meshes) {
         ]);
 
         const closeAnim = new BABYLON.Animation(
-            "doorClose",
+            "doorClose_op_room",
             "rotationQuaternion",
             30, // FPS
             BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
@@ -556,8 +564,16 @@ for (const zombie_corpseMesh of zombie_corpse.meshes) {
   const old_fridgeWorldPos = new BABYLON.Vector3(11.20, 6.65, 14.5);
   const old_fridgeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_old_rusty_fridge_-_game_ready.glb", scene);
 
+  // op_room에서만 사용하는 prefix 추가
+  const roomPrefix = "op_room_";
+  
+  // 모든 mesh 이름에 prefix 추가
+  old_fridgeResult.meshes.forEach(mesh => {
+    mesh.name = roomPrefix + mesh.name;
+  });
+
   let rootFridgeMesh = null;
-  rootFridgeMesh = old_fridgeResult.meshes.find(mesh => mesh.name === "__root__");
+  rootFridgeMesh = old_fridgeResult.meshes.find(mesh => mesh.name === roomPrefix + "__root__");
 
   if (!rootFridgeMesh) {
     rootFridgeMesh = old_fridgeResult.meshes[0];
@@ -579,6 +595,26 @@ for (const zombie_corpseMesh of zombie_corpse.meshes) {
     rootFridgeMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
 
+    // 냉장고 본체 디버깅을 위한 콘솔 출력
+    console.log("=== op_room 냉장고 디버깅 ===");
+    console.log("rootFridgeMesh:", rootFridgeMesh);
+    console.log("rootFridgeMesh.isEnabled:", rootFridgeMesh.isEnabled);
+    console.log("rootFridgeMesh.visibility:", rootFridgeMesh.visibility);
+    console.log("rootFridgeMesh.position:", rootFridgeMesh.position);
+    console.log("rootFridgeMesh.scaling:", rootFridgeMesh.scaling);
+    console.log("rootFridgeMesh.material:", rootFridgeMesh.material);
+    
+    // 모든 mesh 정보 출력
+    old_fridgeResult.meshes.forEach((mesh, index) => {
+      console.log(`Mesh ${index}:`, {
+        name: mesh.name,
+        isEnabled: mesh.isEnabled,
+        visibility: mesh.visibility,
+        hasGeometry: mesh.geometry !== null,
+        material: mesh.material
+      });
+    });
+
     for (const mesh of old_fridgeResult.meshes) {
     mesh.checkCollisions = true;
     mesh.isPickable = true;
@@ -592,10 +628,10 @@ for (const zombie_corpseMesh of zombie_corpse.meshes) {
 };
   }
 
-  let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_6");
+  let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === roomPrefix + "Object_6");
   let isDoor6Open = false;
 
-  let door8Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_8");
+  let door8Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === roomPrefix + "Object_8");
   let isDoor8Open = false;
 
   const closedRotation6 = door6Mesh ? door6Mesh.rotationQuaternion.clone() : BABYLON.Quaternion.Identity();
@@ -607,13 +643,13 @@ for (const zombie_corpseMesh of zombie_corpse.meshes) {
   if (door6Mesh) {
     door6Mesh.rotationQuaternion = closedRotation6.clone();
 
-    const openAnim6 = new BABYLON.Animation("fridgeDoorOpen_Object6", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    const openAnim6 = new BABYLON.Animation("fridgeDoorOpen_Object6_op_room", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
     openAnim6.setKeys([
       { frame: 0, value: closedRotation6 },
       { frame: 30, value: openRotation6 }
     ]);
 
-    const closeAnim6 = new BABYLON.Animation("fridgeDoorClose_Object6", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    const closeAnim6 = new BABYLON.Animation("fridgeDoorClose_Object6_op_room", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
     closeAnim6.setKeys([
       { frame: 0, value: openRotation6 },
       { frame: 30, value: closedRotation6 }
@@ -637,13 +673,13 @@ for (const zombie_corpseMesh of zombie_corpse.meshes) {
   if (door8Mesh) {
     door8Mesh.rotationQuaternion = closedRotation8.clone();
 
-    const openAnim8 = new BABYLON.Animation("fridgeDoorOpen_Object8", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    const openAnim8 = new BABYLON.Animation("fridgeDoorOpen_Object8_op_room", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
     openAnim8.setKeys([
       { frame: 0, value: closedRotation8 },
       { frame: 30, value: openRotation8 }
     ]);
 
-    const closeAnim8 = new BABYLON.Animation("fridgeDoorClose_Object8", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    const closeAnim8 = new BABYLON.Animation("fridgeDoorClose_Object8_op_room", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
     closeAnim8.setKeys([
       { frame: 0, value: openRotation8 },
       { frame: 30, value: closedRotation8 }

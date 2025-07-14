@@ -400,8 +400,16 @@ const myCurtainTexture3 = "/asdfasdf.jpg";
   const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
   const old_fridgeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_old_rusty_fridge_-_game_ready.glb", scene);
 
+  // information에서만 사용하는 prefix 추가
+  const roomPrefix = "information_";
+  
+  // 모든 mesh 이름에 prefix 추가
+  old_fridgeResult.meshes.forEach(mesh => {
+    mesh.name = roomPrefix + mesh.name;
+  });
+
   let rootFridgeMesh = null;
-  rootFridgeMesh = old_fridgeResult.meshes.find(mesh => mesh.name === "__root__");
+  rootFridgeMesh = old_fridgeResult.meshes.find(mesh => mesh.name === roomPrefix + "__root__");
 
   if (!rootFridgeMesh) {
       rootFridgeMesh = old_fridgeResult.meshes[0];
@@ -424,6 +432,26 @@ const myCurtainTexture3 = "/asdfasdf.jpg";
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); // Y축 180도 추가
 
+      // 냉장고 본체 디버깅을 위한 콘솔 출력
+      console.log("=== information 냉장고 디버깅 ===");
+      console.log("rootFridgeMesh:", rootFridgeMesh);
+      console.log("rootFridgeMesh.isEnabled:", rootFridgeMesh.isEnabled);
+      console.log("rootFridgeMesh.visibility:", rootFridgeMesh.visibility);
+      console.log("rootFridgeMesh.position:", rootFridgeMesh.position);
+      console.log("rootFridgeMesh.scaling:", rootFridgeMesh.scaling);
+      console.log("rootFridgeMesh.material:", rootFridgeMesh.material);
+      
+      // 모든 mesh 정보 출력
+      old_fridgeResult.meshes.forEach((mesh, index) => {
+        console.log(`Mesh ${index}:`, {
+          name: mesh.name,
+          isEnabled: mesh.isEnabled,
+          visibility: mesh.visibility,
+          hasGeometry: mesh.geometry !== null,
+          material: mesh.material
+        });
+      });
+
       for (const mesh of old_fridgeResult.meshes) { // forEach를 for...of로 변경
           mesh.checkCollisions = true;
           mesh.isPickable = true;
@@ -437,10 +465,10 @@ const myCurtainTexture3 = "/asdfasdf.jpg";
       }
   }
 
-  let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_6");
+  let door6Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === roomPrefix + "Object_6");
   let isDoor6Open = false;
 
-  let door8Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === "Object_8");
+  let door8Mesh = old_fridgeResult.meshes.find(mesh => mesh.name === roomPrefix + "Object_8");
   let isDoor8Open = false;
 
   const closedRotation6 = door6Mesh ? door6Mesh.rotationQuaternion.clone() : BABYLON.Quaternion.Identity();
@@ -452,13 +480,13 @@ const myCurtainTexture3 = "/asdfasdf.jpg";
   if (door6Mesh) {
       door6Mesh.rotationQuaternion = closedRotation6.clone();
 
-      const openAnim6 = new BABYLON.Animation("fridgeDoorOpen_Object6", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+      const openAnim6 = new BABYLON.Animation("fridgeDoorOpen_Object6_information", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
       openAnim6.setKeys([
           { frame: 0, value: closedRotation6 },
           { frame: 30, value: openRotation6 }
       ]);
 
-      const closeAnim6 = new BABYLON.Animation("fridgeDoorClose_Object6", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+      const closeAnim6 = new BABYLON.Animation("fridgeDoorClose_Object6_information", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
       closeAnim6.setKeys([
           { frame: 0, value: openRotation6 },
           { frame: 30, value: closedRotation6 }
@@ -482,13 +510,13 @@ const myCurtainTexture3 = "/asdfasdf.jpg";
   if (door8Mesh) {
       door8Mesh.rotationQuaternion = closedRotation8.clone();
 
-      const openAnim8 = new BABYLON.Animation("fridgeDoorOpen_Object8", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+      const openAnim8 = new BABYLON.Animation("fridgeDoorOpen_Object8_information", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
       openAnim8.setKeys([
           { frame: 0, value: closedRotation8 },
           { frame: 30, value: openRotation8 }
       ]);
 
-      const closeAnim8 = new BABYLON.Animation("fridgeDoorClose_Object8", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+      const closeAnim8 = new BABYLON.Animation("fridgeDoorClose_Object8_information", "rotationQuaternion", 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
       closeAnim8.setKeys([
           { frame: 0, value: openRotation8 },
           { frame: 30, value: closedRotation8 }
