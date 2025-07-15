@@ -22,8 +22,13 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
     async function wall(worldPosition, parentMesh, scene, rotationQuaternion = null, scalingVector = null) {
         const wall = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "gallery_bare_concrete_wall.glb", scene);
         const rootMesh = wall.meshes[0];
-        rootMesh.checkCollisions = true;
         rootMesh.parent = parentMesh;
+        // 실제 geometry(눈에 보이는 메시)에만 checkCollisions 적용
+        wall.meshes.forEach(mesh => {
+            if (mesh !== rootMesh && mesh.getTotalVertices && mesh.getTotalVertices() > 0) {
+                mesh.checkCollisions = true;
+            }
+        });
 
         rootMesh.position = BABYLON.Vector3.TransformCoordinates(
             worldPosition,
