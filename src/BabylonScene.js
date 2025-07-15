@@ -110,6 +110,13 @@ const BabylonScene = () => {
   const [boxPasswordMessage, setBoxPasswordMessage] = useState('');
   const boxCorrectPassword = "410"; // 상자 비밀번호
 
+  // onDoorInteraction 콜백 함수 정의 (addInformation에 전달될 함수)
+    const handleDoorMessage = (message) => {
+        console.log("UI 메시지:", message);
+        // 여기에 게임 UI에 메시지를 표시하는 실제 로직을 추가합니다.
+        // 예: setUIText(message);
+    };
+    
   // Promise를 해결할 함수를 저장할 useRef
   const resolveBoxPasswordPromiseRef = useRef(null);
 
@@ -269,7 +276,7 @@ const BabylonScene = () => {
         );
 
         await addRestroomObject(scene, parentMesh);
-        await addInformation(scene, parentMesh);
+        await addInformation(scene, parentMesh, handleDoorMessage, camera);
         await addVillain(scene, parentMesh);
         await addUnderground(scene, parentMesh);
 
@@ -552,15 +559,15 @@ const BabylonScene = () => {
         }
       });
          // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {

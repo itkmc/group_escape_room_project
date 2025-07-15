@@ -3,11 +3,90 @@ import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 
 /**
- * @param {BABYLON.Scene} scene 
- * @param {BABYLON.AbstractMesh} parentMesh 
+ * @param {BABYLON.Scene} scene
+ * @param {BABYLON.AbstractMesh} parentMesh
+ * @param {Function} onDoorInteraction
  */
-export async function addInformation(scene, parentMesh,onDoorInteraction, getHasIdCardItem) {
+export async function addInformation(scene, parentMesh, onDoorInteraction) {
 
+    const desiredDoor3WorldPos = new BABYLON.Vector3(-0, 6.3, 2);
+      let doorMeshes = [];
+      let isDoorOpen = false;
+      let initialDoorRotations = new Map();
+    //   let isUnlocked = false; // 한 번 열리면 true
+    
+      // 문 추가 전에 씬 전체에서 같은 이름의 mesh를 모두 삭제
+      ["Object_4", "Object_8"].forEach(name => {
+        scene.meshes.filter(m => m.name === name).forEach(m => m.dispose());
+      });
+    
+      const door3 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
+      console.log("[DEBUG] door3.meshes:", door3.meshes.map(m => m.name)); // 추가: 문 모델의 mesh 이름 전체 출력
+      door3.meshes.forEach((mesh) => {
+        if (mesh.name === "Object_4" || mesh.name === "Object_8") { // Object_4, Object_8만 남김
+          mesh.parent = parentMesh;
+          mesh.position = BABYLON.Vector3.TransformCoordinates(
+            desiredDoor3WorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          mesh.scaling = new BABYLON.Vector3(50, 60, 55);
+          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+          mesh.checkCollisions = true;
+          doorMeshes.push(mesh);
+          initialDoorRotations.set(mesh.name, mesh.rotationQuaternion.clone());
+        } else if (mesh.name !== "__root__") {
+          mesh.setEnabled(false); // 필요 없는 부품 숨기기
+        }
+      });
+    
+      const toggleDoor = () => {
+          
+          const animationGroup = new BABYLON.AnimationGroup("undergroundDoorAnimationGroup");
+          doorMeshes.forEach((doorMesh) => {
+            const startRotation = doorMesh.rotationQuaternion.clone();
+            let targetRotation;
+            if (isDoorOpen) {
+              targetRotation = initialDoorRotations.get(doorMesh.name).clone();
+            } else {
+              targetRotation = initialDoorRotations.get(doorMesh.name)
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+            }
+            const doorAnimation = new BABYLON.Animation(
+              `doorRotation_${doorMesh.name}`,
+              "rotationQuaternion",
+              30,
+              BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+              BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            doorAnimation.setKeys([
+              { frame: 0, value: startRotation },
+              { frame: 60, value: targetRotation }
+            ]);
+            animationGroup.addTargetedAnimation(doorAnimation, doorMesh);
+          });
+          animationGroup.onAnimationGroupEndObservable.addOnce(() => {
+            isDoorOpen = !isDoorOpen;
+            animationGroup.dispose();
+          });
+          animationGroup.play(false);
+        };
+      
+        // 모든 doorMeshes에 클릭 이벤트 등록
+        doorMeshes.forEach((mesh) => {
+          mesh.isPickable = true;
+          mesh.actionManager = new BABYLON.ActionManager(scene);
+          mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+              BABYLON.ActionManager.OnPickTrigger,
+              () => toggleDoor()
+            )
+          );
+        });
+      
+        // toggleDoor를 외부에서 쓸 수 있게 반환
+        return { toggleDoor };
+      
 
 
     // 벽 위치 정의
