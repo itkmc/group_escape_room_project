@@ -557,4 +557,77 @@ export async function addDoctorOffice(
         scaling: new BABYLON.Vector3(100, 100, 100), // 이 값은 모델 크기에 따라 조절하세요.
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 6)) // 다른 방향으로 배치
     });
+
+    // --- 🪑 대기 의자 (waiting_chair.glb) 로더 함수 및 배치 ---
+    const waitingChairWorldPos = [
+        new BABYLON.Vector3(-8.57, 6.48, -5.25), // 첫 번째 대기 의자 위치
+        new BABYLON.Vector3(-5.95, 6.48, -4.75), // 두 번째 대기 의자 위치
+        new BABYLON.Vector3(-11.57, 6.48, -5.25), // ⭐ 세 번째 대기 의자 위치 (새로 추가)
+        new BABYLON.Vector3(-6.45, 6.48, -1.11)  // ⭐ 네 번째 대기 의자 위치 (새로 추가)
+    ];
+
+    // 대기 의자 모델을 로드하고 설정하는 비동기 헬퍼 함수
+    async function loadWaitingChair(worldPosition, parentMesh, scene, options = {}) {
+        try {
+            const waitingChairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "waiting_chair.glb", scene);
+            if (!waitingChairResult || !waitingChairResult.meshes || waitingChairResult.meshes.length === 0) {
+                console.warn("waiting_chair.glb 로드 실패 또는 메쉬가 없습니다.");
+                return null;
+            }
+
+            const rootWaitingChairMesh = waitingChairResult.meshes[0];
+            rootWaitingChairMesh.parent = parentMesh;
+            rootWaitingChairMesh.position = BABYLON.Vector3.TransformCoordinates(
+                worldPosition,
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            // 기본 스케일과 회전은 모델에 따라 다를 수 있으므로 조절 필요
+            rootWaitingChairMesh.scaling = options.scaling || new BABYLON.Vector3(1, 1, 1); // 적절한 스케일로 조절하세요. (예: 20, 20, 20)
+            rootWaitingChairMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2); // 예를 들어, Y축으로 90도 회전
+
+            const targetMeshName = "Waiting Bench (3 Seats)_Waiting Bench_0"; // 텍스처를 적용할 메쉬의 이름
+
+            for (const mesh of waitingChairResult.meshes) {
+                mesh.checkCollisions = true;
+                mesh.isVisible = true;
+
+                // 클릭한 메쉬 이름을 기반으로 텍스처 적용
+                if (mesh.name === targetMeshName) {
+                    // 새 StandardMaterial 생성
+                    const customMaterial = new BABYLON.StandardMaterial("waitingChairTextureMat_" + mesh.uniqueId, scene); // uniqueId를 추가하여 고유한 재질 이름 생성
+                    
+                    // 텍스처 이미지 경로를 지정합니다.
+                    // 실제 텍스처 파일이 있는 경로와 파일명으로 변경해야 합니다.
+                    customMaterial.diffuseTexture = new BABYLON.Texture("/Metal055C.png", scene); // 텍스처 경로에 /textures/ 추가
+                    customMaterial.diffuseTexture.hasAlpha = false; // 텍스처에 투명도(알파 채널)가 있다면 true로 설정
+
+                    mesh.material = customMaterial; // 해당 메쉬에 재질 적용
+                    break;
+                } 
+            }
+            return rootWaitingChairMesh;
+        } catch (error) {
+            console.error("waiting_chair.glb 로드 오류: ", error);
+            return null;
+        }
+    }
+
+    // 정의된 위치에 대기 의자 4개를 로드하고 배치합니다.
+    await loadWaitingChair(waitingChairWorldPos[0], parentMesh, scene, {
+        scaling: new BABYLON.Vector3(80, 80, 80), // 이 값은 모델 크기에 따라 조절하세요.
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 10))
+    });
+    await loadWaitingChair(waitingChairWorldPos[1], parentMesh, scene, {
+        scaling: new BABYLON.Vector3(80, 80, 80), // 이 값은 모델 크기에 따라 조절하세요.
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+    });
+    // ⭐ 새로 추가된 대기 의자 2개 ⭐
+    await loadWaitingChair(waitingChairWorldPos[2], parentMesh, scene, {
+        scaling: new BABYLON.Vector3(80, 80, 80), // 스케일 조정
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)) // 회전 조정
+    });
+    await loadWaitingChair(waitingChairWorldPos[3], parentMesh, scene, {
+        scaling: new BABYLON.Vector3(80, 80, 80), // 스케일 조정
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 3)) // 회전 조정
+    });
 }
