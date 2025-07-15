@@ -38,6 +38,10 @@ const BabylonScene = () => {
   const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
   const undergroundDoorRef = useRef(null);
 
+  // 앉기 기능 관련 상태
+  const [isCrouching, setIsCrouching] = useState(false);
+  const isCrouchingRef = useRef(false);
+
   const correctAnswer = "72";
 
   const handleAnswerSubmit = () => {
@@ -171,6 +175,10 @@ const BabylonScene = () => {
   }, [isOfficeCupboardUnlocked]);
 
   useEffect(() => {
+    isCrouchingRef.current = isCrouching;
+  }, [isCrouching]);
+
+  useEffect(() => {
     if (!canvasRef.current) return;
 
     const engine = new BABYLON.Engine(canvasRef.current, true);
@@ -181,6 +189,8 @@ const BabylonScene = () => {
     let originalHemiLightIntensity;
 
     const initScene = async () => {
+      let crouchOffsetY = 0;
+
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
@@ -193,6 +203,12 @@ const BabylonScene = () => {
       camera.checkCollisions = true;
       camera.applyGravity = true;
       camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
+
+      // 앉기 기능 관련 변수
+      const standingHeight = 1.8; // 기본 카메라 높이
+      const crouchingHeight = 1.0; // 앉았을 때 카메라 높이
+      const standingEllipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1); // 기본 충돌 박스
+      const crouchingEllipsoid = new BABYLON.Vector3(0.1, 0.4, 0.1); // 앉았을 때 충돌 박스
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
@@ -434,6 +450,19 @@ const BabylonScene = () => {
             }
           }
         }
+
+        // 앉기 기능 (C키)
+        if (evt.key.toLowerCase() === "c") {
+          if (!isCrouchingRef.current) {
+            camera.ellipsoid = crouchingEllipsoid;
+            setIsCrouching(true);
+            console.log("앉기");
+          } else {
+            camera.ellipsoid = standingEllipsoid;
+            setIsCrouching(false);
+            console.log("일어서기");
+          }
+        }
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
         if (evt.key === 'e' || evt.key === 'E') {
           // 플레이어와 각 문 위치의 거리 계산
@@ -593,6 +622,30 @@ const BabylonScene = () => {
         style={{
           position: "absolute",
           top: 10,
+          right: 10,
+          padding: "8px 12px",
+          backgroundColor: "rgba(0,0,0,0.6)",
+          color: "white",
+          fontFamily: "monospace",
+          fontSize: "14px",
+          borderRadius: "4px",
+          userSelect: "none",
+          zIndex: 1000,
+        }}
+      >
+        <div>컨트롤:</div>
+        <div>WASD: 이동</div>
+        <div>마우스: 시점</div>
+        <div>F: 손전등 {flashlightStatus}</div>
+        <div>C: 앉기 {isCrouching ? "(앉음)" : "(서있음)"}</div>
+        <div>E: 문 열기</div>
+        <div>P: 씬 저장</div>
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          top: 200,
           right: 10,
           padding: "8px 12px",
           backgroundColor: "rgba(0,0,0,0.6)",
