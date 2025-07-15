@@ -106,17 +106,6 @@ export async function addDoctorOffice(
                     }
                 })
             );
-            // 🔑 E키로 문 열기용 함수 등록!
-            // 이 함수는 전역 window 객체에 추가됩니다.
-            window.openMainDoor = function() {
-                if (isAnimating || isDoorOpen) return; // 이미 애니메이션 중이거나 열려있으면 무시
-                isAnimating = true;
-                doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
-                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                    isDoorOpen = true;
-                    isAnimating = false;
-                });
-            };
         }
     });
 
