@@ -107,7 +107,7 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyIt
     }
   });
 
-  // 🚪 두 번째 문 위치 (이전과 동일, 변동 없음)
+  // 🚪 두 번째 문 위치 (이전과 동일, 변동 없음) 
   const desiredDoor2WorldPos = new BABYLON.Vector3(-28.28, 14.2, 14.1);
   const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
   door2.meshes.forEach((mesh) => {
