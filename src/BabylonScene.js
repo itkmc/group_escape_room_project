@@ -257,11 +257,6 @@ const BabylonScene = () => {
           handleSurgeryBoxClick
         );
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current);
-
-        // --- 💡 수정된 부분: addDoctorOffice 호출 시 콜백 함수 변경 ---
-        // 첫 번째 콜백: 찬장 클릭 시 사무실 퀴즈를 띄움
-        // 두 번째 콜백: ID 카드 획득 시 hasIdCardItem 상태 업데이트 (office.js 내부에서 직접 호출)
-        // 세 번째 콜백: office.js에서 찬장 잠금 해제 여부를 물어볼 때 hasIdCardItemRef의 최신 값 반환
         await addDoctorOffice(
           scene,
           parentMesh,
@@ -344,7 +339,7 @@ const BabylonScene = () => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-16.5,6.65,-14);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-17.5,6.65,-14.5);
           flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.7,0.7,0.7);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
