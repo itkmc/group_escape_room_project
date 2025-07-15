@@ -9,7 +9,7 @@ import "@babylonjs/loaders";
  * @param {Function} [onScrollClick] - 두루마리 클릭 시 호출될 콜백 함수 (선택 사항)
  * @param {Function} [hasKeyItemFn] - 키 아이템이 있는지 확인할 함수 (선택 사항)
  */
-export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyItemFn) {
+export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn, showMessage) {
   if (!parentMesh) {
     console.warn("❗ parentMesh가 없습니다.");
     return;
@@ -71,7 +71,7 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyIt
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
           if (!isFirstOpen) {
             if (!hasKeyItemFn || !hasKeyItemFn()) {
-              alert("열쇠가 필요합니다!");
+              showMessage("열쇠가 필요합니다!");
               return;
             }
             isFirstOpen = true; // 첫 개방 이후엔 자유롭게 여닫기
@@ -332,8 +332,8 @@ export async function addDoorAndChair(scene, parentMesh, onScrollClick, hasKeyIt
       mesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
           console.log("두루마리가 클릭되었습니다! 퀴즈를 표시합니다.");
-          if (onScrollClick) { // 콜백 함수가 있는지 확인 후 호출
-            onScrollClick();
+          if (showQuiz) { // 콜백 함수가 있는지 확인 후 호출
+            showQuiz();
           }
         })
       );

@@ -6,7 +6,7 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene - Babylon.js Scene 객체
  * @param {BABYLON.AbstractMesh} parentMesh - parent로 사용할 메시 (ex: 건물 메시)
  */
-export async function addRestroomObject(scene, parentMesh) {
+export async function addRestroomObject(scene, parentMesh, showMessage) {
   const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "dirty_toilet.glb", scene);
   for (const mesh of result.meshes) {
     if (mesh.name !== "__root__") {
@@ -69,7 +69,7 @@ export async function addRestroomObject(scene, parentMesh) {
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
           console.log('열쇠 클릭됨!');
           if (window.setHasKeyItem) window.setHasKeyItem(true);
-          alert('열쇠를 획득했습니다! E키를 눌러 문을 여세요.');
+          showMessage('열쇠를 획득했습니다! E키를 눌러 문을 여세요.');
           // 열쇠를 획득하면 mesh를 씬에서 제거
           mesh.dispose();
         })
@@ -162,7 +162,7 @@ if (frameMesh && doorMesh) {
   doorMesh.actionManager.registerAction(
     new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
       if (!isFirstOpen) {
-        alert('열쇠를 먼저 획득하세요');
+        showMessage('열쇠를 먼저 획득하세요');
         return;
       }
       if (isAnimating) return;
@@ -185,7 +185,7 @@ if (frameMesh && doorMesh) {
   window.openRestroomDoor = function() {
     if (!isFirstOpen) {
       if (!window.hasKeyItemRef || !window.hasKeyItemRef.current) {
-        alert('열쇠를 먼저 찾으세요!');
+        showMessage('열쇠를 먼저 찾으세요!');
         return;
       }
       isFirstOpen = true;

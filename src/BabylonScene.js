@@ -12,6 +12,7 @@ import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
 
 import { addVillain } from "./rooms/villain";
+import CenterMessage from "./components/CenterMessage";
 const BabylonScene = () => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
@@ -178,6 +179,15 @@ const BabylonScene = () => {
     isCrouchingRef.current = isCrouching;
   }, [isCrouching]);
 
+  const [centerMessage, setCenterMessage] = useState("");
+  const [showCenterMessage, setShowCenterMessage] = useState(false);
+
+  function showMessage(msg) {
+    setCenterMessage(msg);
+    setShowCenterMessage(true);
+    setTimeout(() => setShowCenterMessage(false), 2000);
+  }
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -256,7 +266,7 @@ const BabylonScene = () => {
           },
           handleSurgeryBoxClick
         );
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current);
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage);
         await addDoctorOffice(
           scene,
           parentMesh,
@@ -268,7 +278,7 @@ const BabylonScene = () => {
           () => isOfficeCupboardUnlockedRef.current // 항상 최신값 반환
         );
 
-        await addRestroomObject(scene, parentMesh);
+        await addRestroomObject(scene, parentMesh, showMessage);
         await addInformation(scene, parentMesh);
         await addVillain(scene, parentMesh);
         await addUnderground(scene, parentMesh);
@@ -943,6 +953,7 @@ const BabylonScene = () => {
           {undergroundDoorMessage}
         </div>
       )}
+      <CenterMessage message={centerMessage} visible={showCenterMessage} />
     </>
   );
 };
