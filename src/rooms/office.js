@@ -366,8 +366,9 @@ export async function addDoctorOffice(
                                     console.log("🔒 찬장 잠겨있음. 퀴즈 팝업 호출.");
                                     if (onCupboardClickForQuiz) {
                                         onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
+                                        return; // 잠겨있으면 문 열기 로직 실행하지 않음
                                     }
-                                    return; // 잠겨있으면 문 열기 로직 실행하지 않음
+                                    return;
                                 }
 
                                 // 애니메이션 재생 중이면 클릭 무시
@@ -419,10 +420,11 @@ export async function addDoctorOffice(
 
                                     // ⭐ ID 카드 활성화/비활성화 로직 (문이 열린 후에만 ID 카드가 보이도록)
                                     // isDoorOpen이 true이고, 찬장이 잠금 해제된 상태일 때만 ID 카드 활성화
+                                    // onIdCardAcquired(true)가 호출되면 ID 카드가 setEnabled(false)되므로 중복 활성화 방지
                                     if (rootIdCardMesh) {
                                         if (isDoorOpen && getIsCupboardUnlocked()) {
                                             // 찬장이 열리고 잠금 해제된 경우에만 ID 카드 활성화 (아직 획득 안 했다면)
-                                            // onIdCardAcquired(true)가 호출되면 ID 카드가 setEnabled(false)되므로 중복 활성화 방지
+                                            // onIdCardAcquired(true)가 호출되어 이미 ID 카드가 비활성화되었다면, 이 로직은 영향을 주지 않음
                                             rootIdCardMesh.setEnabled(true);
                                             rootIdCardMesh.isPickable = true;
                                             console.log("✅ ID 카드 활성화됨: 찬장이 열렸고 잠금 해제되었습니다.", {
@@ -459,4 +461,100 @@ export async function addDoctorOffice(
         console.error("metal_cupboard.glb 로드 중 오류: ", error);
         return;
     }
+
+    // --- ♿ 휠체어 (wheelchair.glb) 로더 함수 및 배치 ---
+    const wheelchairWorldPos = [
+        new BABYLON.Vector3(-7.89, 6.90, 6.67), // 첫 번째 휠체어 위치
+        new BABYLON.Vector3(-6.89, 6.90, 6.67), // 두 번째 휠체어 위치
+        new BABYLON.Vector3(-5.89, 6.90, 6.67), // 세 번째 휠체어 위치
+        new BABYLON.Vector3(-7.89, 6.90, 5.67), // ⭐ 네 번째 휠체어 위치 (새로 추가)
+        new BABYLON.Vector3(-6.89, 6.90, 5.67), // ⭐ 다섯 번째 휠체어 위치 (새로 추가)
+        new BABYLON.Vector3(-5.89, 6.90, 5.67)  // ⭐ 여섯 번째 휠체어 위치 (새로 추가)
+    ];
+
+    // 휠체어 모델을 로드하고 설정하는 비동기 헬퍼 함수
+    async function loadWheelchair(worldPosition, parentMesh, scene, options = {}) {
+        try {
+            const wheelchairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wheelchair.glb", scene);
+            if (!wheelchairResult || !wheelchairResult.meshes || wheelchairResult.meshes.length === 0) {
+                console.warn("wheelchair.glb 로드 실패 또는 메쉬가 없습니다."); // 콘솔 로그 추가
+                return null;
+            }
+
+            const rootWheelchairMesh = wheelchairResult.meshes[0];
+            rootWheelchairMesh.parent = parentMesh;
+            rootWheelchairMesh.position = BABYLON.Vector3.TransformCoordinates(
+                worldPosition,
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            // 기본 스케일은 모델에 따라 다를 수 있으므로 조절 필요
+            rootWheelchairMesh.scaling = options.scaling || new BABYLON.Vector3(1, 1, 1); // 적절한 스케일로 조절하세요.
+            // 기본 회전도 모델에 따라 다를 수 있으므로 조절 필요
+            rootWheelchairMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI); // 예를 들어, Y축으로 180도 회전
+            wheelchairResult.meshes.forEach(mesh => {
+                mesh.checkCollisions = true;
+                mesh.isVisible = true;
+            });
+            console.log("휠체어 모델 로드 및 배치 완료!"); // 콘솔 로그 추가
+            return rootWheelchairMesh;
+        } catch (error) {
+            console.error("wheelchair.glb 로드 오류: ", error);
+            return null;
+        }
+    }
+
+    // 정의된 위치에 휠체어 6개를 로드하고 배치합니다.
+    await loadWheelchair(wheelchairWorldPos[0], parentMesh, scene, { scaling: new BABYLON.Vector3(50, 50, 50), rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2)) }); // 첫 번째
+    await loadWheelchair(wheelchairWorldPos[1], parentMesh, scene, { scaling: new BABYLON.Vector3(50, 50, 50), rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 10)) }); // 두 번째
+    await loadWheelchair(wheelchairWorldPos[2], parentMesh, scene, { scaling: new BABYLON.Vector3(50, 50, 50), rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)) }); // 세 번째
+    await loadWheelchair(wheelchairWorldPos[3], parentMesh, scene, { scaling: new BABYLON.Vector3(50, 50, 50), rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 3)) }); // ⭐ 네 번째 (새로 추가)
+    await loadWheelchair(wheelchairWorldPos[4], parentMesh, scene, { scaling: new BABYLON.Vector3(50, 50, 50), rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI * 0.75)) }); // ⭐ 다섯 번째 (새로 추가)
+    await loadWheelchair(wheelchairWorldPos[5], parentMesh, scene, { scaling: new BABYLON.Vector3(50, 50, 50), rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI * 1.5)) }); // ⭐ 여섯 번째 (새로 추가)
+
+    // --- 🛏️ 병원 침대 (hospital_bed.glb) 로더 함수 및 배치 ---
+    const hospitalBedWorldPos = [
+        new BABYLON.Vector3(-5.79, 6.45, 3.65), // 첫 번째 병원 침대 위치 (예시)
+        new BABYLON.Vector3(-7.15, 6.45, 2.15)  // 두 번째 병원 침대 위치 (예시, 약간 옆으로)
+    ];
+
+    // 병원 침대 모델을 로드하고 설정하는 비동기 헬퍼 함수
+    async function loadHospitalBed(worldPosition, parentMesh, scene, options = {}) {
+        try {
+            const hospitalBedResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "hospital_bed.glb", scene);
+            if (!hospitalBedResult || !hospitalBedResult.meshes || hospitalBedResult.meshes.length === 0) {
+                console.warn("hospital_bed.glb 로드 실패 또는 메쉬가 없습니다.");
+                return null;
+            }
+
+            const rootHospitalBedMesh = hospitalBedResult.meshes[0];
+            rootHospitalBedMesh.parent = parentMesh;
+            rootHospitalBedMesh.position = BABYLON.Vector3.TransformCoordinates(
+                worldPosition,
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            // 기본 스케일과 회전은 모델에 따라 다를 수 있으므로 조절 필요
+            rootHospitalBedMesh.scaling = options.scaling || new BABYLON.Vector3(1, 1, 1); // 적절한 스케일로 조절하세요. (예: 50, 50, 50)
+            rootHospitalBedMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI); // 예를 들어, Y축으로 180도 회전
+
+            hospitalBedResult.meshes.forEach(mesh => {
+                mesh.checkCollisions = true;
+                mesh.isVisible = true;
+            });
+            console.log("병원 침대 모델 로드 및 배치 완료!");
+            return rootHospitalBedMesh;
+        } catch (error) {
+            console.error("hospital_bed.glb 로드 오류: ", error);
+            return null;
+        }
+    }
+
+    // 정의된 위치에 병원 침대 2개를 로드하고 배치합니다.
+    await loadHospitalBed(hospitalBedWorldPos[0], parentMesh, scene, {
+        scaling: new BABYLON.Vector3(100, 100, 100), // 이 값은 모델 크기에 따라 조절하세요.
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 6))
+    });
+    await loadHospitalBed(hospitalBedWorldPos[1], parentMesh, scene, {
+        scaling: new BABYLON.Vector3(100, 100, 100), // 이 값은 모델 크기에 따라 조절하세요.
+        rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 6)) // 다른 방향으로 배치
+    });
 }
