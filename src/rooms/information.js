@@ -223,7 +223,7 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
   }
 
   //알람 위치
-  const alarmWorldPos = new BABYLON.Vector3(-9.08, 7.65, -13);
+  const alarmWorldPos = new BABYLON.Vector3(-9.145, 7.65, -13);
   const alarm = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "fire_alarm.glb", scene);
 
   for (const mesh of alarm.meshes) { 
