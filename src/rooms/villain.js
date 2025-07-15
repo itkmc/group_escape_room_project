@@ -14,6 +14,25 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
         return;
     }
 
+    //보드 위치
+      const boardWorldPos = new BABYLON.Vector3(-2.435, 7.85, -11);
+      const board = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "ssss.glb", scene);
+    
+      for (const mesh of board.meshes) { 
+          if (mesh.name !== "__root__") {
+              mesh.parent = parentMesh;
+              mesh.position = BABYLON.Vector3.TransformCoordinates(
+                  boardWorldPos,
+                  BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+              );
+              mesh.scaling = new BABYLON.Vector3(2,2,2)
+              mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+                  .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI/2.1));
+              mesh.checkCollisions = true;
+          }
+      }
+
+
     // --- 1. horror_xqc.glb (빌런) 모델 배치 ---
     const villainWorldPos = new BABYLON.Vector3(0.02, 7.35, -13.60); // 예시 위치, 필요에 따라 조정하세요.
     let rootVillainMesh = null;
