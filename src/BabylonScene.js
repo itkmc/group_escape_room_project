@@ -384,6 +384,12 @@ const BabylonScene = () => {
         }
       }
 
+      let cameraForward = new BABYLON.Vector3(0, 0, 1);
+
+      scene.registerBeforeRender(() => {
+        cameraForward = camera.getDirection(BABYLON.Axis.Z);
+      });
+
       scene.registerBeforeRender(() => {
         const nearSpecialPos = specialPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius);
 
@@ -618,34 +624,12 @@ const BabylonScene = () => {
         <div>Z: {playerPos.z}</div>
       </div>
 
-      <div
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          padding: "8px 12px",
-          backgroundColor: "rgba(0,0,0,0.6)",
-          color: "white",
-          fontFamily: "monospace",
-          fontSize: "14px",
-          borderRadius: "4px",
-          userSelect: "none",
-          zIndex: 1000,
-        }}
-      >
-        <div>컨트롤:</div>
-        <div>WASD: 이동</div>
-        <div>마우스: 시점</div>
-        <div>F: 손전등 {flashlightStatus}</div>
-        <div>C: 앉기 {isCrouching ? "(앉음)" : "(서있음)"}</div>
-        <div>E: 문 열기</div>
-        <div>P: 씬 저장</div>
-      </div>
+      {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
       <div
         style={{
           position: "absolute",
-          top: 200,
+          top: 10,
           right: 10,
           padding: "8px 12px",
           backgroundColor: "rgba(0,0,0,0.6)",
