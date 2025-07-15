@@ -194,7 +194,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(12.82,7.85,5.60),
+        new BABYLON.Vector3(-8.31,7.85,-11.47),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -324,7 +324,7 @@ const BabylonScene = () => {
 
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
       if (!rootFlashlightMeshRef.current) {
-        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flashlight.glb", scene);
+        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_-_17mb.glb", scene);
 
         rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
         if (!rootFlashlightMeshRef.current) {
@@ -339,8 +339,8 @@ const BabylonScene = () => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-17.5,6.65,-14.5);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.7,0.7,0.7);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.04,0.04,0.04);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
