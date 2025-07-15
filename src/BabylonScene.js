@@ -38,6 +38,10 @@ const BabylonScene = () => {
   const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
   const undergroundDoorRef = useRef(null);
 
+  // 앉기 기능 관련 상태
+  const [isCrouching, setIsCrouching] = useState(false);
+  const isCrouchingRef = useRef(false);
+
   const correctAnswer = "72";
 
   const handleAnswerSubmit = () => {
@@ -171,6 +175,10 @@ const BabylonScene = () => {
   }, [isOfficeCupboardUnlocked]);
 
   useEffect(() => {
+    isCrouchingRef.current = isCrouching;
+  }, [isCrouching]);
+
+  useEffect(() => {
     if (!canvasRef.current) return;
 
     const engine = new BABYLON.Engine(canvasRef.current, true);
@@ -181,10 +189,12 @@ const BabylonScene = () => {
     let originalHemiLightIntensity;
 
     const initScene = async () => {
+      let crouchOffsetY = 0;
+
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-7.97,7.85,-11.88),
+        new BABYLON.Vector3(12.82,7.85,5.60),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -193,6 +203,12 @@ const BabylonScene = () => {
       camera.checkCollisions = true;
       camera.applyGravity = true;
       camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
+
+      // 앉기 기능 관련 변수
+      const standingHeight = 1.8; // 기본 카메라 높이
+      const crouchingHeight = 1.0; // 앉았을 때 카메라 높이
+      const standingEllipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1); // 기본 충돌 박스
+      const crouchingEllipsoid = new BABYLON.Vector3(0.1, 0.4, 0.1); // 앉았을 때 충돌 박스
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
@@ -363,6 +379,12 @@ const BabylonScene = () => {
         }
       }
 
+      let cameraForward = new BABYLON.Vector3(0, 0, 1);
+
+      scene.registerBeforeRender(() => {
+        cameraForward = camera.getDirection(BABYLON.Axis.Z);
+      });
+
       scene.registerBeforeRender(() => {
         const nearSpecialPos = specialPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius);
 
@@ -427,6 +449,19 @@ const BabylonScene = () => {
               setFlashlightStatus("ON");
               console.log("손전등 ON");
             }
+          }
+        }
+
+        // 앉기 기능 (C키)
+        if (evt.key.toLowerCase() === "c") {
+          if (!isCrouchingRef.current) {
+            camera.ellipsoid = crouchingEllipsoid;
+            setIsCrouching(true);
+            console.log("앉기");
+          } else {
+            camera.ellipsoid = standingEllipsoid;
+            setIsCrouching(false);
+            console.log("일어서기");
           }
         }
         // 열쇠를 획득한 후 E키를 누르면 문이 열리게
@@ -583,6 +618,8 @@ const BabylonScene = () => {
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
       </div>
+
+      {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
       <div
         style={{
