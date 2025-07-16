@@ -38,12 +38,12 @@ export async function addDoctorOffice(
     const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
     door2.meshes.forEach((doorMesh) => {
         if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
-            const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
+            const pivot = new BABYLON.Vector3(0, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
             doorMesh.setPivotPoint(pivot);
 
             doorMesh.parent = parentMesh;
             doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-                new BABYLON.Vector3(-19.52, 6.95, -2.05), // 이 월드 위치는 유지
+                new BABYLON.Vector3(-19.55, 4.95, -2.15), // 이 월드 위치는 유지
                 BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
             );
 
@@ -51,7 +51,7 @@ export async function addDoctorOffice(
                 .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
             doorMesh.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 원본 스케일 유지
+            doorMesh.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 원본 스케일 유지
             doorMesh.checkCollisions = true;
 
             const startRotation = doorMesh.rotationQuaternion.clone();
