@@ -229,10 +229,27 @@ const BabylonScene = () => {
       camera.speed = WALK_SPEED;
 
       const specialPositions = [
-        new BABYLON.Vector3(-13.72, 2.73, 2.31),
+        new BABYLON.Vector3(-15.2, 3.5, 5.35),
       ];
-      const specialRadius = 12;
-      let ladderMesh = null;
+      const specialRadius = 3.5;
+      let ladderMesh = null; // 이 변수는 현재 중력 범위 표시와 직접적인 관련이 없습니다.
+
+      // 중력 범위 시각화를 위한 빨간색 네모 생성
+      const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
+      redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
+      redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
+
+      specialPositions.forEach((position, index) => {
+          const gravityBox = BABYLON.MeshBuilder.CreateBox(
+              `gravityRangeBox_${index}`,
+              { width: specialRadius * 2, height: specialRadius * 2, depth: specialRadius * 2 }, // 네모의 각 변 길이
+              scene
+          );
+          gravityBox.position = position;
+          gravityBox.material = redMaterial;
+          gravityBox.isPickable = false; // 클릭되지 않도록 설정
+          gravityBox.checkCollisions = false; // 충돌 감지에서 제외
+      });
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
@@ -562,15 +579,15 @@ const BabylonScene = () => {
         }
       });
          // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
