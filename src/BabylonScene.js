@@ -204,7 +204,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-8.57, 8.00, -2.11),
+        new BABYLON.Vector3(-33.50, 15.21, 1.24),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -223,6 +223,9 @@ const BabylonScene = () => {
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
 
+      let ladderMesh = null;
+
+
       // 플레이어 이동 속도 조절
       const WALK_SPEED = 0.1;
       const RUN_SPEED = 0.3;
@@ -231,8 +234,43 @@ const BabylonScene = () => {
       const specialPositions = [
         new BABYLON.Vector3(-13.72, 2.73, 2.31),
       ];
-      const specialRadius = 12;
-      let ladderMesh = null;
+      const specialRadius = 1;
+            const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
+      redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
+      redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
+
+      specialPositions.forEach((position, index) => {
+          const gravityBox = BABYLON.MeshBuilder.CreateBox(
+              `gravityRangeBox_${index}`,
+              { width: specialRadius * 2, height: specialRadius * 2, depth: specialRadius * 2 }, // 네모의 각 변 길이
+              scene
+          );
+          gravityBox.position = position;
+          gravityBox.material = redMaterial;
+          gravityBox.isPickable = false; // 클릭되지 않도록 설정
+          gravityBox.checkCollisions = false; // 충돌 감지에서 제외
+      });
+
+      const specialPositions1 = [
+        new BABYLON.Vector3(-30.38, 14,3),
+      ];
+      const specialRadius1 = 2;
+            const redMaterial1 = new BABYLON.StandardMaterial("redMaterial", scene);
+      redMaterial1.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
+      redMaterial1.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
+
+      specialPositions1.forEach((position, index) => {
+          const gravityBox = BABYLON.MeshBuilder.CreateBox(
+              `gravityRangeBox_${index}`,
+              { width: specialRadius1 * 2, height: specialRadius1 * 2, depth: specialRadius1 * 2 }, // 네모의 각 변 길이
+              scene
+          );
+          gravityBox.position = position;
+          gravityBox.material = redMaterial1;
+          gravityBox.isPickable = false; // 클릭되지 않도록 설정
+          gravityBox.checkCollisions = false; // 충돌 감지에서 제외
+      });
+
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
@@ -562,15 +600,15 @@ const BabylonScene = () => {
         }
       });
          // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
