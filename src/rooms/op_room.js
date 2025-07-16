@@ -304,12 +304,12 @@ door1.meshes.forEach(mesh => {
 for (const doorMesh of door1.meshes) {
     // "Cube.002_Cube.000_My_Ui_0"은 문짝 메쉬의 실제 이름에 따라 다를 수 있습니다.
     if (doorMesh.name === doorPrefix + "Cube.002_Cube.000_My_Ui_0") {
-        const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정
+        const pivot = new BABYLON.Vector3(0,-6.3,0); // 모델에 맞춰 수동 설정
         doorMesh.setPivotPoint(pivot);
 
         doorMesh.parent = parentMesh;
         doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-            new BABYLON.Vector3(2, 6.95, 12.5), // 문짝의 월드 위치
+            new BABYLON.Vector3(2.1, 5, 12.58), // 문짝의 월드 위치
             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
         );
 
@@ -319,7 +319,7 @@ for (const doorMesh of door1.meshes) {
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));;
 
         doorMesh.rotationQuaternion = baseRotation.clone();
-        doorMesh.scaling = new BABYLON.Vector3(31.8, 31.8, 31.8); // 문의 스케일
+        doorMesh.scaling = new BABYLON.Vector3(31.8, 32.2, 31.8); // 문의 스케일
         doorMesh.checkCollisions = true; // 문에 대한 충돌 감지 활성화
 
         // 문 열림/닫힘 애니메이션 정의

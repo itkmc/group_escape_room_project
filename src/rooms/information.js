@@ -3,19 +3,98 @@ import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 
 /**
- * @param {BABYLON.Scene} scene 
- * @param {BABYLON.AbstractMesh} parentMesh 
+ * @param {BABYLON.Scene} scene
+ * @param {BABYLON.AbstractMesh} parentMesh
+ * @param {Function} onDoorInteraction
  */
-export async function addInformation(scene, parentMesh,onDoorInteraction, getHasIdCardItem) {
+export async function addInformation(scene, parentMesh, onDoorInteraction) {
+  const desiredDoor3WorldPos = new BABYLON.Vector3(-0, 6.3, 2);
+  let doorMeshes = [];
+  let isDoorOpen = false;
+  let initialDoorRotations = new Map();
+  let isUnlocked = false; // 한 번 열리면 true
 
+  // 문 추가 전에 씬 전체에서 같은 이름의 mesh를 모두 삭제
+  ["Object_4", "Object_8"].forEach(name => {
+    scene.meshes.filter(m => m.name === name).forEach(m => m.dispose());
+  });
 
+  const door3 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
+  console.log("[DEBUG] door3.meshes:", door3.meshes.map(m => m.name)); // 추가: 문 모델의 mesh 이름 전체 출력
+  door3.meshes.forEach((mesh) => {
+    if (mesh.name === "Object_4" || mesh.name === "Object_8") { // Object_4, Object_8만 남김
+      mesh.parent = parentMesh;
+      mesh.position = BABYLON.Vector3.TransformCoordinates(
+        desiredDoor3WorldPos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
+      mesh.scaling = new BABYLON.Vector3(25, 58, 40);
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+      mesh.checkCollisions = true;
+      doorMeshes.push(mesh);
+      initialDoorRotations.set(mesh.name, mesh.rotationQuaternion.clone());
+    } else if (mesh.name !== "__root__") {
+      mesh.setEnabled(false); // 필요 없는 부품 숨기기
+    }
+  });
+    
+  // 문 열기/닫기 애니메이션 함수
+    const toggleDoor1 = () => {
+      // 한 번이라도 열렸으면 isUnlocked = true
+      if (!isUnlocked) {
+        isUnlocked = true; // E키로 한 번 열면 해제
+      }
+      const animationGroup = new BABYLON.AnimationGroup("undergroundDoorAnimationGroup");
+      doorMeshes.forEach((doorMesh) => {
+        const startRotation = doorMesh.rotationQuaternion.clone();
+        let targetRotation;
+        if (isDoorOpen) {
+          targetRotation = initialDoorRotations.get(doorMesh.name).clone();
+        } else {
+          targetRotation = initialDoorRotations.get(doorMesh.name)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+        }
+        const doorAnimation = new BABYLON.Animation(
+          `doorRotation_${doorMesh.name}`,
+          "rotationQuaternion",
+          30,
+          BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+          BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+        doorAnimation.setKeys([
+          { frame: 0, value: startRotation },
+          { frame: 60, value: targetRotation }
+        ]);
+        animationGroup.addTargetedAnimation(doorAnimation, doorMesh);
+      });
+      animationGroup.onAnimationGroupEndObservable.addOnce(() => {
+        isDoorOpen = !isDoorOpen;
+        animationGroup.dispose();
+      });
+      animationGroup.play(false);
+    };
+  
+    // 모든 doorMeshes에 클릭 이벤트 등록
+    doorMeshes.forEach((mesh) => {
+      mesh.isPickable = true;
+      mesh.actionManager = new BABYLON.ActionManager(scene);
+      mesh.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(
+          BABYLON.ActionManager.OnPickTrigger,
+          () => toggleDoor1()
+        )
+      );
+    });
+  
+ 
 
     // 벽 위치 정의
-    const wallWorldPos1 = new BABYLON.Vector3(-14.1, 7, -8.70);
+    const wallWorldPos1 = new BABYLON.Vector3(-14.1, 8, -8.70);
     const wallWorldPos2 = new BABYLON.Vector3(-0, 7, -8.70);
-    const wallWorldPos3 = new BABYLON.Vector3(-2.42, 7, -13.5);
+    const wallWorldPos3 = new BABYLON.Vector3(-2.42, 8, -13.5);
     const wallWorldPos4 = new BABYLON.Vector3(-9, 7, -14.2);
-    const wallWorldPos5 = new BABYLON.Vector3(-9, 7, -9.85); // 입원실 문 벽
+    const wallWorldPos5 = new BABYLON.Vector3(-9, 8.4, -9.85); // 입원실 문 벽
     const wallWorldPos6 = new BABYLON.Vector3(-9, 10, -11.7);
     const wallWorldPos7 = new BABYLON.Vector3(-2.5, 10, -9.55);
 
@@ -23,7 +102,6 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
         const wall = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "gallery_bare_concrete_wall.glb", scene);
         const rootMesh = wall.meshes[0];
         rootMesh.parent = parentMesh;
-        // 실제 geometry(눈에 보이는 메시)에만 checkCollisions 적용
         wall.meshes.forEach(mesh => {
             if (mesh !== rootMesh && mesh.getTotalVertices && mesh.getTotalVertices() > 0) {
                 mesh.checkCollisions = true;
@@ -38,7 +116,7 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
         if (scalingVector) {
             rootMesh.scaling = scalingVector;
         } else {
-            rootMesh.scaling = new BABYLON.Vector3(80, 125.7, 50); // 높이 길이 기울기?
+            rootMesh.scaling = new BABYLON.Vector3(50, 125.7, 50); // 높이 길이 기울기?
         }
 
         if (rotationQuaternion) {
@@ -68,7 +146,7 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
     
     const wallWorldPos5CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI /2));
-    const wallWorldPos5CustomScaling = new BABYLON.Vector3(100, 30, 50); //높이, 길이, ?
+    const wallWorldPos5CustomScaling = new BABYLON.Vector3(45, 30, 50); //높이, 길이, ?
     
     await wall(wallWorldPos5, parentMesh, scene, wallWorldPos5CustomRotation, wallWorldPos5CustomScaling);
 
@@ -209,6 +287,94 @@ export async function addInformation(scene, parentMesh,onDoorInteraction, getHas
     }
 
     
+// 철문 위치
+const garageWorldPos = new BABYLON.Vector3(0, 6.8, 2);
+const garage = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "garage_door_01.glb", scene);
+
+// 정확한 문 메쉬 찾기
+let garageDoorMesh = null;
+for (const mesh of garage.meshes) {
+    if (mesh.name === "Door.001_rolling-gate-g7c3d87256_1920_0") {
+        garageDoorMesh = mesh;
+        break; // 찾았으면 루프 종료
+    }
+}
+
+if (garageDoorMesh) {
+    // 부모 메쉬 설정 및 초기 위치/스케일/회전 설정 (기존 로직 유지)
+    garageDoorMesh.parent = parentMesh;
+    garageDoorMesh.position = BABYLON.Vector3.TransformCoordinates(
+        garageWorldPos,
+        BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+    );
+    garageDoorMesh.scaling = new BABYLON.Vector3(42, 100, 42);
+    garageDoorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+    garageDoorMesh.checkCollisions = true;
+    garageDoorMesh.isPickable = true; // 명시적으로 클릭 가능하게 설정
+
+    // 문 열림/닫힘 애니메이션 정의
+    // 이전에 설정된 위치를 기반으로 시작 위치를 가져옵니다.
+    const startPosition = garageDoorMesh.position.clone();
+    // 문이 위로 5단위 올라간 위치 (필요에 따라 조절)
+    const openPosition = startPosition.add(new BABYLON.Vector3(0, 0, 150));
+
+    const openAnim = new BABYLON.Animation(
+        "garageDoorOpenAnim",
+        "position.z", // Y 앞으로 튀어나옴  x는 옆으로
+        30, // FPS
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    openAnim.setKeys([
+        { frame: 0, value: startPosition.z },
+        { frame: 60, value: openPosition.z },
+    ]);
+
+    const closeAnim = new BABYLON.Animation(
+        "garageDoorCloseAnim",
+        "position.z",
+        30,
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    closeAnim.setKeys([
+        { frame: 0, value: openPosition.z },
+        { frame: 60, value: startPosition.z },
+    ]);
+
+    let isGarageDoorOpen = false;
+    let isGarageAnimating = false;
+
+    // 마우스 클릭 시 문 열고 닫는 로직
+    garageDoorMesh.actionManager = new BABYLON.ActionManager(scene);
+    garageDoorMesh.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+            console.log("철문이 클릭되었습니다!");
+            if (isGarageAnimating) return;
+            isGarageAnimating = true;
+
+            if (!isGarageDoorOpen) {
+                // 문 닫힘 -> 열기
+                garageDoorMesh.checkCollisions = false;
+                scene.beginDirectAnimation(garageDoorMesh, [openAnim], 0, 60, false, 1.0, () => {
+                    isGarageDoorOpen = true;
+                    isGarageAnimating = false;
+                });
+            } else {
+                // 문 열림 -> 닫기
+                scene.beginDirectAnimation(garageDoorMesh, [closeAnim], 0, 60, false, 1.0, () => {
+                    garageDoorMesh.checkCollisions = true;
+                    isGarageDoorOpen = false;
+                    isGarageAnimating = false;
+                });
+            }
+        })
+    );
+} else {
+    console.error("철문 메쉬 'Door.001_rolling-gate-g7c3d87256_1920_0'을 찾을 수 없습니다. 이름이 정확한지 다시 확인하세요.");
+}
+
   //누워있는 사람 위치
   const kpWorldPos = new BABYLON.Vector3(-12.5, 9.3, -10.5);
   const kp = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "kim.glb", scene);
