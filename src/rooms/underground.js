@@ -255,6 +255,167 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     );
   });
 
+  // 문 추가 전에 씬에 남아있는 모든 문짝 메시를 완전히 삭제
+  scene.meshes.filter(m => m.name === "door_door1_0").forEach(m => m.dispose());
+
+  // underground 전용 door.glb 문 추가 (parent 안전하게, 메시 이름 명확히)
+  const undergroundDoorWorldPos = new BABYLON.Vector3(20.3, 7.18, 5.84);
+  const undergroundDoorScaling = new BABYLON.Vector3(1.15, 1.15, 1.15);
+  const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+  console.log("door.glb 메시 이름 목록:", doorResult.meshes.map(m => m.name));
+  const frameMesh = doorResult.meshes.find(m => m.name === "frame_door1_0");
+  const doorMesh = doorResult.meshes.find(m => m.name === "door_door1_0");
+  const handleMesh = doorResult.meshes.find(m => m.name === "handle_door1_0");
+  // 모든 메시 parent 해제
+  doorResult.meshes.forEach(mesh => { mesh.parent = null; });
+  // TransformNode로 그룹핑
+  const doorGroup = new BABYLON.TransformNode("undergroundDoorGroup", scene);
+  doorGroup.parent = parentMesh;
+  doorGroup.position = BABYLON.Vector3.TransformCoordinates(
+    undergroundDoorWorldPos,
+    BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  );
+  doorGroup.scaling = undergroundDoorScaling;
+  // 문이 세워진 상태에서 Y축으로 90도 회전 적용
+  doorGroup.rotationQuaternion =
+    BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+  // frameMesh(문틀) 제거
+  if (frameMesh) frameMesh.dispose();
+  // doorMesh, handleMesh만 parent 등 기존대로 설정
+  if (doorMesh) doorMesh.parent = doorGroup;
+  if (handleMesh) handleMesh.parent = doorGroup;
+  // doorMesh 설정
+  if (doorMesh) {
+    doorMesh.position = new BABYLON.Vector3(-8, 0, 0);
+    doorMesh.scaling = new BABYLON.Vector3(1, 1, 1);
+    doorMesh.rotationQuaternion = null;
+    doorMesh.isPickable = true;
+    doorMesh.checkCollisions = true;
+    doorMesh.setPivotPoint(new BABYLON.Vector3(0, 0, -0.5));
+
+    // 슬라이딩 애니메이션을 doorGroup.position에 적용 (x축 -1.2 방향)
+    const closedPos = doorGroup.position.clone();
+    const openPos = closedPos.add(new BABYLON.Vector3(-1.2, 0, 0)); // x축(왼쪽)으로 1.2만큼 이동
+
+    const slideAnim = new BABYLON.Animation(
+      "doorGroupSlide",
+      "position",
+      30,
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    slideAnim.setKeys([
+      { frame: 0, value: closedPos },
+      { frame: 30, value: openPos }
+    ]);
+    const slideBackAnim = new BABYLON.Animation(
+      "doorGroupSlideBack",
+      "position",
+      30,
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    slideBackAnim.setKeys([
+      { frame: 0, value: openPos },
+      { frame: 30, value: closedPos }
+    ]);
+
+    let isDoorOpen = false;
+    let isAnimating = false;
+    doorMesh.actionManager = new BABYLON.ActionManager(scene);
+    doorMesh.actionManager.registerAction(
+      new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+        if (isAnimating) return;
+        isAnimating = true;
+        if (!isDoorOpen) {
+          scene.beginDirectAnimation(doorGroup, [slideAnim], 0, 30, false, 1.0, () => {
+            isDoorOpen = true;
+            isAnimating = false;
+          });
+        } else {
+          scene.beginDirectAnimation(doorGroup, [slideBackAnim], 0, 30, false, 1.0, () => {
+            isDoorOpen = false;
+            isAnimating = false;
+          });
+        }
+      })
+    );
+  }
+
+  // handleMesh 설정
+  if (handleMesh) {
+    handleMesh.position = BABYLON.Vector3.Zero();
+    handleMesh.scaling = new BABYLON.Vector3(0, 0, 1);
+    handleMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+    handleMesh.checkCollisions = true;
+  }
+  // 문 열림/닫힘 애니메이션 등 기존 로직은 동일하게 유지
+  if (doorMesh) {
+    const startRotation = BABYLON.Quaternion.Identity();
+    const openAngle = Math.PI / 2;
+    const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+    const openAnim = new BABYLON.Animation(
+      "doorOpen",
+      "rotationQuaternion",
+      30,
+      BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    openAnim.setKeys([
+      { frame: 0, value: startRotation },
+      { frame: 30, value: endRotation },
+    ]);
+    const closeAnim = new BABYLON.Animation(
+      "doorClose",
+      "rotationQuaternion",
+      30,
+      BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    closeAnim.setKeys([
+      { frame: 0, value: endRotation },
+      { frame: 30, value: startRotation },
+    ]);
+    let isDoorOpen = false;
+    let isAnimating = false;
+    doorMesh.actionManager = new BABYLON.ActionManager(scene);
+    doorMesh.actionManager.registerAction(
+      new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+        if (isAnimating) return;
+        isAnimating = true;
+        if (!isDoorOpen) {
+          scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+            isDoorOpen = true;
+            isAnimating = false;
+          });
+        } else {
+          scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+            isDoorOpen = false;
+            isAnimating = false;
+          });
+        }
+      })
+    );
+  }
+
+  // door_door1_0 메시가 여러 개면 첫 번째만 남기고 나머지는 완전히 삭제
+  let firstDoor = true;
+  doorResult.meshes.forEach(mesh => {
+    if (mesh.name === "door_door1_0") {
+      if (firstDoor) {
+        firstDoor = false;
+      } else {
+        mesh.dispose(); // 완전히 삭제
+      }
+    } else if (mesh.name !== "handle_door1_0") {
+      mesh.setEnabled(false);
+    }
+  });
+  // 씬에 활성화된 door_door1_0 메시 개수 콘솔에 출력
+  const allDoors = scene.meshes.filter(m => m.name === "door_door1_0" && m.isEnabled());
+  console.log("씬에 활성화된 door_door1_0 개수:", allDoors.length);
+
   // toggleDoor를 외부에서 쓸 수 있게 반환
   return { toggleDoor };
 }
