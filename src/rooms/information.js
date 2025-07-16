@@ -90,11 +90,11 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
  
 
     // 벽 위치 정의
-    const wallWorldPos1 = new BABYLON.Vector3(-14.1, 7, -8.70);
+    const wallWorldPos1 = new BABYLON.Vector3(-14.1, 8, -8.70);
     const wallWorldPos2 = new BABYLON.Vector3(-0, 7, -8.70);
-    const wallWorldPos3 = new BABYLON.Vector3(-2.42, 7, -13.5);
+    const wallWorldPos3 = new BABYLON.Vector3(-2.42, 8, -13.5);
     const wallWorldPos4 = new BABYLON.Vector3(-9, 7, -14.2);
-    const wallWorldPos5 = new BABYLON.Vector3(-9, 7, -9.85); // 입원실 문 벽
+    const wallWorldPos5 = new BABYLON.Vector3(-9, 8.4, -9.85); // 입원실 문 벽
     const wallWorldPos6 = new BABYLON.Vector3(-9, 10, -11.7);
     const wallWorldPos7 = new BABYLON.Vector3(-2.5, 10, -9.55);
 
@@ -117,7 +117,7 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
         if (scalingVector) {
             rootMesh.scaling = scalingVector;
         } else {
-            rootMesh.scaling = new BABYLON.Vector3(80, 125.7, 50); // 높이 길이 기울기?
+            rootMesh.scaling = new BABYLON.Vector3(50, 125.7, 50); // 높이 길이 기울기?
         }
 
         if (rotationQuaternion) {
@@ -147,7 +147,7 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
     
     const wallWorldPos5CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI /2));
-    const wallWorldPos5CustomScaling = new BABYLON.Vector3(100, 30, 50); //높이, 길이, ?
+    const wallWorldPos5CustomScaling = new BABYLON.Vector3(45, 30, 50); //높이, 길이, ?
     
     await wall(wallWorldPos5, parentMesh, scene, wallWorldPos5CustomRotation, wallWorldPos5CustomScaling);
 
