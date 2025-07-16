@@ -232,10 +232,13 @@ const BabylonScene = () => {
       camera.speed = WALK_SPEED;
 
       const specialPositions = [
-        new BABYLON.Vector3(-13.72, 2.73, 2.31),
+        new BABYLON.Vector3(-15.2, 3.5, 5.35),
       ];
-      const specialRadius = 1;
-            const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
+      const specialRadius = 3.5;
+      let ladderMesh = null; // 이 변수는 현재 중력 범위 표시와 직접적인 관련이 없습니다.
+
+      // 중력 범위 시각화를 위한 빨간색 네모 생성
+      const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
       redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
       redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
 
@@ -247,26 +250,6 @@ const BabylonScene = () => {
           );
           gravityBox.position = position;
           gravityBox.material = redMaterial;
-          gravityBox.isPickable = false; // 클릭되지 않도록 설정
-          gravityBox.checkCollisions = false; // 충돌 감지에서 제외
-      });
-
-      const specialPositions1 = [
-        new BABYLON.Vector3(-30.38, 14,3),
-      ];
-      const specialRadius1 = 2;
-            const redMaterial1 = new BABYLON.StandardMaterial("redMaterial", scene);
-      redMaterial1.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
-      redMaterial1.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
-
-      specialPositions1.forEach((position, index) => {
-          const gravityBox = BABYLON.MeshBuilder.CreateBox(
-              `gravityRangeBox_${index}`,
-              { width: specialRadius1 * 2, height: specialRadius1 * 2, depth: specialRadius1 * 2 }, // 네모의 각 변 길이
-              scene
-          );
-          gravityBox.position = position;
-          gravityBox.material = redMaterial1;
           gravityBox.isPickable = false; // 클릭되지 않도록 설정
           gravityBox.checkCollisions = false; // 충돌 감지에서 제외
       });
