@@ -19,12 +19,12 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
   const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
   door1.meshes.forEach((doorMesh) => {
     if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
-      const pivot = new BABYLON.Vector3(-0.6, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
+      const pivot = new BABYLON.Vector3(0, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
       doorMesh.setPivotPoint(pivot);
 
       doorMesh.parent = parentMesh;
       doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-25.10, 14.80, 10.57), // 이 월드 위치는 유지
+        new BABYLON.Vector3(-25.05, 12.85, 10.46), // 이 월드 위치는 유지
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
 
