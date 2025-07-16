@@ -288,7 +288,7 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
 
     
 // 철문 위치
-const garageWorldPos = new BABYLON.Vector3(0, 6.8, 2);
+const garageWorldPos = new BABYLON.Vector3(0, 6.7, 2.15);
 const garage = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "garage_door_01.glb", scene);
 
 // 정확한 문 메쉬 찾기
@@ -307,7 +307,7 @@ if (garageDoorMesh) {
         garageWorldPos,
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
     );
-    garageDoorMesh.scaling = new BABYLON.Vector3(42, 100, 42);
+    garageDoorMesh.scaling = new BABYLON.Vector3(45, 100, 50)
     garageDoorMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
     garageDoorMesh.checkCollisions = true;
