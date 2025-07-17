@@ -418,6 +418,11 @@ const BabylonScene = () => {
         if (nearSpecialPos || isOnLadder) {
           camera.applyGravity = false;
           camera.position.y = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, camera.position.y));
+          // 💡 specialPositions 근처에서 시점 고정
+          if (nearSpecialPos) {
+            camera.rotation.x = 0; // 원하는 각도로 수정 가능
+            camera.rotation.y = 0; // 원하는 각도로 수정 가능
+          }
         } else {
           camera.applyGravity = true;
           camera.position.y = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, camera.position.y));
