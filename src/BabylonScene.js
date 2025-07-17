@@ -204,7 +204,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-33.50, 15.21, 1.24),
+        new BABYLON.Vector3(-8.57, 8.00, -2.11),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -222,9 +222,6 @@ const BabylonScene = () => {
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
-
-      let ladderMesh = null;
-
 
       // 플레이어 이동 속도 조절
       const WALK_SPEED = 0.1;
@@ -253,7 +250,6 @@ const BabylonScene = () => {
           gravityBox.isPickable = false; // 클릭되지 않도록 설정
           gravityBox.checkCollisions = false; // 충돌 감지에서 제외
       });
-
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
