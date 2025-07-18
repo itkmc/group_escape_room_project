@@ -204,7 +204,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-20.39, 15.69, 10.40),
+        new BABYLON.Vector3(-10.32, 8.00, -3.46),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -235,21 +235,21 @@ const BabylonScene = () => {
       let ladderMesh = null; // 이 변수는 현재 중력 범위 표시와 직접적인 관련이 없습니다.
 
       // 중력 범위 시각화를 위한 빨간색 네모 생성
-      const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
-      redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
-      redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
+      // const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
+      // redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
+      // redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
 
-      specialPositions.forEach((position, index) => {
-          const gravityBox = BABYLON.MeshBuilder.CreateBox(
-              `gravityRangeBox_${index}`,
-              { width: specialRadius * 2, height: specialRadius * 2, depth: specialRadius * 2 }, // 네모의 각 변 길이
-              scene
-          );
-          gravityBox.position = position;
-          gravityBox.material = redMaterial;
-          gravityBox.isPickable = false; // 클릭되지 않도록 설정
-          gravityBox.checkCollisions = false; // 충돌 감지에서 제외
-      });
+      // specialPositions.forEach((position, index) => {
+      //     const gravityBox = BABYLON.MeshBuilder.CreateBox(
+      //         `gravityRangeBox_${index}`,
+      //         { width: specialRadius * 2, height: specialRadius * 2, depth: specialRadius * 2 }, // 네모의 각 변 길이
+      //         scene
+      //     );
+      //     gravityBox.position = position;
+      //     gravityBox.material = redMaterial;
+      //     gravityBox.isPickable = false; // 클릭되지 않도록 설정
+      //     gravityBox.checkCollisions = false; // 충돌 감지에서 제외
+      // });
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
@@ -412,20 +412,49 @@ const BabylonScene = () => {
         cameraForward = camera.getDirection(BABYLON.Axis.Z);
       });
 
+      let gravityTimeout = null;
       scene.registerBeforeRender(() => {
         const nearSpecialPos = specialPositions.some((pos) => BABYLON.Vector3.Distance(camera.position, pos) < specialRadius);
 
-        if (nearSpecialPos || isOnLadder) {
-          camera.applyGravity = false;
-          camera.position.y = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, camera.position.y));
-          // 💡 specialPositions 근처에서 시점 고정
-          if (nearSpecialPos) {
-            camera.rotation.x = 0; // 원하는 각도로 수정 가능
-            camera.rotation.y = 0; // 원하는 각도로 수정 가능
+        // 계단 위에 있을 때 y좌표 보정
+        const stairMesh = scene.getMeshByName("Hospital_02_40m_0");
+        if (
+          stairMesh &&
+          stairMesh.getBoundingInfo &&
+          stairMesh.getBoundingInfo().minimumWorld &&
+          stairMesh.getBoundingInfo().maximumWorld
+        ) {
+          const min = stairMesh.getBoundingInfo().minimumWorld;
+          const max = stairMesh.getBoundingInfo().maximumWorld;
+          if (
+            camera.position.x > min.x && camera.position.x < max.x &&
+            camera.position.z > min.z && camera.position.z < max.z
+          ) {
+            // x축을 따라 오르는 계단이라고 가정
+            const stairStartZ = min.z;
+            const stairEndZ = max.z;
+            const stairStartY = min.y;
+            const stairEndY = max.y;
+            const ratio = (camera.position.z - stairStartZ) / (stairEndZ - stairStartZ);
+            const stairY = stairStartY + (stairEndY - stairStartY) * ratio;
+            camera.position.y = stairY; // 계단 표면에 맞게 y좌표를 항상 맞춤
           }
+        }
+
+        // 중력 범위에 들어가면 2초간만 중력 off, 이후 자동 on
+        if (nearSpecialPos) {
+          camera.applyGravity = false;
+          if (gravityTimeout) clearTimeout(gravityTimeout);
+          gravityTimeout = setTimeout(() => {
+            camera.applyGravity = true;
+            gravityTimeout = null;
+          }, 2000); // 2초 뒤 중력 다시 켜기
         } else {
           camera.applyGravity = true;
-          camera.position.y = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, camera.position.y));
+          if (gravityTimeout) {
+            clearTimeout(gravityTimeout);
+            gravityTimeout = null;
+          }
         }
 
         if (keysPressed["shift"]) {
@@ -583,7 +612,7 @@ const BabylonScene = () => {
           }
         }
       });
-         // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+        //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
       // scene.onPointerObservable.add((pointerInfo) => {
       //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
       //     const mesh = pointerInfo.pickInfo?.pickedMesh;
