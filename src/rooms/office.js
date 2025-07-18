@@ -36,13 +36,13 @@ export async function addDoctorOffice(
 
 // --- 2. door.glb (문) 모델 배치 및 로직 ---
     const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
-    door2.meshes.forEach((doorMesh) => {
-        if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
+    door2.meshes.forEach((doorMesh2) => {
+        if (doorMesh2.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
             const pivot = new BABYLON.Vector3(0, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
-            doorMesh.setPivotPoint(pivot);
+            doorMesh2.setPivotPoint(pivot);
 
-            doorMesh.parent = parentMesh;
-            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+            doorMesh2.parent = parentMesh;
+            doorMesh2.position = BABYLON.Vector3.TransformCoordinates(
                 new BABYLON.Vector3(-19.55, 4.95, -2.15), // 이 월드 위치는 유지
                 BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
             );
@@ -50,58 +50,58 @@ export async function addDoctorOffice(
             const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
                 .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
-            doorMesh.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 원본 스케일 유지
-            doorMesh.checkCollisions = true;
+            doorMesh2.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
+            doorMesh2.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 원본 스케일 유지
+            doorMesh2.checkCollisions = true;
 
-            const startRotation = doorMesh.rotationQuaternion.clone();
-            const openAngle = Math.PI / 2;
-            const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+            const startRotation2 = doorMesh2.rotationQuaternion.clone();
+            const openAngle2 = Math.PI / 2;
+            const endRotation2 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle2).multiply(startRotation2);
 
-            const openAnim = new BABYLON.Animation(
-                "doorOpen",
+            const openAnim2 = new BABYLON.Animation(
+                "officeDoorOpen",
                 "rotationQuaternion",
                 30,
                 BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
             );
-            openAnim.setKeys([
-                { frame: 0, value: startRotation },
-                { frame: 30, value: endRotation },
+            openAnim2.setKeys([
+                { frame: 0, value: startRotation2 },
+                { frame: 30, value: endRotation2 },
             ]);
 
-            const closeAnim = new BABYLON.Animation(
-                "doorClose",
+            const closeAnim2 = new BABYLON.Animation(
+                "officeDoorClose",
                 "rotationQuaternion",
                 30,
                 BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
             );
-            closeAnim.setKeys([
-                { frame: 0, value: endRotation },
-                { frame: 30, value: startRotation },
+            closeAnim2.setKeys([
+                { frame: 0, value: endRotation2 },
+                { frame: 30, value: startRotation2 },
             ]);
 
-            let isDoorOpen = false;
-            let isAnimating = false;
+            let isOfficeDoorOpen2 = false;
+            let isOfficeAnimating2 = false;
             // isFirstOpen 변수 제거
 
-            doorMesh.actionManager = new BABYLON.ActionManager(scene);
-            doorMesh.actionManager.registerAction(
+            doorMesh2.actionManager = new BABYLON.ActionManager(scene);
+            doorMesh2.actionManager.registerAction(
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                    if (isAnimating) return; // 애니메이션 중이면 무시
-                    isAnimating = true;
-                    if (!isDoorOpen) {
-                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
-                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                            isDoorOpen = true;
-                            isAnimating = false;
+                    if (isAnimating2) return; // 애니메이션 중이면 무시
+                    isOfficeAnimating2 = true;
+                    if (!isOfficeDoorOpen2) {
+                        doorMesh2.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                        scene.beginDirectAnimation(doorMesh2, [openAnim2], 0, 30, false, 1.0, () => {
+                            isOfficeDoorOpen2 = true;
+                            isOfficeAnimating2 = false;
                         });
                     } else {
-                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                            doorMesh.checkCollisions = true; // 문이 닫힐 때 충돌 다시 켜기
-                            isDoorOpen = false;
-                            isAnimating = false;
+                        scene.beginDirectAnimation(doorMesh2, [closeAnim2], 0, 30, false, 1.0, () => {
+                            doorMesh2.checkCollisions = true; // 문이 닫힐 때 충돌 다시 켜기
+                            isOfficeDoorOpen2 = false;
+                            isOfficeAnimating2 = false;
                         });
                     }
                 })
@@ -329,17 +329,17 @@ export async function addDoctorOffice(
                 });
             }
 
-            const doorMeshNames = ["cupbord_1.001_Material.001_0", "cupbord_1.002_Material.001_0"];
-            const doorMeshes = doorMeshNames
+            const doorMesh2Names = ["cupbord_1.001_Material.001_0", "cupbord_1.002_Material.001_0"];
+            const door2Meshes = doorMesh2Names
                 .map(name => metalCupboardResult.meshes.find(mesh => mesh.name === name))
                 .filter(mesh => mesh !== undefined);
 
-            if (doorMeshes.length === 0) {
+            if (door2Meshes.length === 0) {
                 console.warn("경고: 찬장 문 메시를 찾을 수 없습니다.");
             }
 
             const initialRotations = new Map();
-            doorMeshes.forEach(mesh => {
+            door2Meshes.forEach(mesh => {
                 mesh.rotationQuaternion = mesh.rotationQuaternion || BABYLON.Quaternion.Identity();
                 initialRotations.set(mesh.name, mesh.rotationQuaternion.clone());
             });
@@ -380,20 +380,20 @@ export async function addDoctorOffice(
 
                                 const animationGroup = new BABYLON.AnimationGroup("metalCupboardDoorAnimationGroup");
 
-                                doorMeshes.forEach(currentDoorMesh => {
-                                    const startRotation = currentDoorMesh.rotationQuaternion.clone();
+                                door2Meshes.forEach(currentDoor2Mesh => {
+                                    const startRotation = currentDoor2Mesh.rotationQuaternion.clone();
                                     let targetRotation;
 
                                     if (isDoorOpen) {
                                         // 문 닫기
-                                        targetRotation = initialRotations.get(currentDoorMesh.name).clone();
+                                        targetRotation = initialRotations.get(currentDoor2Mesh.name).clone();
                                     } else {
                                         // 문 열기
-                                        if (currentDoorMesh.name === "cupbord_1.001_Material.001_0") {
-                                            targetRotation = initialRotations.get(currentDoorMesh.name)
+                                        if (currentDoor2Mesh.name === "cupbord_1.001_Material.001_0") {
+                                            targetRotation = initialRotations.get(currentDoor2Mesh.name)
                                                 .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2));
-                                        } else if (currentDoorMesh.name === "cupbord_1.002_Material.001_0") {
-                                            targetRotation = initialRotations.get(currentDoorMesh.name)
+                                        } else if (currentDoor2Mesh.name === "cupbord_1.002_Material.001_0") {
+                                            targetRotation = initialRotations.get(currentDoor2Mesh.name)
                                                 .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
                                         } else {
                                             targetRotation = startRotation; // 그 외 메시는 회전 안함
@@ -401,7 +401,7 @@ export async function addDoctorOffice(
                                     }
 
                                     const doorAnimation = new BABYLON.Animation(
-                                        `doorRotation_${currentDoorMesh.name}`,
+                                        `doorRotation_${currentDoor2Mesh.name}`,
                                         "rotationQuaternion",
                                         30, // FPS
                                         BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
@@ -412,7 +412,7 @@ export async function addDoctorOffice(
                                     keys.push({ frame: 0, value: startRotation });
                                     keys.push({ frame: 60, value: targetRotation }); // 2초 (60프레임 / 30FPS)
                                     doorAnimation.setKeys(keys);
-                                    animationGroup.addTargetedAnimation(doorAnimation, currentDoorMesh);
+                                    animationGroup.addTargetedAnimation(doorAnimation, currentDoor2Mesh);
                                 });
 
                                 animationGroup.onAnimationGroupEndObservable.addOnce(() => {
