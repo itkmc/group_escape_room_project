@@ -10,7 +10,6 @@ import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
-
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
 const BabylonScene = () => {
@@ -231,7 +230,7 @@ const BabylonScene = () => {
       const specialPositions = [
         new BABYLON.Vector3(-15.2, 3.5, 5.35),
       ];
-      const specialRadius = 3.5;
+      const specialRadius = 0;
       let ladderMesh = null; // 이 변수는 현재 중력 범위 표시와 직접적인 관련이 없습니다.
 
       // 중력 범위 시각화를 위한 빨간색 네모 생성
@@ -457,11 +456,19 @@ const BabylonScene = () => {
           }
         }
 
+        
+       // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
+      if (!isOnLadder) {
         if (keysPressed["shift"]) {
           camera.speed = RUN_SPEED;
         } else {
           camera.speed = WALK_SPEED;
         }
+      } else {
+        camera.speed = 0;
+      }
+
+
 
         setPlayerPos({
           x: camera.position.x.toFixed(2),
