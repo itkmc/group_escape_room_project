@@ -70,11 +70,9 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
       doorMesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
           if (!isFirstOpen) {
-            if (!hasKeyItemFn || !hasKeyItemFn()) {
-              showMessage("열쇠가 필요합니다!");
-              return;
-            }
-            isFirstOpen = true; // 첫 개방 이후엔 자유롭게 여닫기
+            // 클릭으로는 절대 처음 문을 열 수 없음
+            showMessage("E키로만 문을 열 수 있습니다!");
+            return;
           }
           if (isAnimating) return; // 애니메이션 중이면 무시
           isAnimating = true;
@@ -89,7 +87,7 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
               doorMesh.checkCollisions = true;
               isDoorOpen = false;
               isAnimating = false;
-            }); // 닫힐 때만 애니메이션 완료 후 충돌 켬
+            });
           }
         })
       );
