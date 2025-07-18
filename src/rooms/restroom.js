@@ -162,7 +162,7 @@ if (frameMesh && doorMesh) {
   doorMesh.actionManager.registerAction(
     new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
       if (!isFirstOpen) {
-        showMessage('열쇠를 먼저 획득하세요');
+        showMessage('열쇠를 획득 후 E키를 누르세요');
         return;
       }
       if (isAnimating) return;
@@ -185,7 +185,7 @@ if (frameMesh && doorMesh) {
   window.openRestroomDoor = function() {
     if (!isFirstOpen) {
       if (!window.hasKeyItemRef || !window.hasKeyItemRef.current) {
-        showMessage('열쇠를 먼저 찾으세요!');
+        showMessage('열쇠를 획득 후 E키를 누르세요!');
         return;
       }
       isFirstOpen = true;

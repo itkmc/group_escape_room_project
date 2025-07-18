@@ -535,10 +535,10 @@ if (garageDoorMesh) {
                   console.log(`커튼 (${interactiveMesh.name})이 클릭되었습니다! 현재 열림 상태: ${isOpen}`);
 
                   if (!isOpen) {
-                      curtainAnim.start(false, 10, curtainAnim.to, curtainAnim.from, false);
+                      curtainAnim.start(false, 5, curtainAnim.to, curtainAnim.from, false);
                       isOpen = true;
                   } else {
-                      curtainAnim.start(false, 10, curtainAnim.from, curtainAnim.to, false);
+                      curtainAnim.start(false, 5, curtainAnim.from, curtainAnim.to, false);
                       isOpen = false;
                   }
               }
