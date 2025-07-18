@@ -10,7 +10,6 @@ import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
-
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
 const BabylonScene = () => {
@@ -204,7 +203,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-8.57, 8.00, -2.11),
+        new BABYLON.Vector3(0.07,7.85, -2.51),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -232,24 +231,7 @@ const BabylonScene = () => {
         new BABYLON.Vector3(-15.2, 3.5, 5.35),
       ];
       const specialRadius = 3.5;
-      let ladderMesh = null; // 이 변수는 현재 중력 범위 표시와 직접적인 관련이 없습니다.
-
-      // 중력 범위 시각화를 위한 빨간색 네모 생성
-      const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
-      redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
-      redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
-
-      specialPositions.forEach((position, index) => {
-          const gravityBox = BABYLON.MeshBuilder.CreateBox(
-              `gravityRangeBox_${index}`,
-              { width: specialRadius * 2, height: specialRadius * 2, depth: specialRadius * 2 }, // 네모의 각 변 길이
-              scene
-          );
-          gravityBox.position = position;
-          gravityBox.material = redMaterial;
-          gravityBox.isPickable = false; // 클릭되지 않도록 설정
-          gravityBox.checkCollisions = false; // 충돌 감지에서 제외
-      });
+      let ladderMesh = null;
 
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
@@ -270,6 +252,10 @@ const BabylonScene = () => {
           ladderMesh = mesh;
           ladderMesh.checkCollisions = false;
         }
+
+        if (mesh.name === "Hospital_02_40m_0") {
+          mesh.dispose();
+        } 
       });
 
       if (parentMesh) {
@@ -418,11 +404,6 @@ const BabylonScene = () => {
         if (nearSpecialPos || isOnLadder) {
           camera.applyGravity = false;
           camera.position.y = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, camera.position.y));
-          // 💡 specialPositions 근처에서 시점 고정
-          if (nearSpecialPos) {
-            camera.rotation.x = 0; // 원하는 각도로 수정 가능
-            camera.rotation.y = 0; // 원하는 각도로 수정 가능
-          }
         } else {
           camera.applyGravity = true;
           camera.position.y = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, camera.position.y));
@@ -584,15 +565,15 @@ const BabylonScene = () => {
         }
       });
          // Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
