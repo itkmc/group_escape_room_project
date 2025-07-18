@@ -100,6 +100,7 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
     const wallWorldPos6 = new BABYLON.Vector3(-9, 10, -11.7);
     const wallWorldPos7 = new BABYLON.Vector3(-2.5, 10, -9.55);
 
+
     async function wall(worldPosition, parentMesh, scene, rotationQuaternion = null, scalingVector = null) {
         const wall = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "gallery_bare_concrete_wall.glb", scene);
         const rootMesh = wall.meshes[0];
@@ -133,7 +134,6 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
 
     const wallWorldPos2CustomScaling = new BABYLON.Vector3(100, 61, 70); 
     await wall(wallWorldPos2, parentMesh, scene, null, wallWorldPos2CustomScaling);
-
     const wallWorldPos3CustomRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI /2));
     const wallWorldPos3CustomScaling = new BABYLON.Vector3(100, 80, 80);
@@ -163,7 +163,6 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
     const wallWorldPos7CustomScaling = new BABYLON.Vector3(13.5, 18.8, 10); //높이, 길이, ?
     
     await wall(wallWorldPos7, parentMesh, scene, wallWorldPos7CustomRotation, wallWorldPos7CustomScaling);
-
 
      // 입원실 문
     const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);
@@ -409,7 +408,7 @@ if (garageDoorMesh) {
               kpWorldPos,
               BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
-          mesh.scaling = new BABYLON.Vector3(37,37,37)
+          mesh.scaling = new BABYLON.Vector3(37,39,37)
           mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/-1.1)
               .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
           mesh.checkCollisions = true;
@@ -435,7 +434,7 @@ if (garageDoorMesh) {
   }
 
   // 커튼 관련 전역 변수들 (기존 코드와 동일)
-  const curtainWorldPos1 = new BABYLON.Vector3(-18.5, 6.2, -8.6);
+  const curtainWorldPos1 = new BABYLON.Vector3(-18.5, 6.2, -8.7);
   const curtainWorldPos2 = new BABYLON.Vector3(-14.5, 6.2, -8.7);
   const curtainWorldPos3 = new BABYLON.Vector3(-18, 6.2, -15.7);
   // const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15);
@@ -856,3 +855,5 @@ if (garageDoorMesh) {
       }
   }
 }
+
+

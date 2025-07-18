@@ -10,7 +10,6 @@ import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
-
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
 const BabylonScene = () => {
@@ -469,6 +468,7 @@ const BabylonScene = () => {
             camera.position.x > min.x && camera.position.x < max.x &&
             camera.position.z > min.z && camera.position.z < max.z
           ) {
+<<<<<<< HEAD
             // z축 방향이 반대일 수도 있으니 항상 min/max로 보정
             const stairStartZ = Math.min(min.z, max.z);
             const stairEndZ = Math.max(min.z, max.z);
@@ -503,13 +503,48 @@ const BabylonScene = () => {
             clearTimeout(gravityTimeout);
             gravityTimeout = null;
           }
+=======
+            // x축을 따라 오르는 계단이라고 가정
+            const stairStartZ = min.z;
+            const stairEndZ = max.z;
+            const stairStartY = min.y;
+            const stairEndY = max.y;
+            const ratio = (camera.position.z - stairStartZ) / (stairEndZ - stairStartZ);
+            const stairY = stairStartY + (stairEndY - stairStartY) * ratio;
+            camera.position.y = stairY; // 계단 표면에 맞게 y좌표를 항상 맞춤
+          }
+>>>>>>> 97f98ed5cdac38b3e6dac42d06dc6ef0ed3bee5a
         }
 
+        // 중력 범위에 들어가면 2초간만 중력 off, 이후 자동 on
+        if (nearSpecialPos) {
+          camera.applyGravity = false;
+          if (gravityTimeout) clearTimeout(gravityTimeout);
+          gravityTimeout = setTimeout(() => {
+            camera.applyGravity = true;
+            gravityTimeout = null;
+          }, 2000); // 2초 뒤 중력 다시 켜기
+        } else {
+          camera.applyGravity = true;
+          if (gravityTimeout) {
+            clearTimeout(gravityTimeout);
+            gravityTimeout = null;
+          }
+        }
+
+        
+       // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
+      if (!isOnLadder) {
         if (keysPressed["shift"]) {
           camera.speed = RUN_SPEED;
         } else {
           camera.speed = WALK_SPEED;
         }
+      } else {
+        camera.speed = 0;
+      }
+
+
 
         setPlayerPos({
           x: camera.position.x.toFixed(2),

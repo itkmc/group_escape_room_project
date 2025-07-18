@@ -406,7 +406,7 @@ for (const doorMesh of door1.meshes) {
 };
 
   // 냉장고 안 애기 위치
-  const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.67, 14.00);
+  const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.665, 14.00);
   const alien_fetus = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "alien_fetus.glb", scene);
   for (const alien_fetusMesh of alien_fetus.meshes) {
     if (alien_fetusMesh.name !== "__root__") {
@@ -491,7 +491,7 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
 }
 
 // 문제 위치 (두루마리)
-const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.2, 7.53, 14.5);
+const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.2, 8.25, 14.5);
 const old__ancient_scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
 
 for (const mesh of old__ancient_scrollResult.meshes) {
