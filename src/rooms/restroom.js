@@ -53,15 +53,15 @@ export async function addRestroomObject(scene, parentMesh, showMessage) {
     if (mesh.name !== "__root__") {
       mesh.parent = parentMesh;
       mesh.position = BABYLON.Vector3.TransformCoordinates(
-        new BABYLON.Vector3(-36, 2.08, -3.50),
+        new BABYLON.Vector3(-28.38, 1.942, -3.5),
         // -28.5, 1.16, -8.35
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
-      mesh.scaling = new BABYLON.Vector3(10, 10, 10);
+      mesh.scaling = new BABYLON.Vector3(8, 8, 8);
       mesh.checkCollisions = true;
       mesh.isPickable = true;
       // 열쇠를 Z축 -90도, Y축 180도 회전시켜 이미지처럼 배치
-      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2)
+      mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2));
       // 클릭 시 window.setHasKeyItem(true) 호출
       mesh.actionManager = new BABYLON.ActionManager(scene);
@@ -208,7 +208,7 @@ if (frameMesh && doorMesh) {
         new BABYLON.Vector3(-26.85, 0.8, -4.62),
         BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
-      mesh.scaling = new BABYLON.Vector3(80, 80, 80);
+      mesh.scaling = new BABYLON.Vector3(90, 80, 90);
       mesh.checkCollisions = true;
       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
