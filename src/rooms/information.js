@@ -8,6 +8,8 @@ import "@babylonjs/loaders";
  * @param {Function} onDoorInteraction
  */
 export async function addInformation(scene, parentMesh, onDoorInteraction) {
+  const batStartPos = new BABYLON.Vector3(-11.85, 7.85, -12.01);
+  const batEndPos = new BABYLON.Vector3(-9, 7.7, -12.5); // 입원실 문 위치
   const desiredDoor3WorldPos = new BABYLON.Vector3(-0, 6.3, 2);
   let doorMeshes = [];
   let isDoorOpen = false;
@@ -251,6 +253,24 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
           if (isAnimating) return;
           isAnimating = true;
           if (!isDoorOpen) {
+            // 문이 열리기 시작할 때 박쥐도 동시에 날아오기
+            if (batGroup && batGroup.isEnabled()) {
+              const batAnim = new BABYLON.Animation(
+                "batFly",
+                "position",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+              );
+              batAnim.setKeys([
+                { frame: 0, value: batGroup.position.clone() },
+                { frame: 45, value: BABYLON.Vector3.TransformCoordinates(batEndPos, BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())) }
+              ]);
+              batGroup.animations = [batAnim];
+              scene.beginAnimation(batGroup, 0, 45, false, 1, () => {
+                batGroup.setEnabled(false); // 애니메이션 끝나면 사라짐
+              });
+            }
             scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
               isDoorOpen = true;
               isAnimating = false;
@@ -807,6 +827,29 @@ if (garageDoorMesh) {
           mesh.checkCollisions = true;
           mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
               .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+      }
+  }
+
+  // 뱀파이어 박쥐
+  let batGroup = new BABYLON.TransformNode("batGroup", scene);
+  batGroup.parent = parentMesh;
+  batGroup.position = BABYLON.Vector3.TransformCoordinates(
+      batStartPos,
+      BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+  );
+  const vampireBatResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "vampire_bat.glb", scene);
+  for (const mesh of vampireBatResult.meshes) {
+      if (mesh.name !== "__root__") {
+          mesh.parent = batGroup;
+          mesh.scaling = new BABYLON.Vector3(15, 15, 15);
+          mesh.checkCollisions = true;
+          // 문 쪽을 바라보게 회전
+          const direction = batEndPos.subtract(batStartPos).normalize();
+          const up = BABYLON.Vector3.Up();
+          const lookQ = BABYLON.Quaternion.FromLookDirectionLH(direction, up);
+          const fixQ = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI)
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+          mesh.rotationQuaternion = fixQ.multiply(lookQ);
       }
   }
 }
