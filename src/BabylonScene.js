@@ -223,7 +223,7 @@ const BabylonScene = () => {
       const MIN_CAMERA_HEIGHT = 0;
 
       // 플레이어 이동 속도 조절
-      const WALK_SPEED = 0.16;
+      const WALK_SPEED = 0.1;
       const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
 
@@ -270,45 +270,6 @@ const BabylonScene = () => {
           ladderMesh.checkCollisions = false;
         }
       });
-
-      // 계단 위에 투명한 경사로(plane) mesh 추가 (z축 계단 기준, 각도 적용)
-      const stairMesh = scene.getMeshByName("Hospital_02_40m_0");
-      if (
-        stairMesh &&
-        stairMesh.getBoundingInfo &&
-        stairMesh.getBoundingInfo().minimumWorld &&
-        stairMesh.getBoundingInfo().maximumWorld
-      ) {
-        const min = stairMesh.getBoundingInfo().minimumWorld;
-        const max = stairMesh.getBoundingInfo().maximumWorld;
-        const width = Math.abs(max.x - min.x) || 0.5;
-        const height = Math.sqrt(
-          Math.pow(max.z - min.z, 2) + Math.pow(max.y - min.y, 2)
-        ); // 경사면의 실제 길이
-        const centerX = (min.x + max.x) / 2;
-        const centerZ = (min.z + max.z) / 2;
-        const centerY = (min.y + max.y) / 2;
-
-        // 경사 각도 계산 (z축 기준)
-        const angle = Math.atan2(max.y - min.y, max.z - min.z);
-
-        const slope = BABYLON.MeshBuilder.CreatePlane("stairSlope", {
-          width: width,
-          height: height,
-          sideOrientation: BABYLON.Mesh.DOUBLESIDE
-        }, scene);
-
-        slope.position.x = centerX;
-        slope.position.z = centerZ;
-        slope.position.y = centerY;
-        slope.rotation.x = -angle; // 경사로 기울기 적용 (z축 기준)
-        slope.rotation.y = 0; // 필요시 조정
-        slope.visibility = 0.5; // 임시로 반투명(시각 확인용)
-        slope.checkCollisions = true;
-        slope.isPickable = false;
-        // 디버깅 로그
-        console.log("[경사로] position:", slope.position, "rotation:", slope.rotation, "width:", width, "height:", height, "angle:", angle);
-      }
 
       if (parentMesh) {
         await addOperatingRoom(
@@ -468,42 +429,6 @@ const BabylonScene = () => {
             camera.position.x > min.x && camera.position.x < max.x &&
             camera.position.z > min.z && camera.position.z < max.z
           ) {
-<<<<<<< HEAD
-            // z축 방향이 반대일 수도 있으니 항상 min/max로 보정
-            const stairStartZ = Math.min(min.z, max.z);
-            const stairEndZ = Math.max(min.z, max.z);
-            const stairStartY = Math.min(min.y, max.y);
-            const stairEndY = Math.max(min.y, max.y);
-            let ratio = (camera.position.z - stairStartZ) / (stairEndZ - stairStartZ);
-            ratio = Math.max(0, Math.min(1, ratio)); // 0~1로 clamp
-            const stairY = stairStartY + (stairEndY - stairStartY) * ratio;
-            // 디버깅 로그
-            // console.log(`z: ${camera.position.z}, stairStartZ: ${stairStartZ}, stairEndZ: ${stairEndZ}, ratio: ${ratio}, stairY: ${stairY}`);
-            camera.applyGravity = false;
-            camera.checkCollisions = false;
-            camera.position.y = stairY + 0.05; // 계단 표면보다 살짝 위로 즉시 맞춤
-          }
-          else {
-            camera.applyGravity = true;
-            camera.checkCollisions = true;
-          }
-        }
-
-        // 중력 범위에 들어가면 2초간만 중력 off, 이후 자동 on
-        if (nearSpecialPos) {
-          camera.applyGravity = false;
-          if (gravityTimeout) clearTimeout(gravityTimeout);
-          gravityTimeout = setTimeout(() => {
-            camera.applyGravity = true;
-            gravityTimeout = null;
-          }, 2000); // 2초 뒤 중력 다시 켜기
-        } else {
-          camera.applyGravity = true;
-          if (gravityTimeout) {
-            clearTimeout(gravityTimeout);
-            gravityTimeout = null;
-          }
-=======
             // x축을 따라 오르는 계단이라고 가정
             const stairStartZ = min.z;
             const stairEndZ = max.z;
@@ -513,7 +438,6 @@ const BabylonScene = () => {
             const stairY = stairStartY + (stairEndY - stairStartY) * ratio;
             camera.position.y = stairY; // 계단 표면에 맞게 y좌표를 항상 맞춤
           }
->>>>>>> 97f98ed5cdac38b3e6dac42d06dc6ef0ed3bee5a
         }
 
         // 중력 범위에 들어가면 2초간만 중력 off, 이후 자동 on
