@@ -14,6 +14,7 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.18);
   display: flex;
   flex-direction: column;
+  
   align-items: center;
   justify-content: flex-start;
   padding: 32px 16px 0 16px;
@@ -30,14 +31,14 @@
   background: rgba(70, 130, 180, 0.35); /* easy, hard와 동일한 파랑 */
 }
 .difficulty-card.normal:hover {
-  background: rgba(144, 238, 144, 0.35); /* hover 시 연녹색 */
+  background: rgba(85, 85, 85, 0.35); /* hover 시 연녹색 */
 }
 .difficulty-card.hard {
   background: rgba(70, 130, 180, 0.35); /* 파랑 */
 }
 .difficulty-card.easy:hover,
 .difficulty-card.hard:hover {
-  background: rgba(144, 238, 144, 0.35); /* hover 시 연녹색 */
+  background: rgba(85, 85, 85, 0.35); /* hover 시 연녹색 */
 }
 .difficulty-card h2 {
   margin-bottom: 18px;
