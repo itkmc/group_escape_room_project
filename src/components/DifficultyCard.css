@@ -35,6 +35,10 @@
 .difficulty-card.hard {
   background: rgba(70, 130, 180, 0.35); /* 파랑 */
 }
+.difficulty-card.easy:hover,
+.difficulty-card.hard:hover {
+  background: rgba(144, 238, 144, 0.35); /* hover 시 연녹색 */
+}
 .difficulty-card h2 {
   margin-bottom: 18px;
   font-size: 2rem;
