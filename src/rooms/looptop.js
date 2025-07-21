@@ -9,7 +9,7 @@ import "@babylonjs/loaders";
  * @param {Function} [onScrollClick] - 두루마리 클릭 시 호출될 콜백 함수 (선택 사항)
  * @param {Function} [hasKeyItemFn] - 키 아이템이 있는지 확인할 함수 (선택 사항)
  */
-export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn, showMessage) {
+export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn, showMessage, showMessage2) {
   if (!parentMesh) {
     console.warn("❗ parentMesh가 없습니다.");
     return;
@@ -350,4 +350,73 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
     clockRoot.scaling = new BABYLON.Vector3(200, 200, 200);
     clockRoot.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
   }
+// 📂 파일 폴더 추가
+    const desiredFileFolderWorldPos = new BABYLON.Vector3(-23.7, 14.3, 11.5); // 테이블 위 적절한 위치
+    const fileFolderResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "file_folder.glb", scene);
+
+    // --- 애니메이션 자동 재생 방지 ---
+    if (fileFolderResult.animationGroups && fileFolderResult.animationGroups.length > 0) {
+        fileFolderResult.animationGroups.forEach(group => {
+            group.stop(); // 모든 애니메이션 그룹 정지
+            group.reset(); // 애니메이션을 초기 상태로 리셋
+        });
+    }
+
+    // 파일 폴더의 모든 메쉬에 설정 적용
+    // __root__ 메쉬 또는 모든 하위 메쉬에 설정 적용하여 클릭 가능성 높이기
+    fileFolderResult.meshes.forEach(mesh => {
+        // __root__ 메쉬는 다른 메쉬들의 부모 역할을 하므로, 시각적 설정은 하위 메쉬에 집중
+        // 하지만 부모-자식 관계를 유지하며 월드 위치를 설정하기 위해선 루트 메쉬에 부모를 지정
+        // 여기서는 모든 메쉬를 부모에 연결하고 개별적으로 위치, 스케일, 회전을 설정합니다.
+        // 또는, 가장 상위의 `__root__` 메쉬에 모든 변환을 적용하고, 클릭은 하위 메쉬에서 감지하는 방식을 사용합니다.
+        
+        // 특정 메쉬만 클릭 가능하게 하거나, 모든 메쉬를 클릭 가능하게 할 수 있습니다.
+        // 여기서는 모든 메쉬에 actionManager를 등록하여 클릭 가능성을 높입니다.
+        if (mesh.name === "__root__" || mesh.isDescendantOf(fileFolderResult.meshes[0])) { // 루트 또는 루트의 자손 메쉬에만 적용
+            mesh.parent = parentMesh;
+            mesh.position = BABYLON.Vector3.TransformCoordinates(
+                desiredFileFolderWorldPos,
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+            mesh.scaling = new BABYLON.Vector3(20, 20, 20); // 적절한 스케일 조정
+            // 모델의 원래 방향을 유지하면서 Y축으로 -90도 회전하여 정면을 향하게 함
+            mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
+            
+            mesh.checkCollisions = true; // 충돌 가능하게 설정
+            mesh.isPickable = true; // 클릭 가능하게 설정
+
+            // 파일 폴더 클릭 이벤트 처리
+            if (!mesh.actionManager) {
+                mesh.actionManager = new BABYLON.ActionManager(scene);
+            }
+            mesh.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    if (showMessage2) {
+                        const scenarioText = `
+"코드 블랙: 탈출자는 없다"
+
+2025년 7월 21일. 새벽 2시 55분.
+불이 꺼진 옥상, 깨어난 당신의 손목엔
+의료용 밴드 하나가 감겨 있다.
+
+[수술 대상자: 0317 / 장기 등급: A / 회수 준비 완료]
+[수술 시간까지 남은 시간: 23분]
+
+기억은 없고, 옥상 문은 잠겨 있다.
+병원은 폐쇄되었지만, 내부는 누군가가 ‘운영 중’이다.
+기계 소리, 바닥의 피, 그리고 사라진 환자들.
+이 병원은 아직 끝나지 않았다.
+지금 움직이지 않으면, 당신의 차례다.
+출구는 단 하나,
+하지만 지금까지 그 문을 통과한 사람은 없었다.
+
+행운을 빕니다.
+`;
+                        showMessage2(scenarioText); // 시나리오 텍스트를 중앙 메시지로 표시
+                    }
+                })
+            );
+        }
+    });
 }
