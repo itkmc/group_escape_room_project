@@ -394,8 +394,6 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
                     if (showMessage2) {
                         const scenarioText = `
-"코드 블랙: 탈출자는 없다"
-
 2025년 8월 11일, 새벽 2시 30분.
 불 꺼진 병원 옥상, 차가운 의자에 묶인 채 깨어난 당신.
 눈앞에는 범인이 흘리고 간 섬뜩한 파일 하나가 놓여 있다.
