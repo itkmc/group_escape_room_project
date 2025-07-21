@@ -254,6 +254,9 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
           if (!isDoorOpen) {
             // 문이 열리기 시작할 때 박쥐도 동시에 날아오기
             if (batGroup && batGroup.isEnabled()) {
+              // 박쥐 효과음 재생
+              const audio = new Audio('/bat-sound.mp3');
+              audio.play();
               const batAnim = new BABYLON.Animation(
                 "batFly",
                 "position",
