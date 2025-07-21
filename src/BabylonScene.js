@@ -12,6 +12,8 @@ import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
+import ScenarioMessage from "./components/ScenarioMessage";
+
 const BabylonScene = () => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
@@ -187,6 +189,15 @@ const BabylonScene = () => {
     setTimeout(() => setShowCenterMessage(false), 2000);
   }
 
+  const [scenarioMessage, setScenarioMessage] = useState("");
+  const [showScenarioMessage, setShowScenarioMessage] = useState(false);
+
+  function showMessage2(msg) {
+    setScenarioMessage(msg);
+    setShowScenarioMessage(true);
+    // setTimeout(() => setShowCenterMessage(false), 2000);
+  }
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -282,7 +293,7 @@ const BabylonScene = () => {
           },
           handleSurgeryBoxClick
         );
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage);
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
         await addDoctorOffice(
           scene,
           parentMesh,
@@ -1011,7 +1022,8 @@ const BabylonScene = () => {
           {undergroundDoorMessage}
         </div>
       )}
-      <CenterMessage message={centerMessage} visible={showCenterMessage} />
+      <CenterMessage message={centerMessage} visible={showCenterMessage}/>
+      <ScenarioMessage message={scenarioMessage} visible={showScenarioMessage} onClose={() => setShowScenarioMessage(false)}/>
     </>
   );
 };
