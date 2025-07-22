@@ -214,7 +214,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-22.02, 15.69, 11.10),
+        new BABYLON.Vector3(-8.5, 7.86, -10.62),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -361,12 +361,12 @@ const BabylonScene = () => {
 
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
       if (!rootFlashlightMeshRef.current) {
-        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_-_17mb.glb", scene);
-
+        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_6_mb.glb", scene);
+        console.log("Loaded meshes:", flashResult.meshes);
         rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
         if (!rootFlashlightMeshRef.current) {
           rootFlashlightMeshRef.current = flashResult.meshes[0];
-          console.warn("flashlight.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
+          console.warn("flash.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
         }
 
         flashResult.animationGroups.forEach(ag => {
@@ -376,8 +376,8 @@ const BabylonScene = () => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(0.04,0.04,0.04);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-7.35, 7.85, -7.82);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(10,10,10);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
@@ -388,6 +388,7 @@ const BabylonScene = () => {
 
           flashResult.meshes.forEach((mesh) => {
             mesh.isPickable = true;
+            mesh.isVisible = true;
           });
 
           const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.3 }, scene);

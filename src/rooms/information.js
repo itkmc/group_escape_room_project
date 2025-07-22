@@ -515,11 +515,9 @@ if (garageDoorMesh) {
               if (mesh.material) {
                   if (mesh.material instanceof BABYLON.PBRMaterial) {
                       mesh.material.albedoTexture = new BABYLON.Texture(texturePath, scene);
-                      console.log(`메쉬 '${mesh.name}'의 텍스처를 '${texturePath}'로 변경했습니다.`);
                   }
                   else if (mesh.material instanceof BABYLON.StandardMaterial) {
                       mesh.material.diffuseTexture = new BABYLON.Texture(texturePath, scene);
-                      console.log(`메쉬 '${mesh.name}'의 텍스처를 (StandardMaterial) '${texturePath}'로 변경했습니다.`);
                   }
               }
           }
