@@ -109,6 +109,20 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
             if (mesh !== rootMesh && mesh.getTotalVertices && mesh.getTotalVertices() > 0) {
                 mesh.checkCollisions = true;
             }
+            // 벽 밝기 조정 부분
+            const gray = new BABYLON.Color3(0.2, 0.2, 0.2); // 중간 회색
+            if (mesh.material) {
+                if (mesh.material instanceof BABYLON.PBRMaterial) {
+                    mesh.material.emissiveIntensity = 0;
+                    mesh.material.albedoColor = gray;
+                    mesh.material.reflectivityColor = gray;
+                } else if (mesh.material instanceof BABYLON.StandardMaterial) {
+                    mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                    mesh.material.diffuseColor = gray;
+                    mesh.material.specularColor = gray;
+                    mesh.material.ambientColor = gray;
+                }
+            }
         });
 
         rootMesh.position = BABYLON.Vector3.TransformCoordinates(
@@ -166,6 +180,23 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
 
      // 입원실 문
     const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);
+    
+    // 문 밝기 조정 부분
+    doorResult.meshes.forEach(mesh => {
+      const gray = new BABYLON.Color3(0.2, 0.2, 0.2); // 중간 회색
+      if (mesh.material) {
+        if (mesh.material instanceof BABYLON.PBRMaterial) {
+          mesh.material.emissiveIntensity = 0;
+          mesh.material.albedoColor = gray;
+          mesh.material.reflectivityColor = gray;
+        } else if (mesh.material instanceof BABYLON.StandardMaterial) {
+          mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+          mesh.material.diffuseColor = gray;
+          mesh.material.specularColor = gray;
+          mesh.material.ambientColor = gray;
+        }
+      }
+    });
     
     let frameMesh = null;
     let doorMesh = null;
@@ -484,11 +515,9 @@ if (garageDoorMesh) {
               if (mesh.material) {
                   if (mesh.material instanceof BABYLON.PBRMaterial) {
                       mesh.material.albedoTexture = new BABYLON.Texture(texturePath, scene);
-                      console.log(`메쉬 '${mesh.name}'의 텍스처를 '${texturePath}'로 변경했습니다.`);
                   }
                   else if (mesh.material instanceof BABYLON.StandardMaterial) {
                       mesh.material.diffuseTexture = new BABYLON.Texture(texturePath, scene);
-                      console.log(`메쉬 '${mesh.name}'의 텍스처를 (StandardMaterial) '${texturePath}'로 변경했습니다.`);
                   }
               }
           }
