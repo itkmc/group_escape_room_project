@@ -214,7 +214,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-22.02, 15.69, 11.10),
+        new BABYLON.Vector3(-17.15, 7.85, -3.59),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -324,6 +324,8 @@ const BabylonScene = () => {
         );
         undergroundDoorRef.current = undergroundDoor;
       }
+
+      
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
       const lampMesh1 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0");

@@ -607,7 +607,6 @@ export async function addDoctorOffice(
             }
             return rootWaitingChairMesh;
         } catch (error) {
-            console.error("waiting_chair.glb 로드 오류: ", error);
             return null;
         }
     }
