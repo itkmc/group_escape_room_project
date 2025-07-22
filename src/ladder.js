@@ -36,7 +36,7 @@ export function handleLadderMovement(camera, ladderMesh, keysPressed, isOnLadder
     if (keysPressed["w"]) {
       camera.rotation.x = -1.21;
       camera.rotation.y = -0.11;
-      camera.position.y += 0.2;
+      camera.position.y += 0.15;
 
       if (camera.position.y >= 14.13) {
         const offset = new BABYLON.Vector3(0, 0, 1.0);
@@ -49,7 +49,7 @@ export function handleLadderMovement(camera, ladderMesh, keysPressed, isOnLadder
     } else if (keysPressed["s"]) {
       camera.rotation.x = 1.48;
       camera.rotation.y = 0.26;
-      camera.position.y -= 0.2;
+      camera.position.y -= 0.15;
 
       if (camera.position.y <= 2.32) {
         const offset = new BABYLON.Vector3(0, 0, -0.5);
