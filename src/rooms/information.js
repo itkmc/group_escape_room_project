@@ -22,7 +22,6 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
   });
 
   const door3 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_door_-_game_ready.glb", scene);
-  console.log("[DEBUG] door3.meshes:", door3.meshes.map(m => m.name)); // 추가: 문 모델의 mesh 이름 전체 출력
   door3.meshes.forEach((mesh) => {
     if (mesh.name === "Object_4" || mesh.name === "Object_8") { // Object_4, Object_8만 남김
       mesh.parent = parentMesh;
@@ -403,7 +402,6 @@ if (garageDoorMesh) {
     garageDoorMesh.actionManager = new BABYLON.ActionManager(scene);
     garageDoorMesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-            console.log("철문이 클릭되었습니다!");
             if (isGarageAnimating) return;
             isGarageAnimating = true;
 
@@ -424,9 +422,7 @@ if (garageDoorMesh) {
             }
         })
     );
-} else {
-    console.error("철문 메쉬 'Door.001_rolling-gate-g7c3d87256_1920_0'을 찾을 수 없습니다. 이름이 정확한지 다시 확인하세요.");
-}
+} 
 
   //누워있는 사람 위치
   const kpWorldPos = new BABYLON.Vector3(-12.5, 9.3, -10.5);
@@ -495,8 +491,7 @@ if (garageDoorMesh) {
       let interactiveMesh = curtainResult.meshes.find(mesh => mesh.name === "Object_9");
 
       if (!interactiveMesh) {
-          console.error("오류: 'Object_9' 메시를 GLB 파일에서 찾을 수 없습니다. 클릭 이벤트가 작동하지 않을 수 있습니다.");
-          interactiveMesh = rootMesh;
+         interactiveMesh = rootMesh;
       }
 
       rootMesh.position = BABYLON.Vector3.TransformCoordinates(
@@ -564,8 +559,6 @@ if (garageDoorMesh) {
           interactiveMesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
               BABYLON.ActionManager.OnPickTrigger,
               () => {
-                  console.log(`커튼 (${interactiveMesh.name})이 클릭되었습니다! 현재 열림 상태: ${isOpen}`);
-
                   if (!isOpen) {
                       curtainAnim.start(false, 5, curtainAnim.to, curtainAnim.from, false);
                       isOpen = true;
@@ -575,9 +568,7 @@ if (garageDoorMesh) {
                   }
               }
           ));
-      } else {
-          console.warn("경고: 로드된 커튼 모델에 애니메이션 그룹이 없습니다.");
-      }
+      } 
   }
 
   const commonRotation3 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
@@ -725,25 +716,17 @@ if (garageDoorMesh) {
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); // Y축 180도 추가
 
-      // 냉장고 본체 디버깅을 위한 콘솔 출력
-      console.log("=== information 냉장고 디버깅 ===");
-      console.log("rootFridgeMesh:", rootFridgeMesh);
-      console.log("rootFridgeMesh.isEnabled:", rootFridgeMesh.isEnabled);
-      console.log("rootFridgeMesh.visibility:", rootFridgeMesh.visibility);
-      console.log("rootFridgeMesh.position:", rootFridgeMesh.position);
-      console.log("rootFridgeMesh.scaling:", rootFridgeMesh.scaling);
-      console.log("rootFridgeMesh.material:", rootFridgeMesh.material);
       
       // 모든 mesh 정보 출력
-      old_fridgeResult.meshes.forEach((mesh, index) => {
-        console.log(`Mesh ${index}:`, {
-          name: mesh.name,
-          isEnabled: mesh.isEnabled,
-          visibility: mesh.visibility,
-          hasGeometry: mesh.geometry !== null,
-          material: mesh.material
-        });
-      });
+    //   old_fridgeResult.meshes.forEach((mesh, index) => {
+    //     console.log(`Mesh ${index}:`, {
+    //       name: mesh.name,
+    //       isEnabled: mesh.isEnabled,
+    //       visibility: mesh.visibility,
+    //       hasGeometry: mesh.geometry !== null,
+    //       material: mesh.material
+    //     });
+    //   });
 
       for (const mesh of old_fridgeResult.meshes) { // forEach를 for...of로 변경
           mesh.checkCollisions = true;

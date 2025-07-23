@@ -12,7 +12,6 @@ import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
-import ScenarioMessage from "./components/ScenarioMessage";
 
 const BabylonScene = () => {
   const canvasRef = useRef(null);
@@ -24,9 +23,6 @@ const BabylonScene = () => {
   const flashlightHolderRef = useRef(null);
   const [flashlightStatus, setFlashlightStatus] = useState(null);
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
-  const [isFlashlightToggling, setIsFlashlightToggling] = useState(false); // F키 중복 방지용
-  const [flashlightOn, setFlashlightOn] = useState(false); // 손전등 켜짐/꺼짐 상태
-  const flashlightOnRef = useRef(false); // 손전등 상태를 ref로도 관리
   const [hasCardItem, setHasCardItem] = useState(false);
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
@@ -183,11 +179,6 @@ const BabylonScene = () => {
     isCrouchingRef.current = isCrouching;
   }, [isCrouching]);
 
-  // flashlightOn 상태와 ref 동기화
-  useEffect(() => {
-    flashlightOnRef.current = flashlightOn;
-  }, [flashlightOn]);
-
   const [centerMessage, setCenterMessage] = useState("");
   const [showCenterMessage, setShowCenterMessage] = useState(false);
 
@@ -197,30 +188,12 @@ const BabylonScene = () => {
     setTimeout(() => setShowCenterMessage(false), 2000);
   }
 
-  const [scenarioMessage, setScenarioMessage] = useState("");
-  const [showScenarioMessage, setShowScenarioMessage] = useState(false);
-
-  function showMessage2(msg) {
-    setScenarioMessage(msg);
-    setShowScenarioMessage(true);
-    // setTimeout(() => setShowCenterMessage(false), 2000);
-  }
-
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const engine = new BABYLON.Engine(canvasRef.current, true);
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
-    
-    // 물리 시스템 활성화 (PhysicsImpostor 에러 해결)
-    try {
-      scene.enablePhysics();
-      console.log("물리 시스템 활성화 완료");
-    } catch (error) {
-      console.warn("물리 시스템 활성화 실패:", error.message);
-      // 물리 시스템이 없어도 게임은 정상 작동
-    }
 
     let hemiLight;
     let originalHemiLightIntensity;
@@ -231,7 +204,7 @@ const BabylonScene = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-8.5, 7.86, -10.62),
+        new BABYLON.Vector3(-14.00, 7.85, -12.39),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -310,7 +283,7 @@ const BabylonScene = () => {
           },
           handleSurgeryBoxClick
         );
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage);
         await addDoctorOffice(
           scene,
           parentMesh,
@@ -368,7 +341,7 @@ const BabylonScene = () => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
@@ -377,102 +350,60 @@ const BabylonScene = () => {
 
 
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
-      console.log("손전등 초기화 시작 - rootFlashlightMeshRef.current:", rootFlashlightMeshRef.current);
-              // 강제로 손전등 모델 로딩 실행 (디버깅용)
-        {
-          try {
-            console.log("손전등 모델 로드 시작");
-            
-            const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_6_mb.glb", scene);
-            console.log("손전등 모델 로드 완료:", flashResult.meshes.length, "개 메쉬");
-            console.log("손전등 메쉬 이름들:", flashResult.meshes.map(m => m.name));
-            
-            rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
-            if (!rootFlashlightMeshRef.current) {
-              rootFlashlightMeshRef.current = flashResult.meshes[0];
-              console.warn("flash.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
-            }
+      if (!rootFlashlightMeshRef.current) {
+        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_6_mb.glb", scene);
+        console.log("손전등 아이템을 불러오기");
+        rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
+        if (!rootFlashlightMeshRef.current) {
+          rootFlashlightMeshRef.current = flashResult.meshes[0];
+          console.warn("flashlight.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
+        }
 
-            flashResult.animationGroups.forEach(ag => {
-              ag.stop();
-            });
+        flashResult.animationGroups.forEach(ag => {
+          ag.stop();
+        });
 
-            if (rootFlashlightMeshRef.current) {
-              flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
-              flashlightHolderRef.current.position = new BABYLON.Vector3(-8.5, 7.86, -8.0);
-              flashlightHolderRef.current.scaling = new BABYLON.Vector3(2, 2, 2); // 적당한 크기로 조절
-              flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+        if (rootFlashlightMeshRef.current) {
+          flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
+          // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(4,4,4);
+          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-              rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
-              rootFlashlightMeshRef.current.position = BABYLON.Vector3.Zero();
-              rootFlashlightMeshRef.current.scaling = BABYLON.Vector3.One();
-              rootFlashlightMeshRef.current.rotationQuaternion = BABYLON.Quaternion.Identity();
+          rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
+          rootFlashlightMeshRef.current.position = BABYLON.Vector3.Zero();
+          rootFlashlightMeshRef.current.scaling = BABYLON.Vector3.One();
+          rootFlashlightMeshRef.current.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-              flashResult.meshes.forEach((mesh) => {
-                mesh.isPickable = true;
-                mesh.isVisible = true;
-                console.log("손전등 메쉬 설정:", mesh.name, "isVisible:", mesh.isVisible);
-              });
+          flashResult.meshes.forEach((mesh) => {
+            mesh.isPickable = true;
+          });
 
-              const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.5 }, scene);
-              flashlightCollisionBox.parent = flashlightHolderRef.current;
-              flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
-              flashlightCollisionBox.visibility = 0;
-              flashlightCollisionBox.checkCollisions = true;
-              
-              console.log("손전등 모델 초기화 완료 - 위치:", flashlightHolderRef.current.position);
-              console.log("손전등 모델 초기화 완료 - 스케일:", flashlightHolderRef.current.scaling);
-            }
-          } catch (error) {
-            console.error("손전등 모델 로드 실패:", error);
-            
-            // 모델 로드 실패 시 큐브로 대체
-            console.log("손전등 큐브 생성 시작 (대체)");
-            
-            const flashlightCube = BABYLON.MeshBuilder.CreateBox("flashlightCube", { size: 1.0 }, scene);
-            const flashlightMaterial = new BABYLON.StandardMaterial("flashlightMaterial", scene);
-            flashlightMaterial.diffuseColor = new BABYLON.Color3(1, 1, 0); // 노란색
-            flashlightCube.material = flashlightMaterial;
-            
-            flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
-            flashlightHolderRef.current.position = new BABYLON.Vector3(-8.5, 7.86, -8.0);
-            
-            flashlightCube.parent = flashlightHolderRef.current;
-            rootFlashlightMeshRef.current = flashlightCube;
-            
-            flashlightCube.isPickable = true;
-            flashlightCube.isVisible = true;
-            
-            const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.5 }, scene);
-            flashlightCollisionBox.parent = flashlightHolderRef.current;
-            flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
-            flashlightCollisionBox.visibility = 0;
-            flashlightCollisionBox.checkCollisions = true;
-            
-            console.log("손전등 큐브 생성 완료 - 위치:", flashlightHolderRef.current.position);
-          }
+          const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.3 }, scene);
+          flashlightCollisionBox.parent = flashlightHolderRef.current;
+          flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
+          flashlightCollisionBox.visibility = 0;
+          flashlightCollisionBox.checkCollisions = true;
 
-        // 손전등 조명 생성 (항상 생성되도록 조건문 밖으로 이동)
-        flashlightSpotLightRef.current = new BABYLON.SpotLight(
-          "flashlightSpotLight",
-          new BABYLON.Vector3(0, 0, 0),
-          new BABYLON.Vector3(0, 0, 1),
-          BABYLON.Tools.ToRadians(35), // 손전등 빛의 원뿔 각도 (값 낮을수록 좁아짐)
-          2, // 빛의 감쇠 속도 (값이 높을수록 빨리 어두워짐)
-          scene
-        );
-        flashlightSpotLightRef.current.diffuse = new BABYLON.Color3(1, 1, 0.8); // 손전등 빛의 색상
-        flashlightSpotLightRef.current.specular = new BABYLON.Color3(1, 1, 1); // 손전등 빛의 반사광 색상
-        flashlightSpotLightRef.current.intensity = 100; // 기본 밝기 설정
-        flashlightSpotLightRef.current.parent = camera; // 손전등 조명을 카메라에 종속시킵니다.
+          flashlightSpotLightRef.current = new BABYLON.SpotLight(
+            "flashlightSpotLight",
+            new BABYLON.Vector3(0, 0, 0),
+            new BABYLON.Vector3(0, 0, 1),
+            BABYLON.Tools.ToRadians(35), // 손전등 빛의 원뿔 각도 (값 낮을수록 좁아짐)
+            2, // 빛의 감쇠 속도 (값이 높을수록 빨리 어두워짐)
+            scene
+          );
+          flashlightSpotLightRef.current.diffuse = new BABYLON.Color3(1, 1, 0.8); // 손전등 빛의 색상
+          flashlightSpotLightRef.current.specular = new BABYLON.Color3(1, 1, 1); // 손전등 빛의 반사광 색상
+          flashlightSpotLightRef.current.intensity = 0; // 초기에는 꺼진 상태 (F키 누르면 100으로 설정)
+          flashlightSpotLightRef.current.parent = camera; // 손전등 조명을 카메라에 종속시킵니다.
 
-        // 카메라에 부착된 손전등 조명의 상대적 위치 및 방향 조절
-        flashlightSpotLightRef.current.position = new BABYLON.Vector3(0.2, -0.2, 0.5);
-        flashlightSpotLightRef.current.direction = new BABYLON.Vector3(0, -0.1, 1);
-        flashlightSpotLightRef.current.setEnabled(false); // 초기에는 비활성화 (꺼진 상태)
-        
-        console.log("손전등 조명 생성 완료 - intensity:", flashlightSpotLightRef.current.intensity, "enabled:", flashlightSpotLightRef.current.isEnabled());
+          // 카메라에 부착된 손전등 조명의 상대적 위치 및 방향 조절
+          flashlightSpotLightRef.current.position = new BABYLON.Vector3(0.2, -0.2, 0.5);
+          flashlightSpotLightRef.current.direction = new BABYLON.Vector3(0, -0.1, 1);
+          flashlightSpotLightRef.current.setEnabled(false); // 초기에는 비활성화 (꺼진 상태)
+        }
       }
 
       let cameraForward = new BABYLON.Vector3(0, 0, 1);
@@ -570,58 +501,24 @@ const BabylonScene = () => {
         keysPressed[evt.key.toLowerCase()] = true;
 
         if (evt.key.toLowerCase() === "f") {
-          // F키 중복 방지 (더 강력한 방지)
-          if (isFlashlightToggling) {
-            console.log("F키 중복 방지 - 이미 처리 중");
-            evt.preventDefault();
-            evt.stopPropagation();
-            return;
-          }
-          
-          console.log("=== F키 눌림 ===");
-          console.log("F키 눌림 - hasFlashlightItem:", hasFlashlightItemRef.current);
-          console.log("F키 눌림 - flashlightSpotLightRef:", flashlightSpotLightRef.current);
-          console.log("F키 눌림 - flashlightOn:", flashlightOn);
-          console.log("F키 눌림 - flashlightOnRef:", flashlightOnRef.current);
-          
           if (!hasFlashlightItemRef.current) {
             console.log("손전등 아이템을 획득해야 손전등을 켤 수 있습니다.");
             return;
           }
 
-          // 이벤트 전파 중단
-          evt.preventDefault();
-          evt.stopPropagation();
-          
-          setIsFlashlightToggling(true);
-          
           if (flashlightSpotLightRef.current) {
-            console.log("손전등 조명 상태:", flashlightSpotLightRef.current.isEnabled());
-            console.log("flashlightOn 상태:", flashlightOn);
-            console.log("flashlightOnRef 상태:", flashlightOnRef.current);
-            
-            // 손전등이 꺼져있을 때만 켜기
-            if (!flashlightOnRef.current) {
-              // 손전등 켜기
-              console.log("손전등 켜기 시도");
-              flashlightSpotLightRef.current.setEnabled(true);
-              flashlightOnRef.current = true;
-              setFlashlightOn(true);
-              setFlashlightStatus("ON");
-              console.log("손전등 ON 완료 - enabled:", flashlightSpotLightRef.current.isEnabled());
+            if (flashlightSpotLightRef.current.isEnabled()) {
+              flashlightSpotLightRef.current.setEnabled(false);
+              setFlashlightStatus("OFF");
+              console.log("손전등 OFF");
             } else {
-              // 이미 켜져있으면 아무것도 하지 않음
-              console.log("손전등이 이미 켜져있습니다.");
+              flashlightSpotLightRef.current.setEnabled(true);
+              flashlightSpotLightRef.current.intensity = 100; // 손전등 밝기 조절 (값 높을수록 밝아짐)
+              flashlightSpotLightRef.current.exponent = 10; // 손전등 빛의 중앙 집중도 조절 (값 높을수록 중앙에 집중)
+              setFlashlightStatus("ON");
+              console.log("손전등 ON");
             }
-          } else {
-            console.log("손전등 조명이 생성되지 않았습니다!");
           }
-          
-          // 1초 후 중복 방지 해제 (더 길게 설정)
-          setTimeout(() => {
-            setIsFlashlightToggling(false);
-            console.log("F키 중복 방지 해제됨");
-          }, 1000);
         }
 
         // 앉기 기능 (C키)
@@ -709,11 +606,6 @@ const BabylonScene = () => {
                 console.log("손전등은 이미 아이템으로 가지고 있습니다.");
               } else {
                 setHasFlashlightItem(true);
-                
-                // 손전등 상태 초기화
-                setFlashlightOn(false);
-                flashlightOnRef.current = false;
-                setFlashlightStatus("OFF");
 
                 flashlightHolderRef.current.setEnabled(false);
                 console.log("손전등을 획득했습니다!");
@@ -721,6 +613,8 @@ const BabylonScene = () => {
                 // 손전등 사용법 메시지 표시
                 setFlashlightTipMessage("손전등을 획득했습니다! 'F' 키를 눌러 손전등을 켜고 끌 수 있습니다.");
                 setShowFlashlightTip(true);
+
+
               }
             }
           }
@@ -1135,8 +1029,7 @@ const BabylonScene = () => {
           {undergroundDoorMessage}
         </div>
       )}
-      <CenterMessage message={centerMessage} visible={showCenterMessage}/>
-      <ScenarioMessage message={scenarioMessage} visible={showScenarioMessage} onClose={() => setShowScenarioMessage(false)}/>
+      <CenterMessage message={centerMessage} visible={showCenterMessage} />
     </>
   );
 };
