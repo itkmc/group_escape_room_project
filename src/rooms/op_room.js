@@ -77,6 +77,7 @@ if (lidMainMesh instanceof BABYLON.AbstractMesh && lidHandleMesh instanceof BABY
 
         let lidIsOpen = false; 
         let isAnimating = false; 
+        let isBoxUnlocked = false;
 
         // 중요: lidMainMesh만 클릭 가능하게 하고 나머지는 false로 설정
         lidMainMesh.isPickable = true;
@@ -85,7 +86,6 @@ if (lidMainMesh instanceof BABYLON.AbstractMesh && lidHandleMesh instanceof BABY
 
         lidMainMesh.actionManager = new BABYLON.ActionManager(scene);
 
-        // 중요: 상자 클릭 시 비밀번호 UI를 띄우도록 콜백 함수를 호출
         lidMainMesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(
                 BABYLON.ActionManager.OnPickTrigger,
@@ -93,61 +93,70 @@ if (lidMainMesh instanceof BABYLON.AbstractMesh && lidHandleMesh instanceof BABY
                     console.log("=== 상자 클릭 감지 ===");
                     console.log(`현재 lidIsOpen: ${lidIsOpen}, isAnimating: ${isAnimating}`);
 
-                    // 애니메이션 중일 때는 추가 동작 방지
                     if (isAnimating) {
                         console.log("애니메이션이 진행 중입니다. 동작 중지.");
                         return;
                     }
-                    
-                    // onSurgeryBoxClick 콜백이 유효하면 호출
+
+                    // --- 핵심 수정 로직 ---
+                    // 상자가 이미 잠금 해제되었다면 비밀번호 입력 없이 바로 뚜껑 애니메이션 시작
+                    if (isBoxUnlocked) {
+                        console.log("상자가 이미 잠금 해제되었습니다. 뚜껑 애니메이션 시작.");
+                        
+                        isAnimating = true;
+                        
+                        const targetRotation = lidIsOpen ? initialRotationQuaternion : openRotationQuaternion;
+                        const animation = new BABYLON.Animation("lidOpenCloseAnimation", "rotationQuaternion", 60, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                        animation.setKeys([
+                            { frame: 0, value: animatableLidGroup.rotationQuaternion.clone() },
+                            { frame: 30, value: targetRotation },
+                        ]);
+
+                        animatableLidGroup.animations = [];
+                        animatableLidGroup.animations.push(animation);
+
+                        scene.beginAnimation(animatableLidGroup, 0, 30, false, 1, () => {
+                            lidIsOpen = !lidIsOpen;
+                            isAnimating = false;
+                            console.log(`애니메이션 완료 후 lidIsOpen: ${lidIsOpen}, isAnimating: ${isAnimating}`);
+                        });
+                        return; // 로직 실행 후 함수 종료
+                    }
+                    // --- 여기까지가 수정 로직 ---
+
+                    // 상자가 잠겨있을 때 (최초 클릭) 비밀번호 입력 UI 호출
                     if (typeof onSurgeryBoxClick === 'function') {
-                        // Promise를 반환하여, 비밀번호 입력 결과를 기다립니다.
                         onSurgeryBoxClick().then(isPasswordCorrect => {
                             console.log(`비밀번호 확인 결과: ${isPasswordCorrect}`);
                             if (isPasswordCorrect) {
                                 console.log("비밀번호 정답! 애니메이션 시작 로직 진입.");
-                                isAnimating = true; // 애니메이션 시작 플래그 설정
+                                isAnimating = true;
+                                isBoxUnlocked = true; // <-- 정답일 경우 잠금 해제 플래그를 true로 설정!
+
+                                const targetRotation = openRotationQuaternion; // 첫 번째는 항상 열리는 애니메이션
                                 
-                                // 현재 뚜껑 상태에 따라 목표 회전을 결정 (열려있으면 닫히고, 닫혀있으면 열림)
-                                const targetRotation = lidIsOpen ? initialRotationQuaternion : openRotationQuaternion;
+                                const animation = new BABYLON.Animation("lidOpenCloseAnimation", "rotationQuaternion", 60, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                                animation.setKeys([
+                                    { frame: 0, value: animatableLidGroup.rotationQuaternion.clone() },
+                                    { frame: 30, value: targetRotation },
+                                ]);
 
-                                const animation = new BABYLON.Animation(
-                                    "lidOpenCloseAnimation", 
-                                    "rotationQuaternion", 
-                                    60, // frames per second
-                                    BABYLON.Animation.ANIMATIONTYPE_QUATERNION, 
-                                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT 
-                                );
-
-                                animation.enableBlending = true;
-                                animation.blendingSpeed = 0.05; 
-
-                                const keys = [];
-                                keys.push({ frame: 0, value: animatableLidGroup.rotationQuaternion.clone() });
-                                keys.push({ frame: 30, value: targetRotation }); // 0.5초 동안 애니메이션 진행
-                                
-                                animation.setKeys(keys);
-
-                                // 이전에 적용된 애니메이션을 지우고 새로 추가
-                                animatableLidGroup.animations = []; 
+                                animatableLidGroup.animations = [];
                                 animatableLidGroup.animations.push(animation);
 
-                                console.log("Babylon.js 애니메이션 시작 호출.");
                                 scene.beginAnimation(animatableLidGroup, 0, 30, false, 1, () => {
                                     console.log("Babylon.js 애니메이션 완료 콜백 실행.");
-                                    lidIsOpen = !lidIsOpen; // 뚜껑 상태를 토글
-                                    isAnimating = false;    // 애니메이션 종료 플래그 설정
+                                    lidIsOpen = true; // 첫 번째는 무조건 열림
+                                    isAnimating = false;
                                     
-                                    // 뚜껑이 열렸거나 닫혔을 때 다시 클릭 가능하도록 isPickable은 true 유지
-                                    lidMainMesh.isPickable = true; 
+                                    lidMainMesh.isPickable = true;
                                     console.log(`애니메이션 완료 후 lidIsOpen: ${lidIsOpen}, isAnimating: ${isAnimating}`);
                                 });
                             } else {
                                 console.log("상자 비밀번호 틀림.");
-                                // 비밀번호 틀렸다는 메시지는 scene.js에서 처리되므로, 여기서는 별다른 동작 없음
                             }
                         }).catch(error => {
-                            console.error("onSurgeryBoxClick Promise 처리 중 오류 발생:", error); // 에러 로그 추가
+                            console.error("onSurgeryBoxClick Promise 처리 중 오류 발생:", error);
                         });
                     } else {
                         console.warn("onSurgeryBoxClick 콜백이 제공되지 않았습니다. 상자 문을 열 수 없습니다.");
@@ -155,11 +164,11 @@ if (lidMainMesh instanceof BABYLON.AbstractMesh && lidHandleMesh instanceof BABY
                 }
             )
         );
-    }).catch(error => { 
-        console.error("Error during lid meshes onReadyObservable or setup:", error); // Promise.all catch 추가
+    }).catch(error => {
+        console.error("Error during lid meshes onReadyObservable or setup:", error);
     });
-} else { 
-    console.warn("Lid main mesh or handle mesh (01_01_0 or 01_2_4_01_0) not found for surgery tools box."); // 메시 누락 경고 추가
+} else {
+    console.warn("Lid main mesh or handle mesh (01_01_0 or 01_2_4_01_0) not found for surgery tools box.");
 }
 
 // 나머지 메시들에 대한 물리 Impostor 설정 (뚜껑 관련 메시 제외)
@@ -226,7 +235,7 @@ for (const mesh of surgery_toolsResult.meshes) {
   }
   
   // 자물쇠 위치
-const combination_padlockWorldPos = new BABYLON.Vector3(6.95, 7.19, 11.21);
+const combination_padlockWorldPos = new BABYLON.Vector3(6.94, 7.19, 11.225);
 const combination_padlock = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "combination_padlock.glb", scene);
 
 // 루프 변수 이름을 'mesh'로 변경하여 충돌 방지
@@ -354,28 +363,27 @@ for (const doorMesh of door1.meshes) {
         let isDoorOpen = false; // 문의 현재 상태 (열림/닫힘)
         let isAnimating = false; // 애니메이션 진행 여부
 
-        // 마우스 클릭 시 문 열고 닫는 로직
+        // 마우스 클릭 시 문 열고 자동으로 닫는 로직
         doorMesh.actionManager = new BABYLON.ActionManager(scene);
         doorMesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
                 if (isAnimating) return; // 애니메이션 중이면 중복 클릭 무시
+                
                 isAnimating = true;
 
-                if (!isDoorOpen) {
-                    // 문 닫힘 -> 열기
-                    doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 비활성화
-                    scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                        isDoorOpen = true;
-                        isAnimating = false;
-                    });
-                } else {
-                    // 문 열림 -> 닫기
-                    scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                        doorMesh.checkCollisions = true; // 문이 완전히 닫히면 충돌 다시 활성화
-                        isDoorOpen = false;
-                        isAnimating = false;
-                    });
-                }
+                // 문 열기
+                doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 비활성화
+                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                    
+                    // 문이 열린 후 2초(2000ms) 후에 닫기 애니메이션 시작
+                    setTimeout(() => {
+                        // 문 닫기
+                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                            doorMesh.checkCollisions = true; // 문이 완전히 닫히면 충돌 다시 활성화
+                            isAnimating = false; // 애니메이션 종료
+                        });
+                    }, 5000); // 여기서 2000은 닫히기까지의 지연 시간(밀리초)입니다.
+                });
             })
         );
     }
@@ -430,9 +438,9 @@ for (const doorMesh of door1.meshes) {
 };
 
 
-// 망치 위치
+// 열쇠 위치
 const dirty_tube__melee_weaponWorldPos = new BABYLON.Vector3(7.05, 7.22, 11.10);
-const dirty_tube__melee_weaponResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "dirty_tube__melee_weapon.glb", scene);
+const dirty_tube__melee_weaponResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_key.glb", scene);
 
 for (const mesh of dirty_tube__melee_weaponResult.meshes) {
     if (mesh.name !== "__root__") {
@@ -442,15 +450,11 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
         );
 
-        if (mesh.name === "Object_2") {
-            mesh.scaling = new BABYLON.Vector3(0.001, 0.001, 0.001); // Object_2의 스케일을 1로 설정 (예시 값)
-        } else {
-            // Object_2가 아닌 다른 메시들 (Object_3 포함)은 기존 스케일 적용
-            mesh.scaling = new BABYLON.Vector3(2, 2, 2);
-        }
+        mesh.scaling = new BABYLON.Vector3(3,3,3); // Object_2의 스케일을 1로 설정 (예시 값)
+        
 
-        mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
+        mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
         mesh.checkCollisions = true;
 
         if (mesh.isReady()) {
@@ -460,7 +464,7 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1, friction: 0.5 }, scene);
             });
         }
-        // --- 망치 클릭 이벤트 리스너 추가 ---
+        // --- 열쇠 클릭 이벤트 리스너 추가 ---
         mesh.actionManager = new BABYLON.ActionManager(scene);
         mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(
@@ -468,7 +472,7 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
                 function (evt) {
                     const pickedMesh = evt.source;
                     if (pickedMesh === mesh) {
-                        console.log("망치가 클릭되었습니다! (op_room에서)");
+                        console.log("열쇠가 클릭되었습니다! (op_room에서)");
 
                         if (pickedMesh.physicsImpostor) {
                             pickedMesh.physicsImpostor.dispose();
