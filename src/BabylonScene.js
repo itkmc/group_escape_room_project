@@ -753,11 +753,28 @@ const BabylonScene = () => {
       window.addEventListener("resize", onResize);
 
       return () => {
+        console.log("BabylonScene cleanup 시작");
+        
+        // 이벤트 리스너 제거
         window.removeEventListener("keydown", handleKeyDown);
         window.removeEventListener("keyup", handleKeyUp);
         window.removeEventListener("resize", onResize);
-        scene.dispose();
-        engine.dispose();
+        
+        // 씬과 엔진 정리
+        if (scene) {
+          scene.dispose();
+        }
+        if (engine) {
+          engine.dispose();
+        }
+        
+        // ref 초기화
+        flashlightSpotLightRef.current = null;
+        rootFlashlightMeshRef.current = null;
+        flashlightHolderRef.current = null;
+        flashlightOnRef.current = false;
+        
+        console.log("BabylonScene cleanup 완료");
       };
     };
 

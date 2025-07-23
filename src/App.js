@@ -31,8 +31,8 @@ function App() {
                 <Main onStartGame={handleStartGame} />
             ) : (
                 // isGameStarted가 true이면 BabylonScene 컴포넌트를 렌더링
-                // BabylonScene에 닉네임 정보가 필요 없다면 userNickname prop 제거
-                <BabylonScene /* userNickname={userNickname} */ />
+                // key를 추가하여 완전히 새로 마운트되도록 함
+                <BabylonScene key="game-scene" /* userNickname={userNickname} */ />
             )}
         </div>
     );

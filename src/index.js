@@ -7,8 +7,6 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <App /> {/* <--- 여기가 <App /> 이어야 합니다. */}
-  </React.StrictMode>
+  <App />
 );
 // ...
