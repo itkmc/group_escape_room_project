@@ -269,7 +269,6 @@ export async function addDoctorOffice(
                       new BABYLON.ExecuteCodeAction(
                         BABYLON.ActionManager.OnPickTrigger,
                         function() {
-                          console.log("🎉 ID 카드 획득! (클릭 이벤트 발생, 모든 mesh에 등록)");
                           if (onIdCardAcquired) {
                             onIdCardAcquired(true);
                             mesh.setEnabled(false);
@@ -278,7 +277,6 @@ export async function addDoctorOffice(
                         }
                       )
                     );
-                    console.log("ID카드 액션매니저 등록됨(모든 mesh):", mesh.name, !!mesh.actionManager);
                 }
             });
         }
@@ -293,7 +291,6 @@ export async function addDoctorOffice(
             new BABYLON.ExecuteCodeAction(
                 BABYLON.ActionManager.OnPickTrigger,
                 function() {
-                    console.log("🎉 ID 카드 획득! (클릭 이벤트 발생)");
                     if (onIdCardAcquired) {
                         onIdCardAcquired(true); // React의 setHasIdCardItem(true) 콜백 호출
                         rootIdCardMesh.setEnabled(false); // 아이템 획득 후 씬에서 완전히 숨김 (재활성화되지 않음)
@@ -302,7 +299,6 @@ export async function addDoctorOffice(
                 }
             )
         );
-        console.log("ID카드 액션매니저 등록됨:", !!rootIdCardMesh.actionManager);
     }
 
     // --- 메탈 찬장 (metal_cupboard.glb) 추가 및 상호작용 로직 ---
@@ -359,11 +355,8 @@ export async function addDoctorOffice(
                         new BABYLON.ExecuteCodeAction(
                             BABYLON.ActionManager.OnPickTrigger,
                             function () {
-                                console.log("🔍 찬장 메쉬 클릭됨. 현재 찬장 잠금 해제 상태:", getIsCupboardUnlocked());
-
                                 // 찬장이 잠금 해제되었는지 React 함수를 호출하여 확인합니다.
                                 if (!getIsCupboardUnlocked()) {
-                                    console.log("🔒 찬장 잠겨있음. 퀴즈 팝업 호출.");
                                     if (onCupboardClickForQuiz) {
                                         onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
                                         return; // 잠겨있으면 문 열기 로직 실행하지 않음
@@ -374,7 +367,6 @@ export async function addDoctorOffice(
                                 // 애니메이션 재생 중이면 클릭 무시
                                 const activeDoorAnimationGroup = scene.getAnimationGroupByName("metalCupboardDoorAnimationGroup");
                                 if (activeDoorAnimationGroup && activeDoorAnimationGroup.isPlaying) {
-                                    console.log("⏳ 애니메이션 재생 중, 클릭 무시.");
                                     return;
                                 }
 
@@ -454,9 +446,7 @@ export async function addDoctorOffice(
                 }
             });
 
-        } else {
-            console.warn("metal_cupboard.glb 로드 실패 또는 메쉬가 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("metal_cupboard.glb 로드 중 오류: ", error);
         return;
@@ -477,7 +467,6 @@ export async function addDoctorOffice(
         try {
             const wheelchairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wheelchair.glb", scene);
             if (!wheelchairResult || !wheelchairResult.meshes || wheelchairResult.meshes.length === 0) {
-                console.warn("wheelchair.glb 로드 실패 또는 메쉬가 없습니다."); // 콘솔 로그 추가
                 return null;
             }
 
@@ -495,7 +484,6 @@ export async function addDoctorOffice(
                 mesh.checkCollisions = true;
                 mesh.isVisible = true;
             });
-            console.log("휠체어 모델 로드 및 배치 완료!"); // 콘솔 로그 추가
             return rootWheelchairMesh;
         } catch (error) {
             console.error("wheelchair.glb 로드 오류: ", error);
@@ -522,7 +510,6 @@ export async function addDoctorOffice(
         try {
             const hospitalBedResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "hospital_bed.glb", scene);
             if (!hospitalBedResult || !hospitalBedResult.meshes || hospitalBedResult.meshes.length === 0) {
-                console.warn("hospital_bed.glb 로드 실패 또는 메쉬가 없습니다.");
                 return null;
             }
 
@@ -540,7 +527,6 @@ export async function addDoctorOffice(
                 mesh.checkCollisions = true;
                 mesh.isVisible = true;
             });
-            console.log("병원 침대 모델 로드 및 배치 완료!");
             return rootHospitalBedMesh;
         } catch (error) {
             console.error("hospital_bed.glb 로드 오류: ", error);
@@ -571,7 +557,6 @@ export async function addDoctorOffice(
         try {
             const waitingChairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "waiting_chair.glb", scene);
             if (!waitingChairResult || !waitingChairResult.meshes || waitingChairResult.meshes.length === 0) {
-                console.warn("waiting_chair.glb 로드 실패 또는 메쉬가 없습니다.");
                 return null;
             }
 

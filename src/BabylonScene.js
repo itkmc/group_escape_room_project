@@ -334,8 +334,6 @@ const BabylonScene = () => {
         undergroundDoorRef.current = undergroundDoor;
       }
 
-      
-
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
       const lampMesh1 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0");
       if (lampMesh1 && lampMesh1.material) {
