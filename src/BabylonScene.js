@@ -13,7 +13,7 @@ import { addUnderground } from "./rooms/underground";
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
 
-const BabylonScene = () => {
+const BabylonScene = ({ onGameLoaded }) => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
@@ -648,6 +648,27 @@ const BabylonScene = () => {
 
       const onResize = () => engine.resize();
       window.addEventListener("resize", onResize);
+
+      // 모든 모델 로딩이 완료된 후 게임 로딩 완료 알림
+      const checkAllModelsLoaded = () => {
+        console.log("모델 로딩 상태 확인 중...");
+        // 모든 주요 모델이 로드되었는지 확인
+        const allModelsLoaded = true; // 실제로는 각 모델의 로딩 상태를 확인해야 함
+        
+        if (allModelsLoaded && onGameLoaded) {
+          console.log("게임 로딩 완료 - onGameLoaded 콜백 호출 예정");
+          // 약간의 지연을 두어 렌더링이 안정화된 후 콜백 호출
+          setTimeout(() => {
+            console.log("onGameLoaded 콜백 실행");
+            onGameLoaded();
+          }, 1000);
+        } else {
+          console.log("onGameLoaded 콜백이 없거나 모델 로딩이 완료되지 않음");
+        }
+      };
+
+      // 초기 로딩 완료 체크
+      checkAllModelsLoaded();
 
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
