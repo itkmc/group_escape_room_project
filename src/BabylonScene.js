@@ -204,6 +204,15 @@ const BabylonScene = () => {
     const engine = new BABYLON.Engine(canvasRef.current, true);
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
+    
+    // 물리 시스템 활성화 (PhysicsImpostor 에러 해결)
+    try {
+      scene.enablePhysics();
+      console.log("물리 시스템 활성화 완료");
+    } catch (error) {
+      console.warn("물리 시스템 활성화 실패:", error.message);
+      // 물리 시스템이 없어도 게임은 정상 작동
+    }
 
     let hemiLight;
     let originalHemiLightIntensity;
@@ -360,43 +369,83 @@ const BabylonScene = () => {
 
 
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
-      if (!rootFlashlightMeshRef.current) {
-        const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_6_mb.glb", scene);
-        console.log("Loaded meshes:", flashResult.meshes);
-        rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
-        if (!rootFlashlightMeshRef.current) {
-          rootFlashlightMeshRef.current = flashResult.meshes[0];
-          console.warn("flash.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
-        }
+      console.log("손전등 초기화 시작 - rootFlashlightMeshRef.current:", rootFlashlightMeshRef.current);
+              // 강제로 손전등 모델 로딩 실행 (디버깅용)
+        {
+          try {
+            console.log("손전등 모델 로드 시작");
+            
+            const flashResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "flash_light_6_mb.glb", scene);
+            console.log("손전등 모델 로드 완료:", flashResult.meshes.length, "개 메쉬");
+            console.log("손전등 메쉬 이름들:", flashResult.meshes.map(m => m.name));
+            
+            rootFlashlightMeshRef.current = flashResult.meshes.find(mesh => mesh.name === "__root__");
+            if (!rootFlashlightMeshRef.current) {
+              rootFlashlightMeshRef.current = flashResult.meshes[0];
+              console.warn("flash.glb에서 '__root__' 메쉬를 찾을 수 없습니다. 첫 번째 로드된 메쉬를 루트로 사용합니다.");
+            }
 
-        flashResult.animationGroups.forEach(ag => {
-          ag.stop();
-        });
+            flashResult.animationGroups.forEach(ag => {
+              ag.stop();
+            });
+
+            if (rootFlashlightMeshRef.current) {
+              flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
+              flashlightHolderRef.current.position = new BABYLON.Vector3(-8.5, 7.86, -8.0);
+              flashlightHolderRef.current.scaling = new BABYLON.Vector3(2, 2, 2); // 적당한 크기로 조절
+              flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+
+              rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
+              rootFlashlightMeshRef.current.position = BABYLON.Vector3.Zero();
+              rootFlashlightMeshRef.current.scaling = BABYLON.Vector3.One();
+              rootFlashlightMeshRef.current.rotationQuaternion = BABYLON.Quaternion.Identity();
+
+              flashResult.meshes.forEach((mesh) => {
+                mesh.isPickable = true;
+                mesh.isVisible = true;
+                console.log("손전등 메쉬 설정:", mesh.name, "isVisible:", mesh.isVisible);
+              });
+
+              const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.5 }, scene);
+              flashlightCollisionBox.parent = flashlightHolderRef.current;
+              flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
+              flashlightCollisionBox.visibility = 0;
+              flashlightCollisionBox.checkCollisions = true;
+              
+              console.log("손전등 모델 초기화 완료 - 위치:", flashlightHolderRef.current.position);
+              console.log("손전등 모델 초기화 완료 - 스케일:", flashlightHolderRef.current.scaling);
+            }
+          } catch (error) {
+            console.error("손전등 모델 로드 실패:", error);
+            
+            // 모델 로드 실패 시 큐브로 대체
+            console.log("손전등 큐브 생성 시작 (대체)");
+            
+            const flashlightCube = BABYLON.MeshBuilder.CreateBox("flashlightCube", { size: 1.0 }, scene);
+            const flashlightMaterial = new BABYLON.StandardMaterial("flashlightMaterial", scene);
+            flashlightMaterial.diffuseColor = new BABYLON.Color3(1, 1, 0); // 노란색
+            flashlightCube.material = flashlightMaterial;
+            
+            flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
+            flashlightHolderRef.current.position = new BABYLON.Vector3(-8.5, 7.86, -8.0);
+            
+            flashlightCube.parent = flashlightHolderRef.current;
+            rootFlashlightMeshRef.current = flashlightCube;
+            
+            flashlightCube.isPickable = true;
+            flashlightCube.isVisible = true;
+            
+            const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.5 }, scene);
+            flashlightCollisionBox.parent = flashlightHolderRef.current;
+            flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
+            flashlightCollisionBox.visibility = 0;
+            flashlightCollisionBox.checkCollisions = true;
+            
+            console.log("손전등 큐브 생성 완료 - 위치:", flashlightHolderRef.current.position);
+          }
 
         if (rootFlashlightMeshRef.current) {
-          flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
-          // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-7.35, 7.85, -7.82);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(10,10,10);
-          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-
-          rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
-          rootFlashlightMeshRef.current.position = BABYLON.Vector3.Zero();
-          rootFlashlightMeshRef.current.scaling = BABYLON.Vector3.One();
-          rootFlashlightMeshRef.current.rotationQuaternion = BABYLON.Quaternion.Identity();
-
-          flashResult.meshes.forEach((mesh) => {
-            mesh.isPickable = true;
-            mesh.isVisible = true;
-          });
-
-          const flashlightCollisionBox = BABYLON.MeshBuilder.CreateBox("flashlightCollisionBox", { size: 0.3 }, scene);
-          flashlightCollisionBox.parent = flashlightHolderRef.current;
-          flashlightCollisionBox.position = new BABYLON.Vector3(0, 0, 0);
-          flashlightCollisionBox.visibility = 0;
-          flashlightCollisionBox.checkCollisions = true;
-
           flashlightSpotLightRef.current = new BABYLON.SpotLight(
             "flashlightSpotLight",
             new BABYLON.Vector3(0, 0, 0),
