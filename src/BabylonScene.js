@@ -27,6 +27,9 @@ const BabylonScene = () => {
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
+  const [isLoading, setIsLoading] = useState(true);
+    const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
+    const [errorMessage, setErrorMessage] = useState(null);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
