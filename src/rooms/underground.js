@@ -117,13 +117,15 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
 
+
+   
       // 시체 서랍
       const morgueBodyPositions = [
         new BABYLON.Vector3(16.3, 6.4, 8.1)
       ];
       for (const pos of morgueBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "morgue_refrigerator-12mb.glb", scene);
-        console.log("morgue_refrigerator-12mb.glb 로드됨:", result.meshes.map(m => m.name));
+        console.log("시체서랍 로드됨:", result.meshes.map(m => m.name));
         const root = result.meshes.find(m => m.name === "__root__");
         if (root) {
           root.parent = parentMesh;
@@ -148,7 +150,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
       ];
       for (const pos of tableBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "autopsy_table.glb", scene);
-        console.log("autopsy_table.glb 로드됨:", result.meshes.map(m => m.name));
+        console.log("시체테이블 로드됨:", result.meshes.map(m => m.name));
         const root = result.meshes.find(m => m.name === "__root__");
         if (root) {
           root.parent = parentMesh;
