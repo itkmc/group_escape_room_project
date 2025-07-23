@@ -867,5 +867,3 @@ if (garageDoorMesh) {
       }
   }
 }
-
-
