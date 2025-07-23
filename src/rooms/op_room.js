@@ -444,7 +444,6 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
 
         if (mesh.name === "Object_2") {
             mesh.scaling = new BABYLON.Vector3(0.001, 0.001, 0.001); // Object_2의 스케일을 1로 설정 (예시 값)
-            console.log(`Object_2 메시의 스케일이 ${mesh.scaling}으로 설정되었습니다.`);
         } else {
             // Object_2가 아닌 다른 메시들 (Object_3 포함)은 기존 스케일 적용
             mesh.scaling = new BABYLON.Vector3(2, 2, 2);

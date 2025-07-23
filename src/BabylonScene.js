@@ -204,6 +204,15 @@ const BabylonScene = () => {
     const engine = new BABYLON.Engine(canvasRef.current, true);
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
+    
+    // 물리 시스템 활성화 (PhysicsImpostor 에러 해결)
+    try {
+      scene.enablePhysics();
+      console.log("물리 시스템 활성화 완료");
+    } catch (error) {
+      console.warn("물리 시스템 활성화 실패:", error.message);
+      // 물리 시스템이 없어도 게임은 정상 작동
+    }
 
     let hemiLight;
     let originalHemiLightIntensity;
