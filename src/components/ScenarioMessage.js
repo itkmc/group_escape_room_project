@@ -13,21 +13,23 @@ export default function ScenarioMessage({ message, visible, onClose = undefined 
       zIndex: 3000
     }}>
       <div style={{
-        background: "rgba(0,0,0,0.85)",
-        backgroundImage: `url('${process.env.PUBLIC_URL}/2.png')`,
-        borderRadius: 8,
-        padding: "36px",
-        fontSize: 17,
-        fontWeight: "bold",
-        color: "black",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-        textAlign: "center",
-        letterSpacing: "0.02em",
-        whiteSpace: "pre-line", 
-        position: 'relative', 
-        maxWidth: '80%', 
-        boxSizing: 'border-box', 
-      }}>
+    backgroundImage: `url('${process.env.PUBLIC_URL}/2.png')`,
+    borderRadius: 10,
+    padding: "36px 36px",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "black",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+    textAlign: "center",
+    letterSpacing: "0.02em",
+    whiteSpace: "pre-line",
+    position: 'relative',
+    maxWidth: '80%',
+    boxSizing: 'border-box',
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center center',
+}}>
         {/* onClose prop이 존재할 때만 닫기 버튼을 렌더링 */}
         {onClose && (
           <button
@@ -38,7 +40,7 @@ export default function ScenarioMessage({ message, visible, onClose = undefined 
               right: '10px',
               background: 'none',
               border: 'none',
-              color: '#afafaf',
+              color: '#fff',
               fontSize: '24px',
               fontWeight: 'bold',
               cursor: 'pointer',
