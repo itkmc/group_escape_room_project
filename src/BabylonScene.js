@@ -32,8 +32,8 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
   const [isLoading, setIsLoading] = useState(true);
-    const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
-    const [errorMessage, setErrorMessage] = useState(null);
+  const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
+  const [errorMessage, setErrorMessage] = useState(null);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
@@ -55,7 +55,7 @@ const BabylonScene = ({ onGameLoaded }) => {
   useEffect(() => {
     console.log("showProblemModal 상태 변경:", showProblemModal);
   }, [showProblemModal]);
-
+  
   // 앉기 기능 관련 상태
   const [isCrouching, setIsCrouching] = useState(false);
   const isCrouchingRef = useRef(false);
@@ -221,8 +221,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(12.02, 7.85, 4.92),
-
+        new BABYLON.Vector3(3.19, 7.85, 5.60),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -329,15 +328,15 @@ const BabylonScene = ({ onGameLoaded }) => {
         await addVillain(scene, parentMesh);
 
         // underground 문 추가 및 상호작용 설정
-        const undergroundResult = await addUnderground(
+        const undergroundDoor = await addUnderground(
           scene, 
-          parentMesh,
-          (message) => {
+        parentMesh,
+        (message) => {
             setUndergroundDoorMessage(message);
             setShowUndergroundDoorMessage(true);
             // 3초 후 메시지 숨기기
             setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
-          },
+        },
           () => hasIdCardItemRef.current,
           () => {
             console.log("BabylonScene에서 문제 모달을 열려고 합니다!");
@@ -603,15 +602,13 @@ const BabylonScene = ({ onGameLoaded }) => {
           }
           
           // underground 문 (ID 카드 필요)
-          if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
+          if (distToUnderground < THRESHOLD && undergroundDoorRef.current) {
+        if (undergroundDoorRef.current.toggleDoor) {
+            // 이제 toggleDoor()를 인자 없이 호출합니다.
             undergroundDoorRef.current.toggleDoor();
-            setHasIdCardItem(false); // E키로 문을 열면 ID카드 아이템을 UI에서 제거
             opened = true;
-          }
-          
-          // if (!opened) {
-          //   alert('문 가까이에서 E키를 눌러주세요!');
-          // }
+        }
+    }
         }
       };
 
@@ -894,7 +891,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       )}
 
       {/* 수술실 퀴즈 팝업 */}
-      <OperatingRoomProblemModal
+    <OperatingRoomProblemModal
         isOpen={showQuiz2}
         onClose={() => {
           setShowQuiz2(false);
@@ -933,6 +930,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           setIsOfficeCupboardUnlocked(true);
         }}
       />
+
       {/* -------------------------------------------------- */}
       
       {/* Underground 문 상호작용 메시지 */}
@@ -955,8 +953,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           {undergroundDoorMessage}
         </div>
       )}
-
-      {/* 지하실 문제 모달 */}
+       {/* 지하실 문제 모달 */}
       <ProblemModal
         isOpen={showProblemModal}
         onClose={() => setShowProblemModal(false)}
