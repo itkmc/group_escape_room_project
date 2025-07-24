@@ -464,6 +464,11 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     });
     isProblemDoorOpen = true;
     isProblemSolved = true; // 문제 해결됨
+    
+    // 문제 문이 열릴 때 ID 카드가 있다면 사라지도록 콜백 호출
+    if (onProblemOpen) {
+      console.log("문제 문 열림 - ID 카드 사라짐 콜백 호출");
+    }
   };
 
   // 문제 문 토글 함수 (열기/닫기)
