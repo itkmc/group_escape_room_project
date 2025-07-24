@@ -12,10 +12,6 @@ import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
-import ProblemModal from "./components/ProblemModal";
-import RooftopProblemModal from "./components/RooftopProblemModal";
-import OperatingRoomProblemModal from "./components/OperatingRoomProblemModal";
-import OfficeProblemModal from "./components/OfficeProblemModal";
 
 const BabylonScene = ({ onGameLoaded }) => {
   const canvasRef = useRef(null);
@@ -32,8 +28,8 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
-  const [errorMessage, setErrorMessage] = useState(null);
+    const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
+    const [errorMessage, setErrorMessage] = useState(null);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
@@ -46,16 +42,6 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
   const undergroundDoorRef = useRef(null);
 
-  // 지하실 문제 모달 관련 상태
-  const [showProblemModal, setShowProblemModal] = useState(false);
-  const problemDoorRef = useRef(null);
-  const problemDoorToggleRef = useRef(null);
-
-  // showProblemModal 상태 변화 추적
-  useEffect(() => {
-    console.log("showProblemModal 상태 변경:", showProblemModal);
-  }, [showProblemModal]);
-  
   // 앉기 기능 관련 상태
   const [isCrouching, setIsCrouching] = useState(false);
   const isCrouchingRef = useRef(false);
@@ -221,7 +207,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(3.19, 7.85, 5.60),
+        new BABYLON.Vector3(-0.78, 7.85, 9.97),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -326,26 +312,21 @@ const BabylonScene = ({ onGameLoaded }) => {
         await addRestroomObject(scene, parentMesh, showMessage);
         await addInformation(scene, parentMesh);
         await addVillain(scene, parentMesh);
+        await addUnderground(scene, parentMesh);
 
         // underground 문 추가 및 상호작용 설정
         const undergroundDoor = await addUnderground(
           scene, 
-        parentMesh,
-        (message) => {
+          parentMesh,
+          (message) => {
             setUndergroundDoorMessage(message);
             setShowUndergroundDoorMessage(true);
             // 3초 후 메시지 숨기기
             setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
-        },
-          () => hasIdCardItemRef.current,
-          () => {
-            console.log("BabylonScene에서 문제 모달을 열려고 합니다!");
-            setShowProblemModal(true);
-          } // 문제 모달 열기 콜백
+          },
+          () => hasIdCardItemRef.current
         );
-        undergroundDoorRef.current = undergroundResult.toggleDoor;
-        problemDoorRef.current = undergroundResult.openProblemDoor;
-        problemDoorToggleRef.current = undergroundResult.toggleProblemDoor;
+        undergroundDoorRef.current = undergroundDoor;
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -602,13 +583,15 @@ const BabylonScene = ({ onGameLoaded }) => {
           }
           
           // underground 문 (ID 카드 필요)
-          if (distToUnderground < THRESHOLD && undergroundDoorRef.current) {
-        if (undergroundDoorRef.current.toggleDoor) {
-            // 이제 toggleDoor()를 인자 없이 호출합니다.
+          if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
             undergroundDoorRef.current.toggleDoor();
+            setHasIdCardItem(false); // E키로 문을 열면 ID카드 아이템을 UI에서 제거
             opened = true;
-        }
-    }
+          }
+          
+          // if (!opened) {
+          //   alert('문 가까이에서 E키를 눌러주세요!');
+          // }
         }
       };
 
@@ -891,46 +874,157 @@ const BabylonScene = ({ onGameLoaded }) => {
       )}
 
       {/* 수술실 퀴즈 팝업 */}
-    <OperatingRoomProblemModal
-        isOpen={showQuiz2}
-        onClose={() => {
-          setShowQuiz2(false);
-          setQuizMessage2('');
-          setAnswerInput2('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage2("정답입니다! 방 안의 자물쇠를 풀어주세요!");
-        }}
-      />
+      {showQuiz2 && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.7)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2001
+        }}>
+          <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 다음을 보기를 보고 [7+3 = ?]를 구하시오</div>
+            <img src="/수술실문제410.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <br />
+            <input
+              type="text"
+              value={answerInput2}
+              onChange={(e) => setAnswerInput2(e.target.value)}
+              placeholder="정답을 입력하세요"
+              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
+            />
+            <button
+              onClick={handleAnswerSubmit2}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
+            >
+              정답 확인
+            </button>
+            <button
+              onClick={() => {
+                setShowQuiz2(false);
+                setQuizMessage2('');
+                setAnswerInput2('');
+              }}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+            >
+              닫기
+            </button>
+            {quizMessage2 && (
+              <div style={{ marginTop: 16, fontSize: 16, color: quizMessage2.includes("정답입니다") ? "green" : "red" }}>
+                {quizMessage2}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 옥상 퀴즈 팝업 */}
-      <RooftopProblemModal
-        isOpen={showQuiz}
-        onClose={() => {
-          setShowQuiz(false);
-          setQuizMessage('');
-          setAnswerInput('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
-          setHasKeyItem(true);
-        }}
-      />
+      {showQuiz && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.7)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2001
+        }}>
+          <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제] 물음표에 들어갈 숫자를 구하시오</div>
+            <img src="/시계문제.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <br />
+            <input
+              type="text"
+              value={answerInput}
+              onChange={(e) => setAnswerInput(e.target.value)}
+              placeholder="정답을 입력하세요"
+              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
+            />
+            <button
+              onClick={handleAnswerSubmit}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
+            >
+              정답 확인
+            </button>
+            <button
+              onClick={() => {
+                setShowQuiz(false);
+                setQuizMessage('');
+                setAnswerInput('');
+              }}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+            >
+              닫기
+            </button>
+            {quizMessage && (
+              <div style={{ marginTop: 16, fontSize: 16, color: quizMessage.includes("정답입니다") ? "green" : "red" }}>
+                {quizMessage}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* 사무실 퀴즈 팝업 */}
-      <OfficeProblemModal
-        isOpen={showOfficeQuiz}
-        onClose={() => {
-          setShowOfficeQuiz(false);
-          setQuizMessage3('');
-          setAnswerInput3('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage3("정답입니다! 이제 찬장을 열 수 있습니다.");
-          setIsOfficeCupboardUnlocked(true);
-        }}
-      />
-
+      {/* --- 💡 수정된 부분: 사무실 퀴즈 팝업 조건문 변경 --- */}
+      {showOfficeQuiz && ( // showQuiz 대신 showOfficeQuiz 사용
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.7)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2001
+        }}>
+          <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
+            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>[문제]건물의 1층은 커피숍, 2층은 회사다. 3층은 무엇일까?</div>
+            <img src="/영재 문제.png" alt="문제 이미지" style={{ maxWidth: 400, marginBottom: 16 }} />
+            <br />
+            <input
+              type="text"
+              value={answerInput3}
+              onChange={(e) => setAnswerInput3(e.target.value)}
+              placeholder="정답을 입력하세요"
+              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
+            />
+            <button
+              onClick={handleAnswerSubmit3}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
+            >
+              정답 확인
+            </button>
+            <button
+              onClick={() => {
+                setShowOfficeQuiz(false); // showQuiz 대신 showOfficeQuiz 사용
+                setQuizMessage3('');
+                setAnswerInput3('');
+              }}
+              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
+            >
+              닫기
+            </button>
+            {quizMessage3 && (
+              <div style={{ marginTop: 16, fontSize: 16, color: quizMessage3.includes("정답입니다") ? "green" : "red" }}>
+                {quizMessage3}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* -------------------------------------------------- */}
       
       {/* Underground 문 상호작용 메시지 */}
@@ -953,19 +1047,6 @@ const BabylonScene = ({ onGameLoaded }) => {
           {undergroundDoorMessage}
         </div>
       )}
-       {/* 지하실 문제 모달 */}
-      <ProblemModal
-        isOpen={showProblemModal}
-        onClose={() => setShowProblemModal(false)}
-        onCorrectAnswer={() => {
-          console.log("지하실 문제 정답!");
-          // 문제 문 열기
-          if (problemDoorRef.current) {
-            problemDoorRef.current();
-          }
-        }}
-      />
-
       <CenterMessage message={centerMessage} visible={showCenterMessage} />
     </>
   );
