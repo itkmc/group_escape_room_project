@@ -396,7 +396,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     // 한 번이라도 열렸으면 isUnlocked = true
     if (!isUnlocked) {
       if (!getHasIdCardItem || !getHasIdCardItem()) {
-        if (onDoorInteraction) onDoorInteraction("ID 카드가 필요합니다!");
+        if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
         return;
       }
       isUnlocked = true; // E키로 한 번 열면 해제
@@ -434,7 +434,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
   // 클릭으로 문 열기/닫기 함수 (한 번 열린 후에만 사용 가능)
   const handleDoorClick = () => {
     if (!isUnlocked) {
-      if (onDoorInteraction) onDoorInteraction("E키를 눌러 문을 열어주세요!");
+      if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
       return;
     }
     toggleDoor();
@@ -464,6 +464,11 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     });
     isProblemDoorOpen = true;
     isProblemSolved = true; // 문제 해결됨
+    
+    // 문제 문이 열릴 때 ID 카드가 있다면 사라지도록 콜백 호출
+    if (onProblemOpen) {
+      console.log("문제 문 열림 - ID 카드 사라짐 콜백 호출");
+    }
   };
 
   // 문제 문 토글 함수 (열기/닫기)
