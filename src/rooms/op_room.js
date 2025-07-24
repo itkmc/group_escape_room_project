@@ -10,8 +10,10 @@ import "@babylonjs/loaders";
  * @param {Function} [handleOperatingRoomScrollClick] - 두루마리 클릭 시 호출될 콜백 함수
  * @param {Function} [onCardPickedCallback] - 카드 클릭 함수
  * @param {Function} [onSurgeryBoxClick] - 상자가 클릭되었을 때 호출될 콜백 함수 
+ * @param {Function} [onDoorInteraction] - 문 관련 상호작용 메시지를 띄울 함수
+ * @param {Function} [getHasIdCardItem]
  */
-export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onCardPickedCallback, onSurgeryBoxClick) {
+export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onCardPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem) {
   if (!parentMesh) {
     console.warn("parentMesh가 없습니다. 오브젝트들이 부모에 연결되지 않습니다.");
     return;
@@ -300,94 +302,127 @@ for (const mesh of combination_padlock.meshes) {
   await loadDeadHazmatFemale(dead_hazmat_femaleWorldPos3, parentMesh, scene);
   
   // 문
-const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+  const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
 
-// op_room에서만 사용하는 prefix 추가
-const doorPrefix = "op_room_door_";
+  // op_room에서만 사용하는 prefix 추가
+  const doorPrefix = "op_room_door_";
 
-// 모든 mesh 이름에 prefix 추가
-door1.meshes.forEach(mesh => {
-  mesh.name = doorPrefix + mesh.name;
-});
+  // 모든 mesh 이름에 prefix 추가
+  door1.meshes.forEach(mesh => {
+    mesh.name = doorPrefix + mesh.name;
+  });
+  
+  // 애니메이션과 문 메쉬 변수를 for 루프 바깥에 선언
+  let openAnim;
+  let closeAnim;
+  let doorMesh = null; // doorMesh 변수도 여기에 선언
 
-for (const doorMesh of door1.meshes) {
-    // "Cube.002_Cube.000_My_Ui_0"은 문짝 메쉬의 실제 이름에 따라 다를 수 있습니다.
-    if (doorMesh.name === doorPrefix + "Cube.002_Cube.000_My_Ui_0") {
-        const pivot = new BABYLON.Vector3(0,-6.3,0); // 모델에 맞춰 수동 설정
-        doorMesh.setPivotPoint(pivot);
+  // 문 상태 관리 변수들을 루프 바깥에 정의
+  let isUnlocked = false;
+  let isDoorOpen = false;
+  let isAnimating = false;
 
-        doorMesh.parent = parentMesh;
-        doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-            new BABYLON.Vector3(2.1, 5, 12.58), // 문짝의 월드 위치
-            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-        );
+  for (const mesh of door1.meshes) { // 루프 변수 이름을 mesh로 변경
+    if (mesh.name === doorPrefix + "Cube.002_Cube.000_My_Ui_0") {
+      doorMesh = mesh; // doorMesh 변수에 할당
+      const pivot = new BABYLON.Vector3(0,-6.3,0); 
+      doorMesh.setPivotPoint(pivot);
 
-        // 문의 초기 회전 설정
-        const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2))
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));;
+      doorMesh.parent = parentMesh;
+      doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+          new BABYLON.Vector3(2.1, 5, 12.58), 
+          BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+      );
 
-        doorMesh.rotationQuaternion = baseRotation.clone();
-        doorMesh.scaling = new BABYLON.Vector3(31.8, 32.2, 31.8); // 문의 스케일
-        doorMesh.checkCollisions = true; // 문에 대한 충돌 감지 활성화
+      const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI / 2))
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-        // 문 열림/닫힘 애니메이션 정의
-        const startRotation = doorMesh.rotationQuaternion.clone();
-        const openAngle = Math.PI / 2; // 문이 열리는 각도 (90도)
-        const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+      doorMesh.rotationQuaternion = baseRotation.clone();
+      doorMesh.scaling = new BABYLON.Vector3(31.8, 32.2, 31.8);
+      doorMesh.checkCollisions = true;
 
-        const openAnim = new BABYLON.Animation(
-            "doorOpen_op_room",
-            "rotationQuaternion",
-            30, // FPS
-            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-        );
-        openAnim.setKeys([
-            { frame: 0, value: startRotation },
-            { frame: 30, value: endRotation },
-        ]);
+      const startRotation = doorMesh.rotationQuaternion.clone();
+      const openAngle = Math.PI / 2;
+      const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
 
-        const closeAnim = new BABYLON.Animation(
-            "doorClose_op_room",
-            "rotationQuaternion",
-            30, // FPS
-            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-        );
-        closeAnim.setKeys([
-            { frame: 0, value: endRotation },
-            { frame: 30, value: startRotation },
-        ]);
+      openAnim = new BABYLON.Animation(
+          "doorOpen_op_room",
+          "rotationQuaternion",
+          30,
+          BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+          BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+      );
+      openAnim.setKeys([
+          { frame: 0, value: startRotation },
+          { frame: 30, value: endRotation },
+      ]);
 
-        let isDoorOpen = false; // 문의 현재 상태 (열림/닫힘)
-        let isAnimating = false; // 애니메이션 진행 여부
+      closeAnim = new BABYLON.Animation(
+          "doorClose_op_room",
+          "rotationQuaternion",
+          30,
+          BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+          BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+      );
+      closeAnim.setKeys([
+          { frame: 0, value: endRotation },
+          { frame: 30, value: startRotation },
+      ]);
 
-        // 마우스 클릭 시 문 열고 자동으로 닫는 로직
-        doorMesh.actionManager = new BABYLON.ActionManager(scene);
-        doorMesh.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                if (isAnimating) return; // 애니메이션 중이면 중복 클릭 무시
-                
-                isAnimating = true;
+      // 마우스 클릭 시 문 열고 닫는 로직
+      doorMesh.actionManager = new BABYLON.ActionManager(scene);
+      doorMesh.actionManager.registerAction(
+          new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+              if (!isUnlocked) {
+                  if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+                  return;
+              }
 
-                // 문 열기
-                doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 비활성화
-                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                    
-                    // 문이 열린 후 2초(2000ms) 후에 닫기 애니메이션 시작
-                    setTimeout(() => {
-                        // 문 닫기
-                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                            doorMesh.checkCollisions = true; // 문이 완전히 닫히면 충돌 다시 활성화
-                            isAnimating = false; // 애니메이션 종료
-                        });
-                    }, 5000); // 여기서 2000은 닫히기까지의 지연 시간(밀리초)입니다.
-                });
-            })
-        );
+              if (isAnimating) return;
+              isAnimating = true;
+
+              if (isDoorOpen) {
+                  scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                      doorMesh.checkCollisions = true;
+                      isAnimating = false;
+                      isDoorOpen = false;
+                  });
+              } else {
+                  doorMesh.checkCollisions = false;
+                  scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                      isDoorOpen = true;
+                      isAnimating = false;
+                  });
+              }
+          })
+      );
     }
-}
+  }
+
+  // 이 부분은 for 루프가 끝난 후 실행되므로, 밖에서 선언된 doorMesh 변수에 접근 가능
+  if (doorMesh) { // doorMesh가 할당되었는지 확인
+    scene.onKeyboardObservable.add((kbInfo) => {
+        if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e" && !isUnlocked) {
+            if (getHasIdCardItem()) {
+                if (onDoorInteraction) onDoorInteraction("ID 카드로 문을 열었습니다!");
+                isUnlocked = true;
+
+                if (isAnimating) return;
+                isAnimating = true;
+                doorMesh.checkCollisions = false;
+                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                    isDoorOpen = true;
+                    isAnimating = false;
+                });
+            } else {
+                if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+            }
+        }
+    });
+};
+  
+              
 
   // 수술대 위치
   const desiredOperatingWorldPos = new BABYLON.Vector3(6.8, 6.43, 12.67);
