@@ -6,9 +6,10 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene 
  * @param {BABYLON.AbstractMesh} parentMesh 
  * @param {Function} onDoorInteraction - 문 상호작용 시 호출될 콜백 함수
- * @param {Function} [getHasKeyItem] ID 카드 보유 상태를 확인하는 함수
+ * @param {Function} getHasIdCardItem - ID 카드 보유 상태를 확인하는 함수
+ * @param {Function} onProblemOpen - 문제 모달을 열기 위한 콜백 함수
  */
-export async function addUnderground(scene, parentMesh, onDoorInteraction, getHasKeyItem) {
+export async function addUnderground(scene, parentMesh, onDoorInteraction, getHasIdCardItem, onProblemOpen) {
   const desiredDoor2WorldPos = new BABYLON.Vector3(7, 6.4, 5.1);
   let doorMeshes = [];
   let isDoorOpen = false;
@@ -23,6 +24,12 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
   const disposeDistance = 40; // 이 거리 이상이면 dispose
   const undergroundCenter = new BABYLON.Vector3(20, 6, 5); // underground 방의 중심점
   let loadedMeshes = [];
+  
+  // 문제 문 애니메이션 제어를 위한 변수들
+  let problemDoorAnimationGroups = [];
+  let isProblemDoorOpen = false;
+  let isProblemSolved = false; // 문제가 해결되었는지 추적
+  let problemDoorRoot = null; // 문제 문의 루트 메시
 
   // 문 추가 전에 씬 전체에서 같은 이름의 mesh를 모두 삭제
   ["Object_4", "Object_8"].forEach(name => {
@@ -85,6 +92,15 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           );
           root.scaling = new BABYLON.Vector3(100, 100, 100);
           root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2); // X축으로 눕힘
+          root.checkCollisions = true; // 충돌 감지 활성화
+          
+          // 모든 하위 메시들에도 충돌 감지 설정
+          result.meshes.forEach(mesh => {
+            if (mesh.name !== "__root__") {
+              mesh.checkCollisions = true;
+            }
+          });
+          
           console.log("deer_dead_body __root__ 배치:", {
             position: root.position,
             scaling: root.scaling
@@ -110,6 +126,15 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           root.scaling = new BABYLON.Vector3(100, 100, 100);
           root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI)); // X축 90도, Y축 90도 순서로 회전
+          root.checkCollisions = true; // 충돌 감지 활성화
+          
+          // 모든 하위 메시들에도 충돌 감지 설정
+          result.meshes.forEach(mesh => {
+            if (mesh.name !== "__root__") {
+              mesh.checkCollisions = true;
+            }
+          });
+          
           console.log("zombie_smoke_mummy_character __root__ 배치:", {
             position: root.position,
             scaling: root.scaling
@@ -137,6 +162,15 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           root.scaling = new BABYLON.Vector3(70, 90, 70);
           root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)); // X축 90도, Y축 90도 순서로 회전
+          root.checkCollisions = true; // 충돌 감지 활성화
+          
+          // 모든 하위 메시들에도 충돌 감지 설정
+          result.meshes.forEach(mesh => {
+            if (mesh.name !== "__root__") {
+              mesh.checkCollisions = true;
+            }
+          });
+          
           console.log("morgue_refrigerator __root__ 배치:", {
             position: root.position,
             scaling: root.scaling
@@ -162,6 +196,15 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           root.scaling = new BABYLON.Vector3(5, 5, 5);
           root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)); // X축 90도, Y축 90도 순서로 회전
+          root.checkCollisions = true; // 충돌 감지 활성화
+          
+          // 모든 하위 메시들에도 충돌 감지 설정
+          result.meshes.forEach(mesh => {
+            if (mesh.name !== "__root__") {
+              mesh.checkCollisions = true;
+            }
+          });
+          
           console.log("autopsy_table __root__ 배치:", {
             position: root.position,
             scaling: root.scaling
@@ -213,6 +256,105 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI/2)); // X축 90도, Y축 90도 순서로 회전
           console.log("skull_sculpture_two __root__ 배치:", {
+            position: root.position,
+            scaling: root.scaling
+          });
+          loadedMeshes.push(root);
+        }
+      }
+
+      // 문제 넣을 문
+      const massiveDoorPositions = [
+        new BABYLON.Vector3(20.65, 7.2, 6.51)
+      ];
+      for (const pos of massiveDoorPositions) {
+        console.log("massive_door_with_animation.glb 로딩 시작...");
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "massive_door_with_animation.glb", scene);
+        console.log("massive_door_with_animation.glb 로드됨:", result.meshes.map(m => m.name));
+        console.log("애니메이션 그룹:", result.animationGroups.map(ag => ag.name));
+        console.log("로드된 메시 개수:", result.meshes.length);
+        
+        const root = result.meshes.find(m => m.name === "__root__");
+        if (root) {
+          root.parent = parentMesh;
+          root.position = BABYLON.Vector3.TransformCoordinates(
+            pos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          root.scaling = new BABYLON.Vector3(65, 130, 30);
+          root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI/2));
+          root.checkCollisions = true; // 충돌 감지 활성화
+          
+          // 문제 문 루트 메시 저장
+          problemDoorRoot = root;
+          
+          // 모든 하위 메시들에도 충돌 감지 설정
+          result.meshes.forEach(mesh => {
+            if (mesh.name !== "__root__") {
+              mesh.checkCollisions = true;
+            }
+          });
+          
+          // 애니메이션 그룹 저장 및 초기 상태 설정 (모든 애니메이션 정지)
+          result.animationGroups.forEach(animationGroup => {
+            animationGroup.stop();
+            animationGroup.loopAnimation = false; // 반복 애니메이션 비활성화
+            
+            // enableBlending 함수가 있는지 확인 후 호출
+            if (typeof animationGroup.enableBlending === 'function') {
+              animationGroup.enableBlending(0); // 블렌딩 비활성화
+            }
+            
+            // 애니메이션 완료 후 자동으로 닫기 (문제 해결 후에만)
+            animationGroup.onAnimationGroupEndObservable.add(() => {
+              console.log("애니메이션 완료:", animationGroup.name);
+              // 문제가 해결된 후에만 자동으로 닫기
+              if (isProblemSolved && isProblemDoorOpen) {
+                setTimeout(() => {
+                  console.log("자동으로 문 닫기");
+                  problemDoorAnimationGroups.forEach(ag => {
+                    ag.stop();
+                    ag.reset();
+                    ag.loopAnimation = false;
+                  });
+                  isProblemDoorOpen = false;
+                }, 3000); // 3초 후 자동 닫기
+              }
+            });
+            
+            problemDoorAnimationGroups.push(animationGroup);
+            console.log("애니메이션 그룹 저장:", animationGroup.name, "반복:", animationGroup.loopAnimation);
+          });
+          
+          // 모든 애니메이션을 완전히 비활성화 (필요시 주석 해제)
+          // result.animationGroups.forEach(animationGroup => {
+          //   animationGroup.setEnabled(false);
+          // });
+          
+          // 문제 문 클릭 이벤트 추가
+          console.log("클릭 이벤트 등록 시작...");
+          let clickEventCount = 0;
+          result.meshes.forEach(mesh => {
+            if (mesh.name !== "__root__") {
+              console.log("메시에 클릭 이벤트 추가:", mesh.name);
+              mesh.isPickable = true;
+              mesh.actionManager = new BABYLON.ActionManager(scene);
+              mesh.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(
+                  BABYLON.ActionManager.OnPickTrigger,
+                  () => {
+                    console.log("문제 문이 클릭되었습니다! 메시:", mesh.name);
+                    toggleProblemDoor();
+                  }
+                )
+              );
+              clickEventCount++;
+            }
+          });
+          console.log("총", clickEventCount, "개의 메시에 클릭 이벤트 등록됨");
+          
+          console.log("massive_door_with_animation __root__ 배치:", {
             position: root.position,
             scaling: root.scaling
           });
@@ -316,8 +458,65 @@ doorMeshes.forEach((mesh) => {
             () => handleDoorClick()
         )
     );
-});
+  });
 
-// toggleDoor를 외부에서 쓸 수 있게 반환 (E키용)
-return { toggleDoor };
+  // 문제 문 열기 함수
+  const openProblemDoor = () => {
+    if (isProblemDoorOpen) return;
+    
+    console.log("문제 문을 엽니다...");
+    problemDoorAnimationGroups.forEach(animationGroup => {
+      console.log("애니메이션 재생:", animationGroup.name);
+      animationGroup.loopAnimation = false; // 반복 비활성화
+      animationGroup.play();
+    });
+    isProblemDoorOpen = true;
+    isProblemSolved = true; // 문제 해결됨
+  };
+
+  // 문제 문 토글 함수 (열기/닫기)
+  const toggleProblemDoor = () => {
+    console.log("toggleProblemDoor 호출됨, isProblemSolved:", isProblemSolved);
+    
+    if (!isProblemSolved) {
+      // 문제가 해결되지 않았으면 문제 모달 열기
+      console.log("문제가 해결되지 않음, 모달 열기 시도");
+      if (onProblemOpen) {
+        console.log("onProblemOpen 콜백 호출");
+        onProblemOpen();
+      } else {
+        console.log("onProblemOpen 콜백이 없음");
+      }
+      return;
+    }
+
+    // 문제가 해결된 후에는 문만 열고 닫기 (문틀은 회전하지 않음)
+    if (isProblemDoorOpen) {
+      // 문이 열려있으면 닫기
+      console.log("문제 문을 닫습니다...");
+      
+      // 애니메이션만 사용 (문틀 회전 방지)
+      problemDoorAnimationGroups.forEach(animationGroup => {
+        animationGroup.stop();
+        animationGroup.reset();
+        animationGroup.loopAnimation = false;
+      });
+      
+      isProblemDoorOpen = false;
+    } else {
+      // 문이 닫혀있으면 열기
+      console.log("문제 문을 엽니다...");
+      
+      // 애니메이션만 사용 (문틀 회전 방지)
+      problemDoorAnimationGroups.forEach(animationGroup => {
+        animationGroup.loopAnimation = false;
+        animationGroup.play();
+      });
+      
+      isProblemDoorOpen = true;
+    }
+  };
+
+  // toggleDoor를 외부에서 쓸 수 있게 반환 (E키용)
+  return { toggleDoor };
 }
