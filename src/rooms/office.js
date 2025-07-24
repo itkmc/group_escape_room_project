@@ -275,6 +275,8 @@ export async function addDoctorOffice(
                             mesh.setEnabled(false);
                             mesh.isPickable = false;
                           }
+                          // ID 카드 획득 후 즉시 사라지도록 설정
+                          console.log("ID 카드가 즉시 사라집니다.");
                         }
                       )
                     );
@@ -299,6 +301,8 @@ export async function addDoctorOffice(
                         rootIdCardMesh.setEnabled(false); // 아이템 획득 후 씬에서 완전히 숨김 (재활성화되지 않음)
                         rootIdCardMesh.isPickable = false; // 획득 후 다시 픽 불가능하게 설정
                     }
+                    // ID 카드 획득 후 즉시 사라지도록 설정
+                    console.log("ID 카드가 즉시 사라집니다.");
                 }
             )
         );

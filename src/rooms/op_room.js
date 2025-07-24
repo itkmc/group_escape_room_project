@@ -405,6 +405,7 @@ for (const mesh of combination_padlock.meshes) {
     scene.onKeyboardObservable.add((kbInfo) => {
         if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e" && !isUnlocked) {
             if (getHasIdCardItem()) {
+                console.log("E키로 문 열기 - ID 카드 사용됨");
                 if (onDoorInteraction) onDoorInteraction("ID 카드로 문을 열었습니다!");
                 isUnlocked = true;
 
@@ -521,6 +522,9 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
                         } else {
                             console.warn("onCardPickedCallback 함수가 제공되지 않았습니다. UI 상태가 업데이트되지 않을 수 있습니다.");
                         }
+                        
+                        // 열쇠 획득 후 즉시 사라지도록 설정
+                        console.log("열쇠가 사라집니다.");
                     }
                 }
             )
