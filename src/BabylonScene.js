@@ -12,6 +12,7 @@ import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
 import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
+import ScenarioMessage from "./components/ScenarioMessage";
 import ProblemModal from "./components/ProblemModal";
 import RooftopProblemModal from "./components/RooftopProblemModal";
 import OperatingRoomProblemModal from "./components/OperatingRoomProblemModal";
@@ -205,6 +206,15 @@ const BabylonScene = ({ onGameLoaded }) => {
     setTimeout(() => setShowCenterMessage(false), 2000);
   }
 
+  const [scenarioMessage, setScenarioMessage] = useState("");
+  const [showScenarioMessage, setShowScenarioMessage] = useState(false);
+
+  function showMessage2(msg) {
+    setScenarioMessage(msg);
+    setShowScenarioMessage(true);
+    // setTimeout(() => setShowCenterMessage(false), 2000);
+  }
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -221,7 +231,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(12.02, 7.85, 4.92),
+        new BABYLON.Vector3(-32.02, 2.26, -5.99),
 
         scene
       );
@@ -318,7 +328,7 @@ const BabylonScene = ({ onGameLoaded }) => {
         );
     
 
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage);
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
         await addDoctorOffice(
           scene,
           parentMesh,
@@ -983,6 +993,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       />
 
       <CenterMessage message={centerMessage} visible={showCenterMessage} />
+      <ScenarioMessage message={scenarioMessage} visible={showScenarioMessage} onClose={() => setShowScenarioMessage(false)}/>
     </>
   );
 };
