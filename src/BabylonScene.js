@@ -312,21 +312,20 @@ const BabylonScene = ({ onGameLoaded }) => {
         await addRestroomObject(scene, parentMesh, showMessage);
         await addInformation(scene, parentMesh);
         await addVillain(scene, parentMesh);
-        await addUnderground(scene, parentMesh);
 
         // underground 문 추가 및 상호작용 설정
         const undergroundDoor = await addUnderground(
-          scene, 
-          parentMesh,
-          (message) => {
-            setUndergroundDoorMessage(message);
-            setShowUndergroundDoorMessage(true);
-            // 3초 후 메시지 숨기기
-            setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
-          },
-          () => hasIdCardItemRef.current
-        );
-        undergroundDoorRef.current = undergroundDoor;
+    scene, 
+    parentMesh,
+    (message) => {
+        setUndergroundDoorMessage(message);
+        setShowUndergroundDoorMessage(true);
+        // 3초 후 메시지 숨기기
+        setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+    },
+    () => hasKeyItemRef.current
+);
+undergroundDoorRef.current = undergroundDoor;
       }
 
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
@@ -583,15 +582,13 @@ const BabylonScene = ({ onGameLoaded }) => {
           }
           
           // underground 문 (ID 카드 필요)
-          if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
+          if (distToUnderground < THRESHOLD && undergroundDoorRef.current) {
+        if (undergroundDoorRef.current.toggleDoor) {
+            // 이제 toggleDoor()를 인자 없이 호출합니다.
             undergroundDoorRef.current.toggleDoor();
-            setHasIdCardItem(false); // E키로 문을 열면 ID카드 아이템을 UI에서 제거
             opened = true;
-          }
-          
-          // if (!opened) {
-          //   alert('문 가까이에서 E키를 눌러주세요!');
-          // }
+        }
+    }
         }
       };
 
