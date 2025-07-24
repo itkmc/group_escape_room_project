@@ -97,6 +97,21 @@ const BabylonScene = ({ onGameLoaded }) => {
     }
   };
 
+  // --- ⭐ 종이 이미지 팝업 관련 상태 (이전 답변에서 추가한 내용) ⭐ ---
+    const [isPaperImagePopupVisible, setIsPaperImagePopupVisible] = useState(false);
+    const [paperImagePopupContentUrl, setPaperImagePopupContentUrl] = useState("");
+
+    const handlePaperClickForImage = (imageUrl) => {
+        console.log("handlePaperClickForImage 호출됨. 이미지 URL:", imageUrl);
+        setPaperImagePopupContentUrl(imageUrl);
+        setIsPaperImagePopupVisible(true);
+    };
+
+    const closePaperImagePopup = () => {
+        setIsPaperImagePopupVisible(false);
+        setPaperImagePopupContentUrl("");
+    };
+
   //수술실 문제 코드
   const [showQuiz2, setShowQuiz2] = useState(false);
   const [answerInput2, setAnswerInput2] = useState('');
@@ -232,7 +247,6 @@ const BabylonScene = ({ onGameLoaded }) => {
         "camera",
         //첫시작
         new BABYLON.Vector3(-32.02, 2.26, -5.99),
-
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -337,7 +351,8 @@ const BabylonScene = ({ onGameLoaded }) => {
             console.log("setHasIdCardItem 호출됨:", status);
             setHasIdCardItem(status);
           }, // ID카드 획득 시
-          () => isOfficeCupboardUnlockedRef.current // 항상 최신값 반환
+          () => isOfficeCupboardUnlockedRef.current, // 항상 최신값 반환
+          handlePaperClickForImage 
         );
 
         await addRestroomObject(scene, parentMesh, showMessage);
@@ -416,9 +431,9 @@ const BabylonScene = ({ onGameLoaded }) => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.20);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
           flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
-          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
+          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
           rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
@@ -914,19 +929,10 @@ const BabylonScene = ({ onGameLoaded }) => {
       {/* 수술실 퀴즈 팝업 */}
       <OperatingRoomProblemModal
         isOpen={showQuiz2}
-        onClose={() => {
-          setShowQuiz2(false);
-          setQuizMessage2('');
-          setAnswerInput2('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage2("정답입니다! 방 안의 자물쇠를 풀어주세요!");
-        }}
-      />
+        
 
-      {/* 옥상 퀴즈 팝업 */}
-      <RooftopProblemModal
-        isOpen={showQuiz}
+    
+    
         onClose={() => {
           setShowQuiz(false);
           setQuizMessage('');
@@ -952,6 +958,71 @@ const BabylonScene = ({ onGameLoaded }) => {
         }}
       />
       {/* -------------------------------------------------- */}
+
+       {/* --- ⭐ 종이 이미지 팝업 UI (핵심 부분) ⭐ --- */}
+            {isPaperImagePopupVisible && (
+                 <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.7)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 2001 // 높은 z-index
+                }}>
+                    <div style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        padding: '25px',
+                        border: '3px solid #6c757d',
+                        borderRadius: '10px',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
+                        maxWidth: '85%', // 이미지 크기에 맞게 조절
+                        maxHeight: '90%', // 이미지 크기에 맞게 조절
+                        overflow: 'auto', // 이미지가 팝업보다 크면 스크롤
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2002, // 오버레이보다 높게
+                        position: 'relative', // 자식 요소의 absolute 포지셔닝을 위해 필요할 수 있음
+                    }}>
+                        <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#0056b3' }}>식단표 문제</h3>
+                        {paperImagePopupContentUrl && (
+                            <img
+                                src={paperImagePopupContentUrl} // 상태에 저장된 이미지 URL 사용
+                                alt="식단표 문제"
+                                style={{
+                                    maxWidth: '100%', // 팝업 너비에 맞게 조절
+                                    maxHeight: '100%', // 팝업 높이에 맞게 조절
+                                    display: 'block',
+                                    borderRadius: '5px',
+                                    border: '1px solid #e9ecef'
+                                }}
+                                onError={(e) => {
+                                    e.target.onerror = null; // 중복 에러 방지
+                                    console.error("이미지 로드 실패:", paperImagePopupContentUrl);
+                                }}
+                            />
+                        )}
+                        <button onClick={closePaperImagePopup} style={{
+                            marginTop: '20px',
+                            padding: '12px 25px',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '1em',
+                            fontWeight: 'bold',
+                            transition: 'background-color 0.2s ease'
+                        }}>닫기</button>
+                    </div>
+                </div>
+            )}
       
       {/* Underground 문 상호작용 메시지 */}
       {showUndergroundDoorMessage && (

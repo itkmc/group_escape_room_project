@@ -38,7 +38,6 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     let rootVillainMesh = null;
 
     try {
-        console.log("🛠️ Villain 모델 (horror_xqc.glb) 로드 시작...");
         const villainResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "horror_xqc.glb", scene);
 
         if (villainResult && villainResult.meshes && villainResult.meshes.length > 0) {
@@ -65,9 +64,7 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
                     ag.stop(); // 모든 애니메이션 멈춤 (기본)
                 }
             }
-        } else {
-            console.warn("❗️ horror_xqc.glb에서 유효한 메쉬를 찾을 수 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("❌ horror_xqc.glb 로드 오류: ", error);
     }
@@ -178,7 +175,6 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     // --- 3. old_board.glb (오래된 판자) 모델 배치 (첫 번째 인스턴스) ---
     const oldBoardWorldPos = new BABYLON.Vector3(2.55, 8.10, -10.35); // 예시 위치, 필요에 따라 조정하세요.
     try {
-        console.log("🛠️ Old Board 모델 (wooden_panel_board.glb) 로드 시작...");
         const boardResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wooden_panel_board.glb", scene);
 
         if (boardResult && boardResult.meshes && boardResult.meshes.length > 0) {
@@ -199,9 +195,7 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
                 mesh.isVisible = true;
                 mesh.isPickable = true; // 판자는 상호작용 가능하게 할 수도 있음
             }
-        } else {
-            console.warn("❗️ wooden_panel_board.glb에서 유효한 메쉬를 찾을 수 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("❌ wooden_panel_board.glb 로드 오류: ", error);
     }
@@ -209,7 +203,6 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     // --- 4. old_board.glb (오래된 판자) 모델 배치 (두 번째 인스턴스) ---
     const oldBoardWorldPos2 = new BABYLON.Vector3(2.55, 8.10, -12.55); // 두 번째 판자의 예시 위치, 필요에 따라 조정하세요.
     try {
-        console.log("🛠️ Old Board 모델 (wooden_panel_board.glb) 두 번째 인스턴스 로드 시작...");
         const boardResult2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wooden_panel_board.glb", scene);
 
         if (boardResult2 && boardResult2.meshes && boardResult2.meshes.length > 0) {
@@ -230,9 +223,7 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
                 mesh.isVisible = true;
                 mesh.isPickable = true;
             }
-        } else {
-            console.warn("❗️ wooden_panel_board.glb 두 번째 인스턴스에서 유효한 메쉬를 찾을 수 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("❌ wooden_panel_board.glb 두 번째 인스턴스 로드 오류: ", error);
     }
@@ -240,7 +231,6 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     // --- 5. old_board.glb (오래된 판자) 모델 배치 (세 번째 인스턴스) ---
     const oldBoardWorldPos3 = new BABYLON.Vector3(2.55, 8.10, -14.75); // 세 번째 판자의 예시 위치, 필요에 따라 조정하세요.
     try {
-        console.log("🛠️ Old Board 모델 (wooden_panel_board.glb) 세 번째 인스턴스 로드 시작...");
         const boardResult3 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wooden_panel_board.glb", scene);
 
         if (boardResult3 && boardResult3.meshes && boardResult3.meshes.length > 0) {
@@ -261,9 +251,7 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
                 mesh.isVisible = true;
                 mesh.isPickable = true;
             }
-        } else {
-            console.warn("❗️ wooden_panel_board.glb 세 번째 인스턴스에서 유효한 메쉬를 찾을 수 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("❌ wooden_panel_board.glb 세 번째 인스턴스 로드 오류: ", error);
     }
@@ -290,9 +278,7 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
                 mesh.isVisible = true;
                 mesh.isPickable = true; // 무기는 획득 가능하게 할 수도 있음
             }
-        } else {
-            console.warn("❗️ chainsaw.glb에서 유효한 메쉬를 찾을 수 없습니다."); // 콘솔 메시지 수정
-        }
+        } 
     } catch (error) {
         console.error("❌ chainsaw.glb 로드 오류: ", error); // 콘솔 메시지 수정
     }
@@ -300,7 +286,6 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     // --- 7. baseball_bat.glb (야구 방망이) 모델 배치 ---
     const baseballBatWorldPos = new BABYLON.Vector3(2.45, 8.10, -12.00); // 예시 위치, 필요에 따라 조정하세요.
     try {
-        console.log("🛠️ Baseball Bat 모델 (baseball_bat.glb) 로드 시작...");
         const baseballBatResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "baseball_bat.glb", scene);
 
         if (baseballBatResult && baseballBatResult.meshes && baseballBatResult.meshes.length > 0) {
@@ -321,9 +306,7 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
                 mesh.isVisible = true;
                 mesh.isPickable = true; // 무기는 획득 가능하게 할 수도 있음
             }
-        } else {
-            console.warn("❗️ baseball_bat.glb에서 유효한 메쉬를 찾을 수 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("❌ baseball_bat.glb 로드 오류: ", error);
     }
