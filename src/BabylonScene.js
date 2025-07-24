@@ -27,6 +27,9 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
+  const [isLoading, setIsLoading] = useState(true);
+    const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
+    const [errorMessage, setErrorMessage] = useState(null);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
@@ -204,7 +207,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-14.00, 7.85, -12.39),
+        new BABYLON.Vector3(-0.78, 7.85, 9.97),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -272,17 +275,28 @@ const BabylonScene = ({ onGameLoaded }) => {
         }
       });
 
+       const onDoorInteraction = (message) => {
+        setUndergroundDoorMessage(message);
+        setShowUndergroundDoorMessage(true);
+        setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+    };
+
       if (parentMesh) {
-        await addOperatingRoom(
+         await addOperatingRoom(
           scene,
           parentMesh,
-          handleOperatingRoomScrollClick, // 수술실 두루마리 클릭 핸들러
-          () => { // 카드 클릭 시 호출될 콜백 함수
+          handleOperatingRoomScrollClick,
+          () => {
             setHasCardItem(true);
             console.log("scene.js: 카드 아이템을 획득했습니다!");
           },
-          handleSurgeryBoxClick
+          handleSurgeryBoxClick,
+          // 이 부분에 onDoorInteraction 함수를 추가해주세요!
+          onDoorInteraction ,
+          () => hasIdCardItemRef.current
         );
+    
+
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage);
         await addDoctorOffice(
           scene,
@@ -366,9 +380,9 @@ const BabylonScene = ({ onGameLoaded }) => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(4,4,4);
-          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.20);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
+          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
           rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
@@ -741,12 +755,12 @@ const BabylonScene = ({ onGameLoaded }) => {
         {hasCardItem && (
           <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
-              src="망치.png"
-              alt="망치 아이템"
+              src="/key.png"
+              alt="열쇠 아이템"
               style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
-              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/30x30/000000/FFFFFF?text=FL'; }}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
-            <span>망치</span>
+            <span>열쇠</span>
           </div>
         )}
         {hasFlashlightItem && (
