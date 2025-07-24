@@ -31,6 +31,9 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
+  const [isLoading, setIsLoading] = useState(true);
+    const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
+    const [errorMessage, setErrorMessage] = useState(null);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
@@ -219,6 +222,7 @@ const BabylonScene = ({ onGameLoaded }) => {
         "camera",
         //첫시작
         new BABYLON.Vector3(12.02, 7.85, 4.92),
+
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -286,17 +290,28 @@ const BabylonScene = ({ onGameLoaded }) => {
         }
       });
 
+       const onDoorInteraction = (message) => {
+        setUndergroundDoorMessage(message);
+        setShowUndergroundDoorMessage(true);
+        setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+    };
+
       if (parentMesh) {
-        await addOperatingRoom(
+         await addOperatingRoom(
           scene,
           parentMesh,
-          handleOperatingRoomScrollClick, // 수술실 두루마리 클릭 핸들러
-          () => { // 카드 클릭 시 호출될 콜백 함수
+          handleOperatingRoomScrollClick,
+          () => {
             setHasCardItem(true);
             console.log("scene.js: 카드 아이템을 획득했습니다!");
           },
-          handleSurgeryBoxClick
+          handleSurgeryBoxClick,
+          // 이 부분에 onDoorInteraction 함수를 추가해주세요!
+          onDoorInteraction ,
+          () => hasIdCardItemRef.current
         );
+    
+
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage);
         await addDoctorOffice(
           scene,
@@ -760,12 +775,12 @@ const BabylonScene = ({ onGameLoaded }) => {
         {hasCardItem && (
           <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
-              src="망치.png"
-              alt="망치 아이템"
+              src="/key.png"
+              alt="열쇠 아이템"
               style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
-              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/30x30/000000/FFFFFF?text=FL'; }}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
-            <span>망치</span>
+            <span>열쇠</span>
           </div>
         )}
         {hasFlashlightItem && (
