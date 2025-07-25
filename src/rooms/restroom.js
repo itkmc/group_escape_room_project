@@ -189,6 +189,9 @@ if (frameMesh && doorMesh) {
         return;
       }
       isFirstOpen = true;
+      // 문이 처음 열릴 때 효과음 재생
+      const audio = new Audio('/squeaky-door-open-317165.mp3');
+      audio.play();
     }
     if (isAnimating || isDoorOpen) return;
     isAnimating = true;
@@ -266,4 +269,8 @@ if (frameMesh && doorMesh) {
       mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/2);
     }
   });
+  
+  // 시체 위치 정보를 window 객체에 등록 (BabylonScene.js에서 사용)
+  window.corpsePosition = new BABYLON.Vector3(-31.87, 2.0, -3.68);
+  window.hasPlayedCorpseSound = false; // 비명 소리 재생 여부 체크
 }

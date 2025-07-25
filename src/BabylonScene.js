@@ -42,7 +42,7 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [hasKeyItem, setHasKeyItem] = useState(false);
   const hasKeyItemRef = useRef(false);
   
-  // underground 문 상호작용 관련 상태
+  // underground 문제 모달 관련 상태
   const [undergroundDoorMessage, setUndergroundDoorMessage] = useState('');
   const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
   const undergroundDoorRef = useRef(null);
@@ -252,9 +252,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-
-        new BABYLON.Vector3(-0.39, 7.85, 4.37),
-
+        new BABYLON.Vector3(3.25, 7.85, 5.41),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -322,7 +320,11 @@ const BabylonScene = ({ onGameLoaded }) => {
         }
       });
 
-   const onDoorInteraction = (message) => {
+               const onDoorInteraction = (message) => { 
+         // "문이 잠겨있습니다" 메시지는 표시하지 않음
+        if (message.includes("문이 잠겨있습니다")) {
+          return;
+        }
         setUndergroundDoorMessage(message);
         setShowUndergroundDoorMessage(true);
         setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
@@ -571,16 +573,26 @@ const BabylonScene = ({ onGameLoaded }) => {
       camera.angularSensibility = 6000; // 마우스 감도 조절
 
       const handleKeyDown = (evt) => {
-      const rawKey = evt?.key;
-      const key = rawKey ? rawKey.toLowerCase() : "";
+        keysPressed[evt.key.toLowerCase()] = true;
 
-      if (!key) {
-          return;
-      }
-
-      keysPressed[key] = true;
-
-      if (key === "f") {
+        // 시체 근처에서 비명 소리 체크 (매 키 입력마다)
+        if (window.corpsePosition && !window.hasPlayedCorpseSound) {
+          const playerPos = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
+          const distance = BABYLON.Vector3.Distance(playerPos, window.corpsePosition);
+          
+          if (distance < 3) { // 시체에서 3미터 이내에 있으면
+            console.log("시체 근처에서 비명 소리와 물 소리 동시 재생:", distance);
+            const screamAudio = new Audio('/scary-scream-3-81274.mp3');
+            const waterAudio = new Audio('/water-flowing-sound-327661.mp3');
+            
+            // 비명 소리와 물 흐르는 소리를 동시에 재생
+            screamAudio.play();
+            waterAudio.play();
+            
+            window.hasPlayedCorpseSound = true; // 한 번만 재생되도록 설정
+          }
+        }
+      if (evt.key === "f") {
           if (!hasFlashlightItemRef.current) {
               // 손전등 아이템이 없으면 경고 메시지를 표시할 수 있습니다.
               return;
@@ -600,7 +612,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       }
 
       // 앉기 기능 (C키)
-      if (key === "c") {
+      if (evt.key === "c") {
           if (!isCrouchingRef.current) {
               camera.ellipsoid = crouchingEllipsoid;
               setIsCrouching(true);
@@ -611,7 +623,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       }
 
       // 열쇠를 획득한 후 E키를 누르면 문이 열리게
-      if (key === 'e') {
+      if (evt.key === 'e') {
           // 플레이어와 각 문 위치의 거리 계산
           const playerPosVec = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
           const mainDoorPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
@@ -645,6 +657,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           // underground 문 상호작용 (hasOpKeyItemRef를 사용하는 경우)
           if (horizontalDistance(playerPosVec, undergroundDoorPos) < THRESHOLD && undergroundDoorRef.current) {
               undergroundDoorRef.current(); // 직접 toggleDoor 함수 호출
+              setHasOpKeyItem(false); // 언더그라운드 문을 열면 키 아이템 소모
               interacted = true;
           }
 
@@ -1066,6 +1079,20 @@ const BabylonScene = ({ onGameLoaded }) => {
             
             setHasOpKeyItem(false);
           }
+        }}
+      />
+
+      {/* 옥상 퀴즈 팝업 */}
+      <RooftopProblemModal
+        isOpen={showQuiz}
+        onClose={() => {
+          setShowQuiz(false);
+          setQuizMessage('');
+          setAnswerInput('');
+        }}
+        onCorrectAnswer={() => {
+          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
+          setHasKeyItem(true);
         }}
       />
 

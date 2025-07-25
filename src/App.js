@@ -7,6 +7,7 @@ import Main from './components/Main';
 import BabylonScene from './BabylonScene';
 // 로딩 화면 컴포넌트 임포트
 import LoadingScreen from './components/LoadingScreen';
+import BGMPlayer from './components/BGMPlayer';
 
 function App() {
     // 게임이 시작되었는지 여부를 관리하는 상태
@@ -47,6 +48,8 @@ function App() {
             ) : (
                 // 게임이 시작되면 BabylonScene과 로딩 화면을 함께 렌더링
                 <>
+                    {/* BGMPlayer 추가: 로딩이 끝난 후에만 BGM 재생 */}
+                    <BGMPlayer src="/horror-background-atmosphere-156462.mp3" isPlaying={isGameStarted && !isLoading} />
                     {isLoading && <LoadingScreen />}
                     <BabylonScene 
                         key="game-scene" 
