@@ -28,13 +28,13 @@ const BabylonScene = ({ onGameLoaded }) => {
   const flashlightHolderRef = useRef(null);
   const [flashlightStatus, setFlashlightStatus] = useState(null);
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
-  const [hasCardItem, setHasCardItem] = useState(false);
+  const [hasOpKeyItem, setHasOpKeyItem] = useState(false); // 수술실 열쇠 아이템 상태
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
   const [isLoading, setIsLoading] = useState(true);
-    const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
-    const [errorMessage, setErrorMessage] = useState(null);
+  const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
+  const [errorMessage, setErrorMessage] = useState(null);
 
   //옥상문제코드
   const [answerInput, setAnswerInput] = useState('');
@@ -52,6 +52,7 @@ const BabylonScene = ({ onGameLoaded }) => {
   const problemDoorRef = useRef(null);
   const problemDoorToggleRef = useRef(null);
 
+  
   // showProblemModal 상태 변화 추적
   useEffect(() => {
     console.log("showProblemModal 상태 변경:", showProblemModal);
@@ -77,6 +78,11 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [showOfficeQuiz, setShowOfficeQuiz] = useState(false); // 사무실 퀴즈 팝업 표시 상태
   const [answerInput3, setAnswerInput3] = useState('');
   const [quizMessage3, setQuizMessage3] = useState('');
+
+  const hasOpKeyItemRef = useRef(hasOpKeyItem);
+  useEffect(() => {
+    hasOpKeyItemRef.current = hasOpKeyItem;
+  }, [hasOpKeyItem]);
 
   // hasIdCardItem 상태를 Babylon.js에 전달하기 위한 Ref
   const hasIdCardItemRef = useRef(hasIdCardItem);
@@ -314,41 +320,42 @@ const BabylonScene = ({ onGameLoaded }) => {
         }
       });
 
-               const onDoorInteraction = (message) => {
-        // "문이 잠겨있습니다" 메시지는 표시하지 않음
+               const onDoorInteraction = (message) => { 
+         // "문이 잠겨있습니다" 메시지는 표시하지 않음
         if (message.includes("문이 잠겨있습니다")) {
           return;
         }
-        
         setUndergroundDoorMessage(message);
         setShowUndergroundDoorMessage(true);
         setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
-        
-        // 문이 열릴 때 ID 카드가 있다면 사라지도록 설정
-        if (message.includes("ID 카드로 문을 열었습니다")) {
-            console.log("문 열림 - ID 카드 아이템을 제거합니다.");
+
+        if (message.includes("열쇠로 문을 열었습니다!")) {
+            setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
+        }
+        // ID 카드가 필요한 다른 문이 있다면 이곳에 해당 로직 추가
+        else if (message.includes("ID 카드로 문을 열었습니다")) {
             setHasIdCardItem(false);
         }
     };
 
-      if (parentMesh) {
-         await addOperatingRoom(
-          scene,
-          parentMesh,
-          handleOperatingRoomScrollClick,
-          () => {
-            setHasCardItem(true);
-            console.log("scene.js: 카드 아이템을 획득했습니다!");
-          },
-          handleSurgeryBoxClick,
-          // 이 부분에 onDoorInteraction 함수를 추가해주세요!
-          onDoorInteraction ,
-          () => hasIdCardItemRef.current
+    // ... (이전 코드 생략) ...
+
+    if (parentMesh) {
+        await addOperatingRoom(
+            scene,
+            parentMesh,
+            handleOperatingRoomScrollClick,
+            () => {
+                setHasOpKeyItem(true); // 수술실 열쇠 획득
+            },
+            handleSurgeryBoxClick,
+            onDoorInteraction,
+            () => hasIdCardItemRef.current
         );
-    
 
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
         await addDoctorOffice(
+
           scene,
           parentMesh,
           () => setShowOfficeQuiz(true), // 찬장 클릭 시 퀴즈
@@ -358,6 +365,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           }, // ID카드 획득 시
           () => isOfficeCupboardUnlockedRef.current, // 항상 최신값 반환
           handlePaperClickForImage 
+
         );
 
         await addRestroomObject(scene, parentMesh, showMessage);
@@ -366,25 +374,22 @@ const BabylonScene = ({ onGameLoaded }) => {
 
         // underground 문 추가 및 상호작용 설정
         const undergroundResult = await addUnderground(
-          scene, 
-          parentMesh,
-          (message) => {
-            setUndergroundDoorMessage(message);
-            setShowUndergroundDoorMessage(true);
-            // 3초 후 메시지 숨기기
-            setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
-          },
-          () => hasIdCardItemRef.current,
-          () => {
-            console.log("BabylonScene에서 문제 모달을 열려고 합니다!");
-            setShowProblemModal(true);
-          } // 문제 모달 열기 콜백
+            scene,
+            parentMesh,
+            (message) => { // onDoorInteraction 대신 메시지를 직접 처리하는 콜백
+                setUndergroundDoorMessage(message);
+                setShowUndergroundDoorMessage(true);
+                setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+            },
+            () => hasOpKeyItemRef.current, // 지하 문은 수술실 열쇠 상태를 확인
+            () => {
+                setShowProblemModal(true); // 문제 모달 열기 요청
+            }
         );
         undergroundDoorRef.current = undergroundResult.toggleDoor;
         problemDoorRef.current = undergroundResult.openProblemDoor;
         problemDoorToggleRef.current = undergroundResult.toggleProblemDoor;
-      }
-
+    }
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
       const lampMesh1 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0");
       if (lampMesh1 && lampMesh1.material) {
@@ -587,93 +592,84 @@ const BabylonScene = ({ onGameLoaded }) => {
             window.hasPlayedCorpseSound = true; // 한 번만 재생되도록 설정
           }
         }
-
-        if (evt.key.toLowerCase() === "f") {
+      if (key === "f") {
           if (!hasFlashlightItemRef.current) {
-            console.log("손전등 아이템을 획득해야 손전등을 켤 수 있습니다.");
-            return;
+              // 손전등 아이템이 없으면 경고 메시지를 표시할 수 있습니다.
+              return;
           }
 
           if (flashlightSpotLightRef.current) {
-            if (flashlightSpotLightRef.current.isEnabled()) {
-              flashlightSpotLightRef.current.setEnabled(false);
-              setFlashlightStatus("OFF");
-              console.log("손전등 OFF");
-            } else {
-              flashlightSpotLightRef.current.setEnabled(true);
-              flashlightSpotLightRef.current.intensity = 100; // 손전등 밝기 조절 (값 높을수록 밝아짐)
-              flashlightSpotLightRef.current.exponent = 10; // 손전등 빛의 중앙 집중도 조절 (값 높을수록 중앙에 집중)
-              setFlashlightStatus("ON");
-              console.log("손전등 ON");
-            }
+              if (flashlightSpotLightRef.current.isEnabled()) {
+                  flashlightSpotLightRef.current.setEnabled(false);
+                  setFlashlightStatus("OFF");
+              } else {
+                  flashlightSpotLightRef.current.setEnabled(true);
+                  flashlightSpotLightRef.current.intensity = 100; // 손전등 밝기 조절 (값 높을수록 밝아짐)
+                  flashlightSpotLightRef.current.exponent = 10; // 손전등 빛의 중앙 집중도 조절 (값 높을수록 중앙에 집중)
+                  setFlashlightStatus("ON");
+              }
           }
-        }
+      }
 
-        // 앉기 기능 (C키)
-        if (evt.key.toLowerCase() === "c") {
+      // 앉기 기능 (C키)
+      if (key === "c") {
           if (!isCrouchingRef.current) {
-            camera.ellipsoid = crouchingEllipsoid;
-            setIsCrouching(true);
-            console.log("앉기");
+              camera.ellipsoid = crouchingEllipsoid;
+              setIsCrouching(true);
           } else {
-            camera.ellipsoid = standingEllipsoid;
-            setIsCrouching(false);
-            console.log("일어서기");
+              camera.ellipsoid = standingEllipsoid;
+              setIsCrouching(false);
           }
-        }
-        // 열쇠를 획득한 후 E키를 누르면 문이 열리게
-        if (evt.key === 'e' || evt.key === 'E') {
+      }
+
+      // 열쇠를 획득한 후 E키를 누르면 문이 열리게
+      if (key === 'e') {
           // 플레이어와 각 문 위치의 거리 계산
           const playerPosVec = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
           const mainDoorPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
           const restroomDoorPos = new BABYLON.Vector3(-18.95, 2.5, -6.95);
           const undergroundDoorPos = new BABYLON.Vector3(7, 6.4, 5.1);
-          
+
+          let interacted = false;
+
           // 수평(XZ) 거리 계산 함수
           function horizontalDistance(a, b) {
-            return Math.sqrt(
-              Math.pow(a.x - b.x, 2) +
-              Math.pow(a.z - b.z, 2)
-            );
+              return Math.sqrt(
+                  Math.pow(a.x - b.x, 2) +
+                  Math.pow(a.z - b.z, 2)
+              );
           }
-          const distToMain = horizontalDistance(playerPosVec, mainDoorPos);
-          const distToRest = horizontalDistance(playerPosVec, restroomDoorPos);
-          const distToUnderground = horizontalDistance(playerPosVec, undergroundDoorPos);
           const THRESHOLD = 10; // 거리 임계값(수평거리)
 
-          let opened = false;
-          
           // 기존 문들 (열쇠 필요)
           if (hasKeyItemRef.current) {
-            if (distToMain < THRESHOLD && window.openMainDoor) {
-              window.openMainDoor();
-              setHasKeyItem(false);
-              opened = true;
-            } else if (distToRest < THRESHOLD && window.openRestroomDoor) {
-              window.openRestroomDoor();
-              setHasKeyItem(false);
-              opened = true;
-            }
+              if (horizontalDistance(playerPosVec, mainDoorPos) < THRESHOLD && window.openMainDoor) {
+                  window.openMainDoor();
+                  setHasKeyItem(false);
+                  interacted = true;
+              } else if (horizontalDistance(playerPosVec, restroomDoorPos) < THRESHOLD && window.openRestroomDoor) {
+                  window.openRestroomDoor();
+                  setHasKeyItem(false);
+                  interacted = true;
+              }
           }
-          
-          // underground 문 (ID 카드 필요)
-          if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
-            console.log("E키로 underground 문 열기 시도");
-            undergroundDoorRef.current.toggleDoor();
-            console.log("ID 카드 아이템을 UI에서 즉시 제거합니다.");
-            setHasIdCardItem(false); // E키로 문을 열면 ID카드 아이템을 UI에서 즉시 제거
-            opened = true;
-          }
-          
-          // if (!opened) {
-          //   alert('문 가까이에서 E키를 눌러주세요!');
-          // }
-        }
-      };
 
-      const handleKeyUp = (evt) => {
-        keysPressed[evt.key.toLowerCase()] = false;
-      };
+          // underground 문 상호작용 (hasOpKeyItemRef를 사용하는 경우)
+          if (horizontalDistance(playerPosVec, undergroundDoorPos) < THRESHOLD && undergroundDoorRef.current) {
+              undergroundDoorRef.current(); // 직접 toggleDoor 함수 호출
+              interacted = true;
+          }
+
+          // 만약 어떤 문과도 상호작용하지 않았다면 메시지 표시
+          if (!interacted) {
+              // alert('문 가까이에서 E키를 눌러주세요!'); // 필요한 경우 주석 해제
+          }
+      }
+  };
+
+  const handleKeyUp = (evt) => {
+      keysPressed[evt.key.toLowerCase()] = false;
+  };
 
       window.addEventListener("keydown", handleKeyDown);
       window.addEventListener("keyup", handleKeyUp);
@@ -828,11 +824,11 @@ const BabylonScene = ({ onGameLoaded }) => {
             <span>열쇠</span>
           </div>
         )}
-        {hasCardItem && (
+        {hasOpKeyItem && (
           <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
               src="/key.png"
-              alt="열쇠 아이템"
+              alt="수술실 열쇠 아이템"
               style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
@@ -1073,15 +1069,14 @@ const BabylonScene = ({ onGameLoaded }) => {
         isOpen={showProblemModal}
         onClose={() => setShowProblemModal(false)}
         onCorrectAnswer={() => {
-          console.log("지하실 문제 정답!");
           // 문제 문 열기
           if (problemDoorRef.current) {
             problemDoorRef.current();
           }
           // ID 카드가 있다면 사라지도록 설정
-          if (hasIdCardItem) {
-            console.log("문제 해결 후 ID 카드 아이템을 제거합니다.");
-            setHasIdCardItem(false);
+          if (hasOpKeyItem) {
+            
+            setHasOpKeyItem(false);
           }
         }}
       />

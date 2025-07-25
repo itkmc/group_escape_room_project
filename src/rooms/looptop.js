@@ -146,7 +146,7 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
   });
 
   // 🛏️ 침대 옆 테이블 추가
-  const desiredBedsideTableWorldPos = new BABYLON.Vector3(-24.87, 13.9, 11.3);
+  const desiredBedsideTableWorldPos = new BABYLON.Vector3(-19.87, 13.9, 11.3);
   const bedsideTable = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "bedside_table.glb", scene);
   console.log("로드된 책 서랍장 메쉬 목록:", bedsideTable.meshes.map(m => m.name));
 
@@ -362,7 +362,7 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
   if (clockRoot) {
     clockRoot.parent = parentMesh;
     clockRoot.position = BABYLON.Vector3.TransformCoordinates(
-      new BABYLON.Vector3(-23.53, 15.4, 9.5),
+      new BABYLON.Vector3(-18.53, 15.4, 9.5),
       BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
     );
     clockRoot.scaling = new BABYLON.Vector3(200, 200, 200);
