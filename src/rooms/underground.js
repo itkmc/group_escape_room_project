@@ -426,7 +426,7 @@ const toggleDoor = () => {
         }
 
         isUnlocked = true; // 키가 있으면 잠금 해제 상태로 변경
-        if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
+        // if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
     }
 
     if (doorMeshes.length === 0) {
@@ -480,7 +480,7 @@ const toggleDoor = () => {
 // 클릭으로 문 열기/닫기 함수
 const handleDoorClick = () => {
     if (!isUnlocked) {
-      if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+      // if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
       return;
     }
     toggleDoor();

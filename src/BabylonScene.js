@@ -252,7 +252,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(16.81, 7.85, 5.88),
+        new BABYLON.Vector3(-11.55, 7.85, -12.88),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -441,9 +441,9 @@ const BabylonScene = ({ onGameLoaded }) => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.25);
           flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
-          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+          flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
           rootFlashlightMeshRef.current.parent = flashlightHolderRef.current;
