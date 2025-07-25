@@ -24,6 +24,8 @@ export async function addDoctorOffice(
     onCupboardClickForQuiz,
     onIdCardAcquired, // ⭐ 이 인자는 더 이상 office.js에서 직접 사용되지 않습니다.
     getIsCupboardUnlocked,
+    onPaperClickForContent,
+    handlePaperClickForImage,
     idCardOptions = {},
     metalCupboardOptions = {}
 ) {
@@ -269,7 +271,6 @@ export async function addDoctorOffice(
                       new BABYLON.ExecuteCodeAction(
                         BABYLON.ActionManager.OnPickTrigger,
                         function() {
-                          console.log("🎉 ID 카드 획득! (클릭 이벤트 발생, 모든 mesh에 등록)");
                           if (onIdCardAcquired) {
                             onIdCardAcquired(true);
                             mesh.setEnabled(false);
@@ -280,7 +281,6 @@ export async function addDoctorOffice(
                         }
                       )
                     );
-                    console.log("ID카드 액션매니저 등록됨(모든 mesh):", mesh.name, !!mesh.actionManager);
                 }
             });
         }
@@ -295,7 +295,6 @@ export async function addDoctorOffice(
             new BABYLON.ExecuteCodeAction(
                 BABYLON.ActionManager.OnPickTrigger,
                 function() {
-                    console.log("🎉 ID 카드 획득! (클릭 이벤트 발생)");
                     if (onIdCardAcquired) {
                         onIdCardAcquired(true); // React의 setHasIdCardItem(true) 콜백 호출
                         rootIdCardMesh.setEnabled(false); // 아이템 획득 후 씬에서 완전히 숨김 (재활성화되지 않음)
@@ -306,7 +305,6 @@ export async function addDoctorOffice(
                 }
             )
         );
-        console.log("ID카드 액션매니저 등록됨:", !!rootIdCardMesh.actionManager);
     }
 
     // --- 메탈 찬장 (metal_cupboard.glb) 추가 및 상호작용 로직 ---
@@ -363,11 +361,8 @@ export async function addDoctorOffice(
                         new BABYLON.ExecuteCodeAction(
                             BABYLON.ActionManager.OnPickTrigger,
                             function () {
-                                console.log("🔍 찬장 메쉬 클릭됨. 현재 찬장 잠금 해제 상태:", getIsCupboardUnlocked());
-
                                 // 찬장이 잠금 해제되었는지 React 함수를 호출하여 확인합니다.
                                 if (!getIsCupboardUnlocked()) {
-                                    console.log("🔒 찬장 잠겨있음. 퀴즈 팝업 호출.");
                                     if (onCupboardClickForQuiz) {
                                         onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
                                         return; // 잠겨있으면 문 열기 로직 실행하지 않음
@@ -378,7 +373,6 @@ export async function addDoctorOffice(
                                 // 애니메이션 재생 중이면 클릭 무시
                                 const activeDoorAnimationGroup = scene.getAnimationGroupByName("metalCupboardDoorAnimationGroup");
                                 if (activeDoorAnimationGroup && activeDoorAnimationGroup.isPlaying) {
-                                    console.log("⏳ 애니메이션 재생 중, 클릭 무시.");
                                     return;
                                 }
 
@@ -458,9 +452,7 @@ export async function addDoctorOffice(
                 }
             });
 
-        } else {
-            console.warn("metal_cupboard.glb 로드 실패 또는 메쉬가 없습니다.");
-        }
+        } 
     } catch (error) {
         console.error("metal_cupboard.glb 로드 중 오류: ", error);
         return;
@@ -481,7 +473,6 @@ export async function addDoctorOffice(
         try {
             const wheelchairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "wheelchair.glb", scene);
             if (!wheelchairResult || !wheelchairResult.meshes || wheelchairResult.meshes.length === 0) {
-                console.warn("wheelchair.glb 로드 실패 또는 메쉬가 없습니다."); // 콘솔 로그 추가
                 return null;
             }
 
@@ -499,7 +490,6 @@ export async function addDoctorOffice(
                 mesh.checkCollisions = true;
                 mesh.isVisible = true;
             });
-            console.log("휠체어 모델 로드 및 배치 완료!"); // 콘솔 로그 추가
             return rootWheelchairMesh;
         } catch (error) {
             console.error("wheelchair.glb 로드 오류: ", error);
@@ -526,7 +516,6 @@ export async function addDoctorOffice(
         try {
             const hospitalBedResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "hospital_bed.glb", scene);
             if (!hospitalBedResult || !hospitalBedResult.meshes || hospitalBedResult.meshes.length === 0) {
-                console.warn("hospital_bed.glb 로드 실패 또는 메쉬가 없습니다.");
                 return null;
             }
 
@@ -544,7 +533,6 @@ export async function addDoctorOffice(
                 mesh.checkCollisions = true;
                 mesh.isVisible = true;
             });
-            console.log("병원 침대 모델 로드 및 배치 완료!");
             return rootHospitalBedMesh;
         } catch (error) {
             console.error("hospital_bed.glb 로드 오류: ", error);
@@ -575,7 +563,6 @@ export async function addDoctorOffice(
         try {
             const waitingChairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "waiting_chair.glb", scene);
             if (!waitingChairResult || !waitingChairResult.meshes || waitingChairResult.meshes.length === 0) {
-                console.warn("waiting_chair.glb 로드 실패 또는 메쉬가 없습니다.");
                 return null;
             }
 
@@ -611,7 +598,6 @@ export async function addDoctorOffice(
             }
             return rootWaitingChairMesh;
         } catch (error) {
-            console.error("waiting_chair.glb 로드 오류: ", error);
             return null;
         }
     }
@@ -634,4 +620,89 @@ export async function addDoctorOffice(
         scaling: new BABYLON.Vector3(80, 80, 80), // 스케일 조정
         rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 3)) // 회전 조정
     });
+
+    // --- 📄 종이 모델 (paper_tablet.glb) 로드 및 설정 ---
+    // 종이 모델을 배치하고 싶은 월드 위치를 정의합니다.
+    const desiredPaperModelWorldPos = new BABYLON.Vector3(-17.05, 7.85, -5.85); // 원하는 위치로 조절하세요.
+
+    try {
+        // 'paper_tablet.glb' 파일을 비동기적으로 로드합니다.
+        const paperModelResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "paper_tablet.glb", scene);
+
+        if (paperModelResult && paperModelResult.meshes && paperModelResult.meshes.length > 0) {
+            // 로드된 모델의 루트 메시 (가장 상위의 부모 메시)를 가져옵니다.
+            const rootPaperModelMesh = paperModelResult.meshes[0];
+
+            // 이 모델의 부모 메시를 설정합니다.
+            rootPaperModelMesh.parent = parentMesh;
+
+            // 종이 모델의 위치를 설정합니다.
+            rootPaperModelMesh.position = BABYLON.Vector3.TransformCoordinates(
+                desiredPaperModelWorldPos,
+                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+            );
+
+            // 종이 모델의 크기를 조절합니다.
+            rootPaperModelMesh.scaling = new BABYLON.Vector3(100, 100, 100); // 필요에 따라 조절하세요
+
+            // 종이 모델의 회전을 조절합니다.
+            rootPaperModelMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 32)); // 필요에 따라 조절하세요
+
+            // 로드된 모델의 모든 하위 메시에 대해 설정을 적용합니다.
+            paperModelResult.meshes.forEach(mesh => {
+                // 개발자 도구 콘솔에 모든 메시의 이름을 출력하여 흰 종이 메시를 식별합니다.
+                // ⭐ 이 로그를 보고 정확한 메시 이름을 찾으세요! (예: "Tablet_Paper")
+                console.log(`[paper_tablet.glb] 메시 이름: ${mesh.name}`);
+
+                mesh.checkCollisions = true; // 충돌 감지 활성화
+                mesh.isVisible = true;      // 메시 가시성 설정
+
+                // ⭐⭐⭐ 핵심: "흰 종이 부분" 메시를 이름으로 식별하여 텍스처 적용 및 클릭 이벤트 추가 ⭐⭐⭐
+                if (mesh.name === "Plane.005_Material.002_0") { 
+                    const paperContentMaterial = new BABYLON.StandardMaterial("paperContentMat", scene);
+
+                    // 3D 모델 표면에 입힐 이미지 텍스처 로드
+                    // 이 이미지는 모델 자체에 보여질 내용입니다. (예: 미리보기, 제목 등)
+                    paperContentMaterial.diffuseTexture = new BABYLON.Texture("/식단표.png", scene); // 3D 모델에 보일 이미지 경로
+                    paperContentMaterial.diffuseTexture.hasAlpha = true; // 텍스처에 투명도가 있다면 활성화
+
+                    // (선택 사항) 종이처럼 보이도록 설정 (광택 없음, 거칠게)
+                    paperContentMaterial.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+                    paperContentMaterial.roughness = 1.0;
+
+                    mesh.material = paperContentMaterial; // 해당 메시에 커스텀 재질 적용
+                    mesh.isPickable = true; // 이 메시가 클릭 가능하게 설정
+
+                    // ⭐ 흰 종이 메시 클릭 이벤트 리스너 추가
+                    if (!mesh.actionManager) {
+                        mesh.actionManager = new BABYLON.ActionManager(scene);
+                    }
+
+                    mesh.actionManager.registerAction(
+                        new BABYLON.ExecuteCodeAction(
+                            BABYLON.ActionManager.OnPickTrigger,
+                            function() {
+                                console.log("✅ 흰 종이 클릭됨!");
+                                // onPaperClickForContent 콜백 함수가 유효하면 호출
+                                if (onPaperClickForContent) {
+                                    // ⭐ 텍스트 대신 팝업으로 보여줄 이미지 파일의 경로를 전달 ⭐
+                                    // 이 이미지는 클릭했을 때 팝업창에 크게 나타날 고해상도 이미지입니다.
+                                    const popupImageUrl = "/식단표.png"; // 팝업으로 보여줄 이미지 경로
+                                    onPaperClickForContent(popupImageUrl);
+                                }
+                            }
+                        )
+                    );
+                } else {
+                    // 종이 부분이 아닌 다른 메쉬 (예: 클립보드 판, 클립)
+                    // 이 메시들은 클릭되지 않도록 설정할 수 있습니다.
+                    mesh.isPickable = false;
+                }
+            });
+            console.log("✅ 종이 모델 'paper_tablet.glb' 로드 및 배치 완료.");
+        }
+    } catch (error) {
+        console.error("❗ 'paper_tablet.glb' 로드 중 오류 발생: ", error);
+    }
 }
