@@ -8,12 +8,12 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene - Babylon.js Scene
  * @param {BABYLON.AbstractMesh} parentMesh - 건물 메시에 붙일 부모
  * @param {Function} [handleOperatingRoomScrollClick] - 두루마리 클릭 시 호출될 콜백 함수
- * @param {Function} [onCardPickedCallback] - 카드 클릭 함수
+ * @param {Function} [onOpKeyPickedCallback] - 카드 클릭 함수
  * @param {Function} [onSurgeryBoxClick] - 상자가 클릭되었을 때 호출될 콜백 함수 
  * @param {Function} [onDoorInteraction] - 문 관련 상호작용 메시지를 띄울 함수
  * @param {Function} [getHasIdCardItem]
  */
-export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onCardPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem) {
+export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onOpKeyPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem) {
   if (!parentMesh) {
     console.warn("parentMesh가 없습니다. 오브젝트들이 부모에 연결되지 않습니다.");
     return;
@@ -517,10 +517,10 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
                         pickedMesh.isPickable = false;
                         pickedMesh.setEnabled(false);
 
-                        if (typeof onCardPickedCallback === 'function') {
-                            onCardPickedCallback();
+                        if (typeof onOpKeyPickedCallback === 'function') {
+                            onOpKeyPickedCallback();
                         } else {
-                            console.warn("onCardPickedCallback 함수가 제공되지 않았습니다. UI 상태가 업데이트되지 않을 수 있습니다.");
+                            console.warn("onOpKeyPickedCallback 함수가 제공되지 않았습니다. UI 상태가 업데이트되지 않을 수 있습니다.");
                         }
                         
                         // 열쇠 획득 후 즉시 사라지도록 설정

@@ -1,4 +1,4 @@
-// information.js
+// underground.js
 import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 
@@ -6,10 +6,10 @@ import "@babylonjs/loaders";
  * @param {BABYLON.Scene} scene 
  * @param {BABYLON.AbstractMesh} parentMesh 
  * @param {Function} onDoorInteraction - 문 상호작용 시 호출될 콜백 함수
- * @param {Function} getHasIdCardItem - ID 카드 보유 상태를 확인하는 함수
+ * @param {Function} getHasOpKeyItem - ID 카드 보유 상태를 확인하는 함수
  * @param {Function} onProblemOpen - 문제 모달을 열기 위한 콜백 함수
  */
-export async function addUnderground(scene, parentMesh, onDoorInteraction, getHasIdCardItem, onProblemOpen) {
+export async function addUnderground(scene, parentMesh, onDoorInteraction, getHasOpKeyItem, onProblemOpen) {
   const desiredDoor2WorldPos = new BABYLON.Vector3(7, 6.4, 5.1);
   let doorMeshes = [];
   let isDoorOpen = false;
@@ -391,66 +391,89 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     }
   });
 
-  // 문 열기/닫기 애니메이션 함수
-  const toggleDoor = () => {
-    // 한 번이라도 열렸으면 isUnlocked = true
+   // 문 열기/닫기 애니메이션 함수
+const toggleDoor = () => {
+    // 문이 잠금 해제되지 않은 상태에서만 열쇠 검사를 수행합니다.
     if (!isUnlocked) {
-      if (!getHasIdCardItem || !getHasIdCardItem()) {
-        if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
-        return;
-      }
-      isUnlocked = true; // E키로 한 번 열면 해제
-    }
-    const animationGroup = new BABYLON.AnimationGroup("undergroundDoorAnimationGroup");
-    doorMeshes.forEach((doorMesh) => {
-      const startRotation = doorMesh.rotationQuaternion.clone();
-      let targetRotation;
-      if (isDoorOpen) {
-        targetRotation = initialDoorRotations.get(doorMesh.name).clone();
-      } else {
-        targetRotation = initialDoorRotations.get(doorMesh.name)
-          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
-      }
-      const doorAnimation = new BABYLON.Animation(
-        `doorRotation_${doorMesh.name}`,
-        "rotationQuaternion",
-        30,
-        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-      );
-      doorAnimation.setKeys([
-        { frame: 0, value: startRotation },
-        { frame: 60, value: targetRotation }
-      ]);
-      animationGroup.addTargetedAnimation(doorAnimation, doorMesh);
-    });
-    animationGroup.onAnimationGroupEndObservable.addOnce(() => {
-      isDoorOpen = !isDoorOpen;
-      animationGroup.dispose();
-    });
-    animationGroup.play(false);
-  };
+        const hasOpKey = getHasOpKeyItem ? getHasOpKeyItem() : false;
 
-  // 클릭으로 문 열기/닫기 함수 (한 번 열린 후에만 사용 가능)
-  const handleDoorClick = () => {
+        if (!hasOpKey) {
+            if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+            return; // 키가 없으면 함수 종료
+        }
+
+        isUnlocked = true; // 키가 있으면 잠금 해제 상태로 변경
+        if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
+    }
+
+    if (doorMeshes.length === 0) {
+        if (onDoorInteraction) onDoorInteraction("문을 찾을 수 없습니다!");
+        return;
+    }
+
+    const animationGroup = new BABYLON.AnimationGroup("undergroundDoorAnimationGroup");
+
+    doorMeshes.forEach((doorMesh) => {
+        const startRotation = doorMesh.rotationQuaternion.clone();
+        let targetRotation;
+
+        const initialRot = initialDoorRotations.get(doorMesh.name);
+        if (!initialRot) {
+            return;
+        }
+
+        if (isDoorOpen) {
+            targetRotation = initialRot.clone();
+        } else {
+            targetRotation = initialRot.multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+        }
+
+        const doorAnimation = new BABYLON.Animation(
+            `doorRotation_${doorMesh.name}`,
+            "rotationQuaternion",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+        doorAnimation.setKeys([
+            { frame: 0, value: startRotation },
+            { frame: 60, value: targetRotation }
+        ]);
+        animationGroup.addTargetedAnimation(doorAnimation, doorMesh);
+    });
+
+    if (animationGroup.targetedAnimations.length === 0) {
+        return;
+    }
+
+    animationGroup.onAnimationGroupEndObservable.addOnce(() => {
+        isDoorOpen = !isDoorOpen;
+        animationGroup.dispose();
+    });
+
+    animationGroup.play(false);
+};
+
+// 클릭으로 문 열기/닫기 함수
+const handleDoorClick = () => {
     if (!isUnlocked) {
       if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
       return;
     }
     toggleDoor();
-  };
+};
 
-  // 모든 doorMeshes에 클릭 이벤트 등록
-  doorMeshes.forEach((mesh) => {
+// 모든 doorMeshes에 클릭 이벤트 등록
+doorMeshes.forEach((mesh) => {
     mesh.isPickable = true;
     mesh.actionManager = new BABYLON.ActionManager(scene);
     mesh.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnPickTrigger,
-        () => handleDoorClick()
-      )
+        new BABYLON.ExecuteCodeAction(
+            BABYLON.ActionManager.OnPickTrigger,
+            () => handleDoorClick()
+        )
     );
-  });
+});
 
   // 문제 문 열기 함수
   const openProblemDoor = () => {
