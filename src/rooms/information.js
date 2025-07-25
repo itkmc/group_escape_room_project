@@ -424,25 +424,9 @@ if (garageDoorMesh) {
     );
 } 
 
-  //누워있는 사람 위치
-  const kpWorldPos = new BABYLON.Vector3(-12.5, 9.3, -10.5);
-  const kp = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "kim.glb", scene);
 
-  for (const mesh of kp.meshes) { 
-      if (mesh.name !== "__root__") {
-          mesh.parent = parentMesh;
-          mesh.position = BABYLON.Vector3.TransformCoordinates(
-              kpWorldPos,
-              BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-          );
-          mesh.scaling = new BABYLON.Vector3(37,39,37)
-          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/-1.1)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-          mesh.checkCollisions = true;
-      }
-  }
 
-  //알람 위치
+//알람 위치
   const alarmWorldPos = new BABYLON.Vector3(-9.145, 7.65, -13);
   const alarm = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "fire_alarm.glb", scene);
 
