@@ -246,7 +246,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-32.02, 2.26, -5.99),
+        new BABYLON.Vector3(-20.59, 15.69, 10.68),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -315,6 +315,11 @@ const BabylonScene = ({ onGameLoaded }) => {
       });
 
                const onDoorInteraction = (message) => {
+        // "문이 잠겨있습니다" 메시지는 표시하지 않음
+        if (message.includes("문이 잠겨있습니다")) {
+          return;
+        }
+        
         setUndergroundDoorMessage(message);
         setShowUndergroundDoorMessage(true);
         setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
@@ -564,6 +569,24 @@ const BabylonScene = ({ onGameLoaded }) => {
 
       const handleKeyDown = (evt) => {
         keysPressed[evt.key.toLowerCase()] = true;
+
+        // 시체 근처에서 비명 소리 체크 (매 키 입력마다)
+        if (window.corpsePosition && !window.hasPlayedCorpseSound) {
+          const playerPos = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
+          const distance = BABYLON.Vector3.Distance(playerPos, window.corpsePosition);
+          
+          if (distance < 3) { // 시체에서 3미터 이내에 있으면
+            console.log("시체 근처에서 비명 소리와 물 소리 동시 재생:", distance);
+            const screamAudio = new Audio('/scary-scream-3-81274.mp3');
+            const waterAudio = new Audio('/water-flowing-sound-327661.mp3');
+            
+            // 비명 소리와 물 흐르는 소리를 동시에 재생
+            screamAudio.play();
+            waterAudio.play();
+            
+            window.hasPlayedCorpseSound = true; // 한 번만 재생되도록 설정
+          }
+        }
 
         if (evt.key.toLowerCase() === "f") {
           if (!hasFlashlightItemRef.current) {
@@ -1060,6 +1083,20 @@ const BabylonScene = ({ onGameLoaded }) => {
             console.log("문제 해결 후 ID 카드 아이템을 제거합니다.");
             setHasIdCardItem(false);
           }
+        }}
+      />
+
+      {/* 옥상 퀴즈 팝업 */}
+      <RooftopProblemModal
+        isOpen={showQuiz}
+        onClose={() => {
+          setShowQuiz(false);
+          setQuizMessage('');
+          setAnswerInput('');
+        }}
+        onCorrectAnswer={() => {
+          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
+          setHasKeyItem(true);
         }}
       />
 

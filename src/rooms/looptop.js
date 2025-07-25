@@ -93,7 +93,12 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
       );
       // 🔑 E키로 문 열기용 함수 등록!
       window.openMainDoor = function() {
-        if (!isFirstOpen) isFirstOpen = true;
+        if (!isFirstOpen) {
+          isFirstOpen = true;
+          // 문이 처음 열릴 때 효과음 재생
+          const audio = new Audio('/squeaky-door-open-317165.mp3');
+          audio.play();
+        }
         if (isAnimating || isDoorOpen) return;
         isAnimating = true;
         doorMesh.checkCollisions = false;
@@ -270,6 +275,10 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
     }
     mesh.actionManager.registerAction(
       new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+        // 서랍장 클릭 효과음 재생
+        const audio = new Audio('/slide-click-92152.mp3');
+        audio.play();
+        
         // 첫 번째 서랍의 상태를 토글합니다.
         drawerStates[0] = !drawerStates[0];
         animateDrawer(firstDrawerMeshes, drawerStates[0]);
@@ -280,7 +289,8 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
   // --- 두 번째/세 번째 서랍 동시 애니메이션 (이름으로 메시 찾기) ---
   const doubleDrawerMeshNames = [
     "polySurface541_bedside_wood2_0", // 2번 서랍 본체 이름 예시
-    "polySurface553_cupboard_wood1_0"  // 3번 서랍 본체 이름 예시
+    "polySurface553_cupboard_wood1_0",  // 3번 서랍 본체 이름 예시
+    "polySurface541_side_rail_0"  // 서랍 손잡이
   ];
 
   // 해당하는 메시들을 찾습니다.
@@ -300,6 +310,10 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
       }
       mesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+          // 서랍장 클릭 효과음 재생
+          const audio = new Audio('/slide-click-92152.mp3');
+          audio.play();
+          
           // 두 번째 서랍 그룹의 상태를 토글 (drawerStates[1]을 사용)
           drawerStates[1] = !drawerStates[1];
           animateDrawer(doubleDrawerMeshes, drawerStates[1]);
@@ -329,6 +343,10 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
       }
       mesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+          // 종이 소리 효과음 재생
+          const audio = new Audio('/paper-rustle-81855.mp3');
+          audio.play();
+          
           console.log("두루마리가 클릭되었습니다! 퀴즈를 표시합니다.");
           if (showQuiz) { // 콜백 함수가 있는지 확인 후 호출
             showQuiz();
@@ -392,6 +410,10 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
             }
             mesh.actionManager.registerAction(
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    // 종이 소리 효과음 재생
+                    const audio = new Audio('/paper-rustle-81855.mp3');
+                    audio.play();
+                    
                     if (showMessage2) {
                         const scenarioText = `
 "코드 블랙: 탈출자는 없다"
