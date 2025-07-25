@@ -252,7 +252,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(3.25, 7.85, 5.41),
+        new BABYLON.Vector3(16.81, 7.85, 5.88),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;

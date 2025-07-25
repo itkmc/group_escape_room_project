@@ -361,6 +361,29 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
 
+      // cifr_12345678910.glb 추가
+      const cifrPositions = [
+        new BABYLON.Vector3(20.09, 8.36, 3.43)
+      ];
+      for (const pos of cifrPositions) {
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "cifr_12345678910.glb", scene);
+        console.log("cifr_12345678910.glb 로드됨:", result.meshes.map(m => m.name));
+        const root = result.meshes.find(m => m.name === "__root__");
+        if (root) {
+          root.parent = parentMesh;
+          root.position = BABYLON.Vector3.TransformCoordinates(
+            pos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          root.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
+          root.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI)
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2));
+          root.checkCollisions = true;
+          // 필요시 회전 추가: root.rotationQuaternion = ...;
+          loadedMeshes.push(root);
+        }
+      }
+
       modelsLoaded = true;
       console.log("underground 모델 로드 완료");
     } catch (error) {
@@ -480,6 +503,11 @@ doorMeshes.forEach((mesh) => {
     if (isProblemDoorOpen) return;
     
     console.log("문제 문을 엽니다...");
+    
+    // 정답을 맞추고 문이 열릴 때 효과음 재생
+    const audio = new Audio('/metal-door-creaking-closing-47323.mp3');
+    audio.play();
+    
     problemDoorAnimationGroups.forEach(animationGroup => {
       console.log("애니메이션 재생:", animationGroup.name);
       animationGroup.loopAnimation = false; // 반복 비활성화
@@ -501,6 +529,11 @@ doorMeshes.forEach((mesh) => {
     if (!isProblemSolved) {
       // 문제가 해결되지 않았으면 문제 모달 열기
       console.log("문제가 해결되지 않음, 모달 열기 시도");
+      
+      // 종이 효과음 재생
+      const audio = new Audio('/paper-rustle-81855.mp3');
+      audio.play();
+      
       if (onProblemOpen) {
         console.log("onProblemOpen 콜백 호출");
         onProblemOpen();
