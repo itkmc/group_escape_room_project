@@ -42,7 +42,7 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [hasKeyItem, setHasKeyItem] = useState(false);
   const hasKeyItemRef = useRef(false);
   
-  // underground 문 상호작용 관련 상태
+  // underground 문제 모달 관련 상태
   const [undergroundDoorMessage, setUndergroundDoorMessage] = useState('');
   const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
   const undergroundDoorRef = useRef(null);
@@ -252,7 +252,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-20.59, 15.69, 10.68),
+        new BABYLON.Vector3(3.25, 7.85, 5.41),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -592,7 +592,7 @@ const BabylonScene = ({ onGameLoaded }) => {
             window.hasPlayedCorpseSound = true; // 한 번만 재생되도록 설정
           }
         }
-      if (key === "f") {
+      if (evt.key === "f") {
           if (!hasFlashlightItemRef.current) {
               // 손전등 아이템이 없으면 경고 메시지를 표시할 수 있습니다.
               return;
@@ -612,7 +612,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       }
 
       // 앉기 기능 (C키)
-      if (key === "c") {
+      if (evt.key === "c") {
           if (!isCrouchingRef.current) {
               camera.ellipsoid = crouchingEllipsoid;
               setIsCrouching(true);
@@ -623,7 +623,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       }
 
       // 열쇠를 획득한 후 E키를 누르면 문이 열리게
-      if (key === 'e') {
+      if (evt.key === 'e') {
           // 플레이어와 각 문 위치의 거리 계산
           const playerPosVec = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
           const mainDoorPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
@@ -657,6 +657,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           // underground 문 상호작용 (hasOpKeyItemRef를 사용하는 경우)
           if (horizontalDistance(playerPosVec, undergroundDoorPos) < THRESHOLD && undergroundDoorRef.current) {
               undergroundDoorRef.current(); // 직접 toggleDoor 함수 호출
+              setHasOpKeyItem(false); // 언더그라운드 문을 열면 키 아이템 소모
               interacted = true;
           }
 
