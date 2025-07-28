@@ -5,7 +5,7 @@ import "@babylonjs/inspector";
 import { GLTF2Export } from "@babylonjs/serializers";
 import { addDoorAndChair } from "./rooms/looptop";
 import { addOperatingRoom } from "./rooms/op_room";
-import { addDoctorOffice } from "./rooms/office";
+import { addDoctorOffice } from "./rooms/office"; // addDoctorOffice 임포트 확인
 import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
@@ -17,6 +17,7 @@ import ProblemModal from "./components/ProblemModal";
 import RooftopProblemModal from "./components/RooftopProblemModal";
 import OperatingRoomProblemModal from "./components/OperatingRoomProblemModal";
 import OfficeProblemModal from "./components/OfficeProblemModal";
+import OfficeDoorProblemModal from "./components/OfficeDoorProblemModal";
 
 const BabylonScene = ({ onGameLoaded }) => {
   const canvasRef = useRef(null);
@@ -28,21 +29,23 @@ const BabylonScene = ({ onGameLoaded }) => {
   const flashlightHolderRef = useRef(null);
   const [flashlightStatus, setFlashlightStatus] = useState(null);
   const [hasFlashlightItem, setHasFlashlightItem] = useState(false);
-  const [hasOpKeyItem, setHasOpKeyItem] = useState(false); // 수술실 열쇠 아이템 상태
+  const [hasCardItem, setHasCardItem] = useState(false);
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
+  const [isOfficeDoorUnlocked, setIsOfficeDoorUnlocked] = useState(false);
+  const isOfficeDoorUnlockedRef = useRef(isOfficeDoorUnlocked);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
   const [errorMessage, setErrorMessage] = useState(null);
 
-  //옥상문제코드
+  // 옥상 문제 코드
   const [answerInput, setAnswerInput] = useState('');
   const [quizMessage, setQuizMessage] = useState('');
   const [hasKeyItem, setHasKeyItem] = useState(false);
   const hasKeyItemRef = useRef(false);
-  
-  // underground 문제 모달 관련 상태
+
+  // 지하 문 상호작용 관련 상태
   const [undergroundDoorMessage, setUndergroundDoorMessage] = useState('');
   const [showUndergroundDoorMessage, setShowUndergroundDoorMessage] = useState(false);
   const undergroundDoorRef = useRef(null);
@@ -52,7 +55,6 @@ const BabylonScene = ({ onGameLoaded }) => {
   const problemDoorRef = useRef(null);
   const problemDoorToggleRef = useRef(null);
 
-  
   // showProblemModal 상태 변화 추적
   useEffect(() => {
     console.log("showProblemModal 상태 변경:", showProblemModal);
@@ -75,14 +77,9 @@ const BabylonScene = ({ onGameLoaded }) => {
   };
 
   // --- 💡 수정된 부분: 사무실 문제 코드 전용 상태 추가 ---
-  const [showOfficeQuiz, setShowOfficeQuiz] = useState(false); // 사무실 퀴즈 팝업 표시 상태
+  const [showOfficeQuiz, setShowOfficeQuiz] = useState(false); // 사무실 퀴즈 팝업 표시 상태 (찬장)
   const [answerInput3, setAnswerInput3] = useState('');
   const [quizMessage3, setQuizMessage3] = useState('');
-
-  const hasOpKeyItemRef = useRef(hasOpKeyItem);
-  useEffect(() => {
-    hasOpKeyItemRef.current = hasOpKeyItem;
-  }, [hasOpKeyItem]);
 
   // hasIdCardItem 상태를 Babylon.js에 전달하기 위한 Ref
   const hasIdCardItemRef = useRef(hasIdCardItem);
@@ -103,22 +100,40 @@ const BabylonScene = ({ onGameLoaded }) => {
     }
   };
 
+  // 사무실 문 퀴즈
+  const [showOfficeDoorQuiz, setShowOfficeDoorQuiz] = useState(false); // 사무실 문 퀴즈 팝업 표시 상태
+  const [answerInput4, setAnswerInput4] = useState('');
+  const [quizMessage4, setQuizMessage4] = useState('');
+
+  const correctAnswer4 = "1346";
+
+  const handleAnswerSubmit4 = () => {
+    // 정답 비교 시 대소문자 무시
+    if (answerInput4.toLowerCase() === correctAnswer4) {
+      setQuizMessage4("정답입니다! 이제 문을 열 수 있습니다.");
+      setIsOfficeDoorUnlocked(true);
+    } else {
+      setQuizMessage4("오답입니다. 다시 시도해 보세요.");
+      setAnswerInput4('');
+    }
+  };
+
   // --- ⭐ 종이 이미지 팝업 관련 상태 (이전 답변에서 추가한 내용) ⭐ ---
-    const [isPaperImagePopupVisible, setIsPaperImagePopupVisible] = useState(false);
-    const [paperImagePopupContentUrl, setPaperImagePopupContentUrl] = useState("");
+  const [isPaperImagePopupVisible, setIsPaperImagePopupVisible] = useState(false);
+  const [paperImagePopupContentUrl, setPaperImagePopupContentUrl] = useState("");
 
-    const handlePaperClickForImage = (imageUrl) => {
-        console.log("handlePaperClickForImage 호출됨. 이미지 URL:", imageUrl);
-        setPaperImagePopupContentUrl(imageUrl);
-        setIsPaperImagePopupVisible(true);
-    };
+  const handlePaperClickForImage = (imageUrl) => {
+    console.log("handlePaperClickForImage 호출됨. 이미지 URL:", imageUrl);
+    setPaperImagePopupContentUrl(imageUrl);
+    setIsPaperImagePopupVisible(true);
+  };
 
-    const closePaperImagePopup = () => {
-        setIsPaperImagePopupVisible(false);
-        setPaperImagePopupContentUrl("");
-    };
+  const closePaperImagePopup = () => {
+    setIsPaperImagePopupVisible(false);
+    setPaperImagePopupContentUrl("");
+  };
 
-  //수술실 문제 코드
+  // 수술실 문제 코드
   const [showQuiz2, setShowQuiz2] = useState(false);
   const [answerInput2, setAnswerInput2] = useState('');
   const [quizMessage2, setQuizMessage2] = useState('');
@@ -183,8 +198,8 @@ const BabylonScene = ({ onGameLoaded }) => {
       setBoxPasswordInput(''); // 입력 필드 초기화
       if (resolveBoxPasswordPromiseRef.current) {
         console.log("Promise 해결 시도: false (비밀번호 틀림)");
-        resolveBoxPasswordPromiseRef.current(false); // op_room.js로 false 반환
-      
+        resolveBoxPasswordPromiseRef.current(false);
+
       }
     }
   };
@@ -202,6 +217,20 @@ const BabylonScene = ({ onGameLoaded }) => {
     }
   };
 
+  // --- getIsOfficeDoorUnlocked 함수 정의 ---
+  const getIsOfficeDoorUnlocked = useCallback(() => {
+    return isOfficeDoorUnlockedRef.current;
+  }, []); // isOfficeDoorUnlockedRef는 이미 최신 값을 가지고 있으므로 의존성 배열에 추가할 필요 없음
+
+  // --- handleOfficeDoorClick 함수 정의 ---
+  const handleOfficeDoorClick = useCallback(() => {
+    setShowOfficeDoorQuiz(true); // 사무실 문 퀴즈 팝업 표시
+    setQuizMessage4(''); // 퀴즈 열릴 때 메시지 초기화
+    setAnswerInput4(''); // 퀴즈 열릴 때 입력값 초기화
+    console.log("React: 사무실 문 클릭 감지, 퀴즈 팝업 표시.");
+  }, []);
+
+
   useEffect(() => {
     hasFlashlightItemRef.current = hasFlashlightItem;
   }, [hasFlashlightItem]);
@@ -213,6 +242,10 @@ const BabylonScene = ({ onGameLoaded }) => {
   useEffect(() => {
     isOfficeCupboardUnlockedRef.current = isOfficeCupboardUnlocked;
   }, [isOfficeCupboardUnlocked]);
+
+  useEffect(() => {
+    isOfficeDoorUnlockedRef.current = isOfficeDoorUnlocked;
+  }, [isOfficeDoorUnlocked]);
 
   useEffect(() => {
     isCrouchingRef.current = isCrouching;
@@ -251,8 +284,8 @@ const BabylonScene = ({ onGameLoaded }) => {
 
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        //첫시작
-        new BABYLON.Vector3(3.25, 7.85, 5.41),
+        // 첫 시작 위치
+        new BABYLON.Vector3(-19.59, 7.85, -5.42),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -282,23 +315,6 @@ const BabylonScene = ({ onGameLoaded }) => {
       const specialRadius = 0;
       let ladderMesh = null; // 이 변수는 현재 중력 범위 표시와 직접적인 관련이 없습니다.
 
-      // 중력 범위 시각화를 위한 빨간색 네모 생성
-      // const redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
-      // redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
-      // redMaterial.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 합니다.
-
-      // specialPositions.forEach((position, index) => {
-      //     const gravityBox = BABYLON.MeshBuilder.CreateBox(
-      //         `gravityRangeBox_${index}`,
-      //         { width: specialRadius * 2, height: specialRadius * 2, depth: specialRadius * 2 }, // 네모의 각 변 길이
-      //         scene
-      //     );
-      //     gravityBox.position = position;
-      //     gravityBox.material = redMaterial;
-      //     gravityBox.isPickable = false; // 클릭되지 않도록 설정
-      //     gravityBox.checkCollisions = false; // 충돌 감지에서 제외
-      // });
-
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       let parentMesh = null;
       result.meshes.forEach((mesh) => {
@@ -320,42 +336,36 @@ const BabylonScene = ({ onGameLoaded }) => {
         }
       });
 
-               const onDoorInteraction = (message) => { 
-         // "문이 잠겨있습니다" 메시지는 표시하지 않음
-        if (message.includes("문이 잠겨있습니다")) {
-          return;
-        }
+      const onDoorInteraction = (message) => {
         setUndergroundDoorMessage(message);
         setShowUndergroundDoorMessage(true);
         setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
 
-        if (message.includes("열쇠로 문을 열었습니다!")) {
-            setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
+        // 문이 열릴 때 ID 카드가 있다면 사라지도록 설정
+        if (message.includes("ID 카드로 문을 열었습니다")) {
+          console.log("문 열림 - ID 카드 아이템을 제거합니다.");
+          setHasIdCardItem(false);
         }
-        // ID 카드가 필요한 다른 문이 있다면 이곳에 해당 로직 추가
-        else if (message.includes("ID 카드로 문을 열었습니다")) {
-            setHasIdCardItem(false);
-        }
-    };
+      };
 
-    // ... (이전 코드 생략) ...
-
-    if (parentMesh) {
+      if (parentMesh) {
         await addOperatingRoom(
-            scene,
-            parentMesh,
-            handleOperatingRoomScrollClick,
-            () => {
-                setHasOpKeyItem(true); // 수술실 열쇠 획득
-            },
-            handleSurgeryBoxClick,
-            onDoorInteraction,
-            () => hasIdCardItemRef.current
+          scene,
+          parentMesh,
+          handleOperatingRoomScrollClick,
+          () => {
+            setHasCardItem(true);
+            console.log("scene.js: 카드 아이템을 획득했습니다!");
+          },
+          handleSurgeryBoxClick,
+          // 이 부분에 onDoorInteraction 함수를 추가해주세요!
+          onDoorInteraction,
+          () => hasIdCardItemRef.current
         );
+
 
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
         await addDoctorOffice(
-
           scene,
           parentMesh,
           () => setShowOfficeQuiz(true), // 찬장 클릭 시 퀴즈
@@ -364,32 +374,36 @@ const BabylonScene = ({ onGameLoaded }) => {
             setHasIdCardItem(status);
           }, // ID카드 획득 시
           () => isOfficeCupboardUnlockedRef.current, // 항상 최신값 반환
-          handlePaperClickForImage 
-
+          handlePaperClickForImage,
+          handleOfficeDoorClick, // 사무실 문 클릭 시 호출될 함수
+          getIsOfficeDoorUnlocked // 사무실 문 잠금 해제 상태를 반환하는 함수
         );
 
         await addRestroomObject(scene, parentMesh, showMessage);
         await addInformation(scene, parentMesh);
         await addVillain(scene, parentMesh);
 
-        // underground 문 추가 및 상호작용 설정
+        // 지하 문 추가 및 상호작용 설정
         const undergroundResult = await addUnderground(
-            scene,
-            parentMesh,
-            (message) => { // onDoorInteraction 대신 메시지를 직접 처리하는 콜백
-                setUndergroundDoorMessage(message);
-                setShowUndergroundDoorMessage(true);
-                setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
-            },
-            () => hasOpKeyItemRef.current, // 지하 문은 수술실 열쇠 상태를 확인
-            () => {
-                setShowProblemModal(true); // 문제 모달 열기 요청
-            }
+          scene,
+          parentMesh,
+          (message) => {
+            setUndergroundDoorMessage(message);
+            setShowUndergroundDoorMessage(true);
+            // 3초 후 메시지 숨기기
+            setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+          },
+          () => hasIdCardItemRef.current,
+          () => {
+            console.log("BabylonScene에서 문제 모달을 열려고 합니다!");
+            setShowProblemModal(true);
+          } // 문제 모달 열기 콜백
         );
         undergroundDoorRef.current = undergroundResult.toggleDoor;
         problemDoorRef.current = undergroundResult.openProblemDoor;
         problemDoorToggleRef.current = undergroundResult.toggleProblemDoor;
-    }
+      }
+
       // 램프 메쉬의 발광 강도 조절 (씬의 전체 밝기에 영향)
       const lampMesh1 = scene.getMeshByName("LAMP_LP:LAMP_03_lowLAMP_03polySurface14_LAmp_0");
       if (lampMesh1 && lampMesh1.material) {
@@ -442,7 +456,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
           flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
@@ -532,17 +546,17 @@ const BabylonScene = ({ onGameLoaded }) => {
           }
         }
 
-        
-       // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
-      if (!isOnLadder) {
-        if (keysPressed["shift"]) {
-          camera.speed = RUN_SPEED;
+
+        // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
+        if (!isOnLadder) {
+          if (keysPressed["shift"]) {
+            camera.speed = RUN_SPEED;
+          } else {
+            camera.speed = WALK_SPEED;
+          }
         } else {
-          camera.speed = WALK_SPEED;
+          camera.speed = 0;
         }
-      } else {
-        camera.speed = 0;
-      }
 
 
 
@@ -575,102 +589,91 @@ const BabylonScene = ({ onGameLoaded }) => {
       const handleKeyDown = (evt) => {
         keysPressed[evt.key.toLowerCase()] = true;
 
-        // 시체 근처에서 비명 소리 체크 (매 키 입력마다)
-        if (window.corpsePosition && !window.hasPlayedCorpseSound) {
-          const playerPos = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
-          const distance = BABYLON.Vector3.Distance(playerPos, window.corpsePosition);
-          
-          if (distance < 3) { // 시체에서 3미터 이내에 있으면
-            console.log("시체 근처에서 비명 소리와 물 소리 동시 재생:", distance);
-            const screamAudio = new Audio('/scary-scream-3-81274.mp3');
-            const waterAudio = new Audio('/water-flowing-sound-327661.mp3');
-            
-            // 비명 소리와 물 흐르는 소리를 동시에 재생
-            screamAudio.play();
-            waterAudio.play();
-            
-            window.hasPlayedCorpseSound = true; // 한 번만 재생되도록 설정
-          }
-        }
-      if (evt.key === "f") {
+        if (evt.key.toLowerCase() === "f") {
           if (!hasFlashlightItemRef.current) {
-              // 손전등 아이템이 없으면 경고 메시지를 표시할 수 있습니다.
-              return;
+            console.log("손전등 아이템을 획득해야 손전등을 켤 수 있습니다.");
+            return;
           }
 
           if (flashlightSpotLightRef.current) {
-              if (flashlightSpotLightRef.current.isEnabled()) {
-                  flashlightSpotLightRef.current.setEnabled(false);
-                  setFlashlightStatus("OFF");
-              } else {
-                  flashlightSpotLightRef.current.setEnabled(true);
-                  flashlightSpotLightRef.current.intensity = 100; // 손전등 밝기 조절 (값 높을수록 밝아짐)
-                  flashlightSpotLightRef.current.exponent = 10; // 손전등 빛의 중앙 집중도 조절 (값 높을수록 중앙에 집중)
-                  setFlashlightStatus("ON");
-              }
+            if (flashlightSpotLightRef.current.isEnabled()) {
+              flashlightSpotLightRef.current.setEnabled(false);
+              setFlashlightStatus("OFF");
+              console.log("손전등 OFF");
+            } else {
+              flashlightSpotLightRef.current.setEnabled(true);
+              flashlightSpotLightRef.current.intensity = 100; // 손전등 밝기 조절 (값 높을수록 밝아짐)
+              flashlightSpotLightRef.current.exponent = 10; // 손전등 빛의 중앙 집중도 조절 (값 높을수록 중앙에 집중)
+              setFlashlightStatus("ON");
+              console.log("손전등 ON");
+            }
           }
-      }
+        }
 
-      // 앉기 기능 (C키)
-      if (evt.key === "c") {
+        // 앉기 기능 (C키)
+        if (evt.key.toLowerCase() === "c") {
           if (!isCrouchingRef.current) {
-              camera.ellipsoid = crouchingEllipsoid;
-              setIsCrouching(true);
+            camera.ellipsoid = crouchingEllipsoid;
+            setIsCrouching(true);
+            console.log("앉기");
           } else {
-              camera.ellipsoid = standingEllipsoid;
-              setIsCrouching(false);
+            camera.ellipsoid = standingEllipsoid;
+            setIsCrouching(false);
+            console.log("일어서기");
           }
-      }
-
-      // 열쇠를 획득한 후 E키를 누르면 문이 열리게
-      if (evt.key === 'e') {
+        }
+        // 열쇠를 획득한 후 E키를 누르면 문이 열리게
+        if (evt.key === 'e' || evt.key === 'E') {
           // 플레이어와 각 문 위치의 거리 계산
           const playerPosVec = new BABYLON.Vector3(camera.position.x, camera.position.y, camera.position.z);
           const mainDoorPos = new BABYLON.Vector3(-25.10, 14.80, 10.57);
           const restroomDoorPos = new BABYLON.Vector3(-18.95, 2.5, -6.95);
           const undergroundDoorPos = new BABYLON.Vector3(7, 6.4, 5.1);
 
-          let interacted = false;
-
           // 수평(XZ) 거리 계산 함수
           function horizontalDistance(a, b) {
-              return Math.sqrt(
-                  Math.pow(a.x - b.x, 2) +
-                  Math.pow(a.z - b.z, 2)
-              );
+            return Math.sqrt(
+              Math.pow(a.x - b.x, 2) +
+              Math.pow(a.z - b.z, 2)
+            );
           }
+          const distToMain = horizontalDistance(playerPosVec, mainDoorPos);
+          const distToRest = horizontalDistance(playerPosVec, restroomDoorPos);
+          const distToUnderground = horizontalDistance(playerPosVec, undergroundDoorPos);
           const THRESHOLD = 10; // 거리 임계값(수평거리)
+
+          let opened = false;
 
           // 기존 문들 (열쇠 필요)
           if (hasKeyItemRef.current) {
-              if (horizontalDistance(playerPosVec, mainDoorPos) < THRESHOLD && window.openMainDoor) {
-                  window.openMainDoor();
-                  setHasKeyItem(false);
-                  interacted = true;
-              } else if (horizontalDistance(playerPosVec, restroomDoorPos) < THRESHOLD && window.openRestroomDoor) {
-                  window.openRestroomDoor();
-                  setHasKeyItem(false);
-                  interacted = true;
-              }
+            if (distToMain < THRESHOLD && window.openMainDoor) {
+              window.openMainDoor();
+              setHasKeyItem(false);
+              opened = true;
+            } else if (distToRest < THRESHOLD && window.openRestroomDoor) {
+              window.openRestroomDoor();
+              setHasKeyItem(false);
+              opened = true;
+            }
           }
 
-          // underground 문 상호작용 (hasOpKeyItemRef를 사용하는 경우)
-          if (horizontalDistance(playerPosVec, undergroundDoorPos) < THRESHOLD && undergroundDoorRef.current) {
-              undergroundDoorRef.current(); // 직접 toggleDoor 함수 호출
-              setHasOpKeyItem(false); // 언더그라운드 문을 열면 키 아이템 소모
-              interacted = true;
+          // 지하 문 (ID 카드 필요)
+          if (distToUnderground < THRESHOLD && undergroundDoorRef.current && undergroundDoorRef.current.toggleDoor) {
+            console.log("E키로 underground 문 열기 시도");
+            undergroundDoorRef.current.toggleDoor();
+            console.log("ID 카드 아이템을 UI에서 즉시 제거합니다.");
+            setHasIdCardItem(false); // E키로 문을 열면 ID카드 아이템을 UI에서 즉시 제거
+            opened = true;
           }
+          // if (!opened) {
+          //   alert('문 가까이에서 E키를 눌러주세요!');
+          // }
+        }
+      };
 
-          // 만약 어떤 문과도 상호작용하지 않았다면 메시지 표시
-          if (!interacted) {
-              // alert('문 가까이에서 E키를 눌러주세요!'); // 필요한 경우 주석 해제
-          }
-      }
-  };
-
-  const handleKeyUp = (evt) => {
-      keysPressed[evt.key.toLowerCase()] = false;
-  };
+      const handleKeyUp = (evt) => {
+        keysPressed[evt.key.toLowerCase()] = false;
+      };
 
       window.addEventListener("keydown", handleKeyDown);
       window.addEventListener("keyup", handleKeyUp);
@@ -707,15 +710,15 @@ const BabylonScene = ({ onGameLoaded }) => {
           }
         }
       });
-        //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
+      //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
       // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
       // });
 
       window.addEventListener("keydown", (evt) => {
@@ -738,7 +741,7 @@ const BabylonScene = ({ onGameLoaded }) => {
         console.log("모델 로딩 상태 확인 중...");
         // 모든 주요 모델이 로드되었는지 확인
         const allModelsLoaded = true; // 실제로는 각 모델의 로딩 상태를 확인해야 함
-        
+
         if (allModelsLoaded && onGameLoaded) {
           console.log("게임 로딩 완료 - onGameLoaded 콜백 호출 예정");
           // 약간의 지연을 두어 렌더링이 안정화된 후 콜백 호출
@@ -765,7 +768,12 @@ const BabylonScene = ({ onGameLoaded }) => {
 
     initScene();
 
-  }, [handleOperatingRoomScrollClick, handleSurgeryBoxClick]);
+  }, [
+    handleOperatingRoomScrollClick,
+    handleSurgeryBoxClick,
+    handleOfficeDoorClick, // 의존성 배열에 추가
+    getIsOfficeDoorUnlocked // 의존성 배열에 추가
+  ]);
 
   useEffect(() => {
     window.setHasKeyItem = setHasKeyItem;
@@ -825,11 +833,11 @@ const BabylonScene = ({ onGameLoaded }) => {
             <span>열쇠</span>
           </div>
         )}
-        {hasOpKeyItem && (
+        {hasCardItem && (
           <div style={{ marginTop: 5, display: 'flex', alignItems: 'center' }}>
             <img
               src="/key.png"
-              alt="수술실 열쇠 아이템"
+              alt="열쇠 아이템"
               style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 8 }}
               onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50/000000/FFFFFF?text=KEY'; }}
             />
@@ -860,8 +868,58 @@ const BabylonScene = ({ onGameLoaded }) => {
         )}
       </div>
 
-      {/* --- 상자 비밀번호 입력 팝업 --- */}
-      {showBoxPasswordInput && (
+      {showFlashlightTip && (
+        <CenterMessage message={flashlightTipMessage} onClose={() => setShowFlashlightTip(false)} />
+      )}
+      {showCenterMessage && <CenterMessage message={centerMessage} />}
+      {showScenarioMessage && <ScenarioMessage message={scenarioMessage} />}
+
+      {/* 옥상 퀴즈 모달 */}
+      {showQuiz && (
+        <RooftopProblemModal
+          answerInput={answerInput}
+          setAnswerInput={setAnswerInput}
+          quizMessage={quizMessage}
+          handleAnswerSubmit={handleAnswerSubmit}
+          onClose={() => setShowQuiz(false)}
+        />
+      )}
+
+      {/* 수술실 퀴즈 모달 */}
+      {showQuiz2 && (
+        <OperatingRoomProblemModal
+          answerInput={answerInput2}
+          setAnswerInput={setAnswerInput2}
+          quizMessage={quizMessage2}
+          handleAnswerSubmit={handleAnswerSubmit2}
+          onClose={() => setShowQuiz2(false)}
+        />
+      )}
+
+      {/* 사무실 찬장 퀴즈 모달 */}
+      {showOfficeQuiz && (
+        <OfficeProblemModal
+          answerInput={answerInput3}
+          setAnswerInput={setAnswerInput3}
+          quizMessage={quizMessage3}
+          handleAnswerSubmit={handleAnswerSubmit3}
+          onClose={() => setShowOfficeQuiz(false)}
+        />
+      )}
+
+      {/* 사무실 문 퀴즈 모달 */}
+      {showOfficeDoorQuiz && (
+        <OfficeDoorProblemModal
+          answerInput={answerInput4}
+          setAnswerInput={setAnswerInput4}
+          quizMessage={quizMessage4}
+          handleAnswerSubmit={handleAnswerSubmit4}
+          onClose={() => setShowOfficeDoorQuiz(false)}
+        />
+      )}
+
+      {/* --- ⭐ 종이 이미지 팝업 UI (핵심 부분) ⭐ --- */}
+      {isPaperImagePopupVisible && (
         <div style={{
           position: "fixed",
           top: 0,
@@ -873,178 +931,87 @@ const BabylonScene = ({ onGameLoaded }) => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 2002 // 다른 팝업보다 높은 z-index
+          zIndex: 2001 // 높은 z-index
         }}>
-          <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
-            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>{boxPasswordMessage}</div>
-            <input
-              type="password" // 비밀번호 필드로 설정하여 입력 내용이 *로 표시되게 할 수 있습니다.
-              value={boxPasswordInput}
-              onChange={(e) => setBoxPasswordInput(e.target.value)}
-              placeholder="비밀번호 입력"
-              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
-            />
-            <button
-              onClick={handleBoxPasswordSubmit}
-              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
-            >
-              확인
-            </button>
-            <button
-              onClick={handleCloseBoxPasswordInput}
-              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
-            >
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
-      {/* ----------------------------- */}
-
-      {/* 손전등 사용법 메시지 팝업 */}
-      {showFlashlightTip && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000 // 퀴즈보다 낮은 z-index
-          }}
-        >
           <div style={{
-            background: "rgba(0,0,0,0.6)",
-            padding: 24,
-            borderRadius: 12,
-            textAlign: "center",
-            minWidth: 320,
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            padding: '25px',
+            border: '3px solid #6c757d',
+            borderRadius: '10px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
+            maxWidth: '85%', // 이미지 크기에 맞게 조절
+            maxHeight: '90%', // 이미지 크기에 맞게 조절
+            overflow: 'auto', // 이미지가 팝업보다 크면 스크롤
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2002, // 오버레이보다 높게
+            position: 'relative', // 자식 요소의 absolute 포지셔닝을 위해 필요할 수 있음
           }}>
-            <div style={{
-              fontSize: 20,
-              marginBottom: 16,
-              color: "white"
-            }}>
-              {flashlightTipMessage}
-            </div>
-            <button
-              onClick={() => {
-                setShowFlashlightTip(false);
-                setFlashlightTipMessage("");
-              }}
-              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
-            >
-              닫기
-            </button>
+            <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#0056b3' }}>식단표 문제</h3>
+            {paperImagePopupContentUrl && (
+              <img
+                src={paperImagePopupContentUrl} // 상태에 저장된 이미지 URL 사용
+                alt="식단표 문제"
+                style={{
+                  maxWidth: '100%', // 팝업 너비에 맞게 조절
+                  maxHeight: '100%', // 팝업 높이에 맞게 조절
+                  display: 'block',
+                  borderRadius: '5px',
+                  border: '1px solid #e9ecef'
+                }}
+                onError={(e) => {
+                  e.target.onerror = null; // 중복 에러 방지
+                  console.error("이미지 로드 실패:", paperImagePopupContentUrl);
+                }}
+              />
+            )}
+            <button onClick={closePaperImagePopup} style={{
+              marginTop: '20px',
+              padding: '12px 25px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '1em',
+              fontWeight: 'bold',
+              transition: 'background-color 0.2s ease'
+            }}>닫기</button>
           </div>
         </div>
       )}
 
-      {/* 수술실 퀴즈 팝업 */}
-      <OperatingRoomProblemModal
-        isOpen={showQuiz2}
-        
+      {/* 상자 비밀번호 입력 모달 */}
+      {showBoxPasswordInput && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          padding: '20px',
+          borderRadius: '10px',
+          zIndex: 2000,
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <h3>{boxPasswordMessage}</h3>
+          <input
+            type="password"
+            value={boxPasswordInput}
+            onChange={(e) => setBoxPasswordInput(e.target.value)}
+            style={{ padding: '8px', margin: '10px 0', width: '150px' }}
+          />
+          <div>
+            <button onClick={handleBoxPasswordSubmit} style={{ marginRight: '10px', padding: '8px 15px' }}>확인</button>
+            <button onClick={handleCloseBoxPasswordInput} style={{ padding: '8px 15px' }}>닫기</button>
+          </div>
+        </div>
+      )}
 
-    
-    
-        onClose={() => {
-          setShowQuiz(false);
-          setQuizMessage('');
-          setAnswerInput('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
-          setHasKeyItem(true);
-        }}
-      />
-
-      {/* 사무실 퀴즈 팝업 */}
-      <OfficeProblemModal
-        isOpen={showOfficeQuiz}
-        onClose={() => {
-          setShowOfficeQuiz(false);
-          setQuizMessage3('');
-          setAnswerInput3('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage3("정답입니다! 이제 찬장을 열 수 있습니다.");
-          setIsOfficeCupboardUnlocked(true);
-        }}
-      />
-      {/* -------------------------------------------------- */}
-
-       {/* --- ⭐ 종이 이미지 팝업 UI (핵심 부분) ⭐ --- */}
-            {isPaperImagePopupVisible && (
-                 <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
-                    background: "rgba(0,0,0,0.7)",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 2001 // 높은 z-index
-                }}>
-                    <div style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        padding: '25px',
-                        border: '3px solid #6c757d',
-                        borderRadius: '10px',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
-                        maxWidth: '85%', // 이미지 크기에 맞게 조절
-                        maxHeight: '90%', // 이미지 크기에 맞게 조절
-                        overflow: 'auto', // 이미지가 팝업보다 크면 스크롤
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 2002, // 오버레이보다 높게
-                        position: 'relative', // 자식 요소의 absolute 포지셔닝을 위해 필요할 수 있음
-                    }}>
-                        <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#0056b3' }}>식단표 문제</h3>
-                        {paperImagePopupContentUrl && (
-                            <img
-                                src={paperImagePopupContentUrl} // 상태에 저장된 이미지 URL 사용
-                                alt="식단표 문제"
-                                style={{
-                                    maxWidth: '100%', // 팝업 너비에 맞게 조절
-                                    maxHeight: '100%', // 팝업 높이에 맞게 조절
-                                    display: 'block',
-                                    borderRadius: '5px',
-                                    border: '1px solid #e9ecef'
-                                }}
-                                onError={(e) => {
-                                    e.target.onerror = null; // 중복 에러 방지
-                                    console.error("이미지 로드 실패:", paperImagePopupContentUrl);
-                                }}
-                            />
-                        )}
-                        <button onClick={closePaperImagePopup} style={{
-                            marginTop: '20px',
-                            padding: '12px 25px',
-                            backgroundColor: '#007bff',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '1em',
-                            fontWeight: 'bold',
-                            transition: 'background-color 0.2s ease'
-                        }}>닫기</button>
-                    </div>
-                </div>
-            )}
-      
-      {/* Underground 문 상호작용 메시지 */}
+      {/* 지하 문 상호작용 메시지 */}
       {showUndergroundDoorMessage && (
         <div style={{
           position: "fixed",
@@ -1070,34 +1037,22 @@ const BabylonScene = ({ onGameLoaded }) => {
         isOpen={showProblemModal}
         onClose={() => setShowProblemModal(false)}
         onCorrectAnswer={() => {
+          console.log("지하실 문제 정답!");
           // 문제 문 열기
-          if (problemDoorRef.current) {
-            problemDoorRef.current();
+          if (problemDoorToggleRef.current) { // problemDoorToggleRef 사용
+            problemDoorToggleRef.current(true);
           }
           // ID 카드가 있다면 사라지도록 설정
-          if (hasOpKeyItem) {
-            
-            setHasOpKeyItem(false);
+          if (hasIdCardItem) {
+            console.log("문제 해결 후 ID 카드 아이템을 제거합니다.");
+            setHasIdCardItem(false);
           }
         }}
       />
 
-      {/* 옥상 퀴즈 팝업 */}
-      <RooftopProblemModal
-        isOpen={showQuiz}
-        onClose={() => {
-          setShowQuiz(false);
-          setQuizMessage('');
-          setAnswerInput('');
-        }}
-        onCorrectAnswer={() => {
-          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
-          setHasKeyItem(true);
-        }}
-      />
-
-      <CenterMessage message={centerMessage} visible={showCenterMessage} />
-      <ScenarioMessage message={scenarioMessage} visible={showScenarioMessage} onClose={() => setShowScenarioMessage(false)}/>
+      {/* CenterMessage와 ScenarioMessage 컴포넌트에는 'visible' prop이 없으므로 'showCenterMessage'와 'showScenarioMessage'를 직접 사용합니다. */}
+      {showCenterMessage && <CenterMessage message={centerMessage} />}
+      {showScenarioMessage && <ScenarioMessage message={scenarioMessage} onClose={() => setShowScenarioMessage(false)} />}
     </>
   );
 };
