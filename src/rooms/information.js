@@ -317,60 +317,7 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
       );
     
     }
-    
-const loadPaper = async () => {
-    const paperWorldPos = new BABYLON.Vector3(-17, 7.85, -8.8);
-    const paper = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "paper_tablet.glb", scene);
-
-    const textureUrl = `${process.env.PUBLIC_URL}/짱구문제4.png`;
-    const paperMaterial = new BABYLON.StandardMaterial("paperMat", scene);
-    paperMaterial.diffuseTexture = new BABYLON.Texture(textureUrl, scene);
-
-    // --- 여기는 텍스처 크기(스케일) 및 반복 설정 (기존 코드) ---
-    paperMaterial.diffuseTexture.hasAlpha = true;
-    paperMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-    paperMaterial.backFaceCulling = false;
-    paperMaterial.diffuseTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-    paperMaterial.diffuseTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-
-    paperMaterial.diffuseTexture.uScale = 0.92; // U 방향 (가로) 스케일
-    paperMaterial.diffuseTexture.vScale = 0.85; // V 방향 (세로) 스케일
-
-    // --- 여기부터 텍스처 위치(오프셋) 조절 ---
-    // 이 값들을 조절하면서 텍스처가 메쉬 위에서 어떻게 이동하는지 확인해야 합니다.
-    // 양수 값은 텍스처를 오른쪽/위쪽으로 이동시키고 (텍스처의 내용은 왼쪽/아래로 이동하는 것처럼 보임),
-    // 음수 값은 텍스처를 왼쪽/아래쪽으로 이동시킵니다.
-    paperMaterial.diffuseTexture.uOffset = 0.045; // U 방향 (가로) 오프셋
-    paperMaterial.diffuseTexture.vOffset = 0.065; // V 방향 (세로) 오프셋
-    // --- 여기까지 텍스처 위치(오프셋) 조절 ---
-
-    for (const mesh of paper.meshes) {
-        if (mesh.name === "Plane_Material_0") {
-            mesh.dispose();
-            continue;
-        }
-
-        if (mesh.name === "Plane.005_Material.002_0") {
-            mesh.material = paperMaterial;
-        }
-
-        if (mesh.name !== "__root__") {
-            mesh.parent = parentMesh;
-            mesh.position = BABYLON.Vector3.TransformCoordinates(
-                paperWorldPos,
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            mesh.scaling = new BABYLON.Vector3(200, 200, 200);
-            mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-            mesh.checkCollisions = true;
-        }
-    }
-};
-
-loadPaper();
   
-
 //     // paper 위치 (모델의 원하는 월드 위치)
 // const desiredPaperModelWorldPos = new BABYLON.Vector3(-17, 7.85, -8.8);
 
