@@ -15,6 +15,8 @@ import "@babylonjs/loaders"; // GLB 등 3D 모델 로더를 위한 확장 기능
  * 주로 React 상태(예: `hasIdCardItem`)를 업데이트하는 데 사용됩니다.
  * @param {Function} getIsCupboardUnlocked - React 컴포넌트에서 관리하는 찬장의 잠금 해제 상태(isOfficeCupboardUnlocked)를
  * 실시간으로 가져오는 콜백 함수입니다. 이 함수를 호출하여 현재 잠금 상태를 확인합니다.
+ * @param {Function} getIsDoorUnlocked
+ * @param {Function} onOfficeDoorClick
  * @param {object} idCardOptions - ID 카드 모델의 초기 위치, 스케일, 회전 등을 재정의할 수 있는 옵션 객체입니다.
  * @param {object} metalCupboardOptions - 메탈 찬장 모델의 스케일, 회전 등을 재정의할 수 있는 옵션 객체입니다.
  */
@@ -25,10 +27,18 @@ export async function addDoctorOffice(
     onIdCardAcquired, // ⭐ 이 인자는 더 이상 office.js에서 직접 사용되지 않습니다.
     getIsCupboardUnlocked,
     onPaperClickForContent,
-    handlePaperClickForImage,
+    onOfficeDoorClick, // <--- 이 매개변수가 추가되었습니다.
+    getIsOfficeDoorUnlocked,
     idCardOptions = {},
     metalCupboardOptions = {}
 ) {
+    // --- 디버깅 로그 추가 ---
+    console.log("--- addDoctorOffice 함수 호출됨 ---");
+    console.log("getIsOfficeDoorUnlocked 매개변수 타입:", typeof getIsOfficeDoorUnlocked);
+    console.log("getIsOfficeDoorUnlocked 매개변수 값:", getIsOfficeDoorUnlocked);
+    console.log("onOfficeDoorClick 매개변수 타입:", typeof onOfficeDoorClick);
+    console.log("onOfficeDoorClick 매개변수 값:", onOfficeDoorClick);
+    // -------------------------
 
     if (!parentMesh) {
         console.warn("❗ parentMesh가 없습니다.");
@@ -37,79 +47,118 @@ export async function addDoctorOffice(
 
 
 // --- 2. door.glb (문) 모델 배치 및 로직 ---
-    const door2 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
-    door2.meshes.forEach((doorMesh) => {
+    const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+    doorResult.meshes.forEach((doorMesh) => {
         if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
-            const pivot = new BABYLON.Vector3(0, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
+            const pivot = new BABYLON.Vector3(0, -6.3, 0); // 문을 회전시킬 축의 피벗 포인트 설정
             doorMesh.setPivotPoint(pivot);
 
             doorMesh.parent = parentMesh;
+            // 문 메시의 월드 위치를 부모 메시의 로컬 좌표계로 변환하여 설정
             doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-                new BABYLON.Vector3(-19.55, 4.95, -2.15), // 이 월드 위치는 유지
+                new BABYLON.Vector3(-19.55, 4.95, -2.15),
                 BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
             );
 
+            // 초기 회전 설정 (X축 90도, Y축 90도 회전)
             const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
                 .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
-            doorMesh.rotationQuaternion = baseRotation.clone(); // 원본 그대로 유지
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 원본 스케일 유지
-            doorMesh.checkCollisions = true;
+            doorMesh.rotationQuaternion = baseRotation.clone(); // 문 메시의 초기 회전 쿼터니언 설정
+            doorMesh.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 문 메시의 스케일 설정
+            doorMesh.checkCollisions = true; // 충돌 감지 활성화
 
-            const startRotation = doorMesh.rotationQuaternion.clone();
-            const openAngle = Math.PI / 2;
+            const startRotation = doorMesh.rotationQuaternion.clone(); // 문이 닫힌 상태의 회전 값
+            const openAngle = Math.PI / 2; // 문이 열릴 각도 (90도)
+            // 문이 열린 상태의 회전 값 (Z축 기준으로 회전)
             const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
 
+            // 문 열림 애니메이션 정의
             const openAnim = new BABYLON.Animation(
-                "doorOpen",
-                "rotationQuaternion",
-                30,
-                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                "doorOpen", // 애니메이션 이름
+                "rotationQuaternion", // 애니메이션 적용할 속성
+                30, // 초당 프레임 수 (FPS)
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION, // 애니메이션 타입 (쿼터니언)
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // 애니메이션 반복 모드 (한 번만 실행)
             );
             openAnim.setKeys([
-                { frame: 0, value: startRotation },
-                { frame: 30, value: endRotation },
+                { frame: 0, value: startRotation }, // 0프레임: 시작 회전
+                { frame: 30, value: endRotation }, // 30프레임: 종료 회전
             ]);
 
+            // 문 닫힘 애니메이션 정의
             const closeAnim = new BABYLON.Animation(
-                "doorClose",
-                "rotationQuaternion",
-                30,
-                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                "doorClose", // 애니메이션 이름
+                "rotationQuaternion", // 애니메이션 적용할 속성
+                30, // 초당 프레임 수 (FPS)
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION, // 애니메이션 타입 (쿼터니언)
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // 애니메이션 반복 모드 (한 번만 실행)
             );
             closeAnim.setKeys([
-                { frame: 0, value: endRotation },
-                { frame: 30, value: startRotation },
+                { frame: 0, value: endRotation }, // 0프레임: 시작 회전 (열린 상태)
+                { frame: 30, value: startRotation }, // 30프레임: 종료 회전 (닫힌 상태)
             ]);
 
-            let isDoorOpen = false;
-            let isAnimating = false;
-            // isFirstOpen 변수 제거
+            let isDoorOpen = false; // 문이 현재 열려있는지 닫혀있는지 상태
+            let isAnimating = false; // 문 애니메이션이 현재 실행 중인지 상태
 
+            // --- 문 상호작용 로직 ---
             doorMesh.actionManager = new BABYLON.ActionManager(scene);
             doorMesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                    if (isAnimating) return; // 애니메이션 중이면 무시
-                    isAnimating = true;
-                    if (!isDoorOpen) {
-                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
-                        // 문 열릴 때 효과음 재생
-                        const audio = new Audio('/squeaky-door-open-317165.mp3');
-                        audio.play();
-                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                            isDoorOpen = true;
-                            isAnimating = false;
-                        });
-                    } else {
-                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                            doorMesh.checkCollisions = true; // 문이 닫힐 때 충돌 다시 켜기
-                            isDoorOpen = false;
-                            isAnimating = false;
-                        });
+                new BABYLON.ExecuteCodeAction(
+                    BABYLON.ActionManager.OnPickTrigger,
+                    function () {
+                        console.log("🚪 사무실 문 클릭 감지!"); // 클릭 감지 로그
+                        // 애니메이션이 이미 진행 중이라면, 추가 클릭을 무시합니다.
+                        if (isAnimating) {
+                            console.log("애니메이션 진행 중. 클릭 무시.");
+                            return;
+                        }
+
+                        // React로부터 문 잠금 해제 상태를 가져옴
+                        const unlocked = getIsOfficeDoorUnlocked();
+                        console.log("문 잠금 해제 상태 (getIsOfficeDoorUnlocked 호출 결과):", unlocked);
+
+                        // 문이 잠금 해제되지 않았다면 (잠겨 있다면)
+                        if (!unlocked) {
+                            console.log("문이 잠겨 있습니다. 퀴즈를 트리거합니다.");
+                            // `onOfficeDoorClick` 함수가 유효한지 확인하고 호출합니다.
+                            if (onOfficeDoorClick) {
+                                onOfficeDoorClick(); // React 퀴즈를 트리거합니다.
+                            } else {
+                                console.warn("onOfficeDoorClick 함수가 정의되지 않았습니다.");
+                            }
+                            // 잠겨 있을 때는 문을 열거나 닫는 애니메이션을 실행하지 않고 즉시 종료합니다.
+                            return;
+                        }
+                        // 문이 잠금 해제되었다면 (문이 열리거나 닫힐 수 있는 상태)
+                        else {
+                            console.log("문이 잠금 해제되었습니다. 문 애니메이션을 시작합니다.");
+                            // 이제 문 애니메이션을 시작할 수 있습니다.
+                            isAnimating = true; // 애니메이션 시작을 알림
+
+                            if (!isDoorOpen) {
+                                // 문을 엽니다. 문이 열릴 때 충돌을 끄고 효과음을 재생합니다.
+                                doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                                const audio = new Audio('/squeaky-door-open-317165.mp3'); // 효과음 로드
+                                audio.play(); // 효과음 재생
+                                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                                    isDoorOpen = true;    // 문 열림 상태로 변경
+                                    isAnimating = false;  // 애니메이션 종료 알림
+                                    console.log("문 열림 애니메이션 완료.");
+                                });
+                            } else {
+                                // 문을 닫습니다. 애니메이션 완료 후 충돌을 다시 활성화합니다.
+                                scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                                    doorMesh.checkCollisions = true; // 문 닫힘 후 충돌 감지 다시 활성화
+                                    isDoorOpen = false;   // 문 닫힘 상태로 변경
+                                    isAnimating = false;  // 애니메이션 종료 알림
+                                    console.log("문 닫힘 애니메이션 완료.");
+                                });
+                            }
+                        }
                     }
-                })
+                )
             );
         }
     });

@@ -17,6 +17,7 @@ import ProblemModal from "./components/ProblemModal";
 import RooftopProblemModal from "./components/RooftopProblemModal";
 import OperatingRoomProblemModal from "./components/OperatingRoomProblemModal";
 import OfficeProblemModal from "./components/OfficeProblemModal";
+import OfficeDoorProblemModal from "./components/OfficeDoorProblemModal";
 
 const BabylonScene = ({ onGameLoaded }) => {
   const canvasRef = useRef(null);
@@ -32,6 +33,8 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [hasIdCardItem, setHasIdCardItem] = useState(false);
   const [isOfficeCupboardUnlocked, setIsOfficeCupboardUnlocked] = useState(false);
   const isOfficeCupboardUnlockedRef = useRef(isOfficeCupboardUnlocked);
+  const [isOfficeDoorUnlocked, setIsOfficeDoorUnlocked] = useState(false);
+  const isOfficeDoorUnlockedRef = useRef(isOfficeDoorUnlocked);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("게임 로딩 중...");
   const [errorMessage, setErrorMessage] = useState(null);
@@ -118,6 +121,28 @@ const BabylonScene = ({ onGameLoaded }) => {
         setPaperImagePopupContentUrl("");
     };
 
+    // --- 💡 수정된 부분: 사무실 문 퀴즈 코드 전용 상태 추가 ---
+const [showOfficeDoorQuiz, setShowOfficeDoorQuiz] = useState(false); // 사무실 문 퀴즈 팝업 표시 상태
+const [answerInput4, setAnswerInput4] = useState(''); // 사무실 문 퀴즈 입력값 (기존 answerInput3 대신 4로 통일)
+const [quizMessage4, setQuizMessage4] = useState(''); // 사무실 문 퀴즈 메시지 (기존 quizMessage3 대신 4로 통일)
+
+// hasOpKeyItemRef와 hasIdCardItemRef는 이 퀴즈와 직접적인 관련이 없으므로 제거합니다.
+// (만약 다른 곳에서 사용된다면 해당 위치에서 유지되어야 합니다.)
+
+const correctAnswer4 = "1346"; // 사무실 문 퀴즈 정답 (예시 값, 필요에 따라 변경 가능)
+
+const handleAnswerSubmit4 = () => {
+  // 정답 비교 시 대소문자 무시 (현재는 숫자이므로 큰 의미 없음)
+  if (answerInput4 === correctAnswer4) {
+    setQuizMessage4("정답입니다! 이제 문을 열 수 있습니다.");
+    // 이 퀴즈는 문을 여는 것이 목적이므로, 사무실 문 잠금 해제 상태를 변경합니다.
+    setIsOfficeDoorUnlocked(true);
+  } else {
+    setQuizMessage4("오답입니다. 다시 시도해 보세요.");
+    setAnswerInput4('');
+  }
+};
+
   //수술실 문제 코드
   const [showQuiz2, setShowQuiz2] = useState(false);
   const [answerInput2, setAnswerInput2] = useState('');
@@ -202,6 +227,13 @@ const BabylonScene = ({ onGameLoaded }) => {
     }
   };
 
+  const handleOfficeDoorClick = useCallback(() => {
+    console.log("handleOfficeDoorClick 호출됨. 사무실 문 퀴즈 팝업 표시.");
+    setShowOfficeDoorQuiz(true); // 사무실 문 퀴즈 팝업 표시
+    setQuizMessage4(''); // 퀴즈 열릴 때 메시지 초기화
+    setAnswerInput4(''); // 퀴즈 열릴 때 입력값 초기화
+  }, []);
+
   useEffect(() => {
     hasFlashlightItemRef.current = hasFlashlightItem;
   }, [hasFlashlightItem]);
@@ -213,6 +245,10 @@ const BabylonScene = ({ onGameLoaded }) => {
   useEffect(() => {
     isOfficeCupboardUnlockedRef.current = isOfficeCupboardUnlocked;
   }, [isOfficeCupboardUnlocked]);
+
+  useEffect(() => {
+    isOfficeDoorUnlockedRef.current = isOfficeDoorUnlocked;
+  }, [isOfficeDoorUnlocked]);
 
   useEffect(() => {
     isCrouchingRef.current = isCrouching;
@@ -252,7 +288,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-1.03, 7.85, 9.30),
+        new BABYLON.Vector3(-19.59, 7.85, -5.42),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -355,17 +391,17 @@ const BabylonScene = ({ onGameLoaded }) => {
 
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
         await addDoctorOffice(
-
-          scene,
-          parentMesh,
-          () => setShowOfficeQuiz(true), // 찬장 클릭 시 퀴즈
-          (status) => {
-            console.log("setHasIdCardItem 호출됨:", status);
-            setHasIdCardItem(status);
-          }, // ID카드 획득 시
-          () => isOfficeCupboardUnlockedRef.current, // 항상 최신값 반환
-          handlePaperClickForImage 
-
+            scene,
+            parentMesh,
+            () => setIsOfficeCupboardUnlocked(true), // onCupboardClickForQuiz (찬장 클릭 시 퀴즈 대신 바로 잠금 해제)
+            (status) => {
+                console.log("setHasIdCardItem 호출됨:", status);
+                setHasIdCardItem(status);
+            }, // onIdCardAcquired
+            () => isOfficeCupboardUnlockedRef.current, // getIsCupboardUnlocked
+            handlePaperClickForImage, // onPaperClickForContent
+            handleOfficeDoorClick, // onOfficeDoorClick
+            () => isOfficeDoorUnlockedRef.current // getIsOfficeDoorUnlocked
         );
 
         await addRestroomObject(scene, parentMesh, showMessage);
@@ -974,6 +1010,20 @@ const BabylonScene = ({ onGameLoaded }) => {
         }}
       />
       {/* -------------------------------------------------- */}
+
+{/* ⭐ 사무실 문 퀴즈 모달 (간소화된 방식) ⭐ */}
+      <OfficeDoorProblemModal
+        isOpen={showOfficeDoorQuiz}
+        onClose={() => {
+          setShowOfficeDoorQuiz(false);
+          // OfficeDoorProblemModal 내부에서 answerInput4, quizMessage4를 초기화한다고 가정
+        }}
+        onCorrectAnswer={() => {
+          setIsOfficeDoorUnlocked(true); // 사무실 문 잠금 해제
+          setShowOfficeDoorQuiz(false); // 정답 후 퀴즈 닫기
+          // OfficeDoorProblemModal 내부에서 quizMessage4를 설정한다고 가정
+        }}
+      />
 
        {/* --- ⭐ 종이 이미지 팝업 UI (핵심 부분) ⭐ --- */}
             {isPaperImagePopupVisible && (
