@@ -11,28 +11,34 @@ import "@babylonjs/loaders"; // GLB 등 3D 모델 로더를 위한 확장 기능
  * 부모 메시의 변환(위치, 회전, 스케일)에 따라 자식 메시들도 함께 움직입니다.
  * @param {Function} onCupboardClickForQuiz - 찬장 클릭 시 퀴즈 팝업을 띄우기 위해 React 컴포넌트로 전달될 콜백 함수입니다.
  * 이 함수는 찬장이 잠겨 있을 때 호출됩니다.
- * @param {Function} onDoorClickForQuiz
  * @param {Function} onIdCardAcquired - (이제 사용하지 않음) ID 카드를 플레이어가 획득했을 때 React 컴포넌트로 전달될 콜백 함수입니다.
  * 주로 React 상태(예: `hasIdCardItem`)를 업데이트하는 데 사용됩니다.
  * @param {Function} getIsCupboardUnlocked - React 컴포넌트에서 관리하는 찬장의 잠금 해제 상태(isOfficeCupboardUnlocked)를
  * 실시간으로 가져오는 콜백 함수입니다. 이 함수를 호출하여 현재 잠금 상태를 확인합니다.
- * @param {Function} getIsDoorUnlocked 
+ * @param {Function} getIsDoorUnlocked
+ * @param {Function} onOfficeDoorClick
  * @param {object} idCardOptions - ID 카드 모델의 초기 위치, 스케일, 회전 등을 재정의할 수 있는 옵션 객체입니다.
  * @param {object} metalCupboardOptions - 메탈 찬장 모델의 스케일, 회전 등을 재정의할 수 있는 옵션 객체입니다.
  */
-
 export async function addDoctorOffice(
     scene,
     parentMesh,
     onCupboardClickForQuiz,
-    onIdCardAcquired,
+    onIdCardAcquired, // ⭐ 이 인자는 더 이상 office.js에서 직접 사용되지 않습니다.
     getIsCupboardUnlocked,
     onPaperClickForContent,
-    onOfficeDoorClick, // 추가됨: 사무실 문 클릭 시 호출될 함수
-    getIsOfficeDoorUnlocked, // 추가됨: 사무실 문 잠금 해제 상태를 가져오는 함수
+    onOfficeDoorClick, // <--- 이 매개변수가 추가되었습니다.
+    getIsOfficeDoorUnlocked,
     idCardOptions = {},
     metalCupboardOptions = {}
 ) {
+    // --- 디버깅 로그 추가 ---
+    console.log("--- addDoctorOffice 함수 호출됨 ---");
+    console.log("getIsOfficeDoorUnlocked 매개변수 타입:", typeof getIsOfficeDoorUnlocked);
+    console.log("getIsOfficeDoorUnlocked 매개변수 값:", getIsOfficeDoorUnlocked);
+    console.log("onOfficeDoorClick 매개변수 타입:", typeof onOfficeDoorClick);
+    console.log("onOfficeDoorClick 매개변수 값:", onOfficeDoorClick);
+    // -------------------------
 
     if (!parentMesh) {
         console.warn("❗ parentMesh가 없습니다.");
@@ -41,7 +47,6 @@ export async function addDoctorOffice(
 
 
 // --- 2. door.glb (문) 모델 배치 및 로직 ---
-    // 변수 이름을 'door2'에서 'doorResult'로 통일하여 혼동을 줄였습니다.
     const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
     doorResult.meshes.forEach((doorMesh) => {
         if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
@@ -100,23 +105,60 @@ export async function addDoctorOffice(
             // --- 문 상호작용 로직 ---
             doorMesh.actionManager = new BABYLON.ActionManager(scene);
             doorMesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                    if (isAnimating) return; // 애니메이션 중이면 무시
-                    isAnimating = true;
-                    if (!isDoorOpen) {
-                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
-                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                            isDoorOpen = true;
-                            isAnimating = false;
-                        });
-                    } else {
-                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                            doorMesh.checkCollisions = true; // 문이 닫힐 때 충돌 다시 켜기
-                            isDoorOpen = false;
-                            isAnimating = false;
-                        });
+                new BABYLON.ExecuteCodeAction(
+                    BABYLON.ActionManager.OnPickTrigger,
+                    function () {
+                        console.log("🚪 사무실 문 클릭 감지!"); // 클릭 감지 로그
+                        // 애니메이션이 이미 진행 중이라면, 추가 클릭을 무시합니다.
+                        if (isAnimating) {
+                            console.log("애니메이션 진행 중. 클릭 무시.");
+                            return;
+                        }
+
+                        // React로부터 문 잠금 해제 상태를 가져옴
+                        const unlocked = getIsOfficeDoorUnlocked();
+                        console.log("문 잠금 해제 상태 (getIsOfficeDoorUnlocked 호출 결과):", unlocked);
+
+                        // 문이 잠금 해제되지 않았다면 (잠겨 있다면)
+                        if (!unlocked) {
+                            console.log("문이 잠겨 있습니다. 퀴즈를 트리거합니다.");
+                            // `onOfficeDoorClick` 함수가 유효한지 확인하고 호출합니다.
+                            if (onOfficeDoorClick) {
+                                onOfficeDoorClick(); // React 퀴즈를 트리거합니다.
+                            } else {
+                                console.warn("onOfficeDoorClick 함수가 정의되지 않았습니다.");
+                            }
+                            // 잠겨 있을 때는 문을 열거나 닫는 애니메이션을 실행하지 않고 즉시 종료합니다.
+                            return;
+                        }
+                        // 문이 잠금 해제되었다면 (문이 열리거나 닫힐 수 있는 상태)
+                        else {
+                            console.log("문이 잠금 해제되었습니다. 문 애니메이션을 시작합니다.");
+                            // 이제 문 애니메이션을 시작할 수 있습니다.
+                            isAnimating = true; // 애니메이션 시작을 알림
+
+                            if (!isDoorOpen) {
+                                // 문을 엽니다. 문이 열릴 때 충돌을 끄고 효과음을 재생합니다.
+                                doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                                const audio = new Audio('/squeaky-door-open-317165.mp3'); // 효과음 로드
+                                audio.play(); // 효과음 재생
+                                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                                    isDoorOpen = true;    // 문 열림 상태로 변경
+                                    isAnimating = false;  // 애니메이션 종료 알림
+                                    console.log("문 열림 애니메이션 완료.");
+                                });
+                            } else {
+                                // 문을 닫습니다. 애니메이션 완료 후 충돌을 다시 활성화합니다.
+                                scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                                    doorMesh.checkCollisions = true; // 문 닫힘 후 충돌 감지 다시 활성화
+                                    isDoorOpen = false;   // 문 닫힘 상태로 변경
+                                    isAnimating = false;  // 애니메이션 종료 알림
+                                    console.log("문 닫힘 애니메이션 완료.");
+                                });
+                            }
+                        }
                     }
-                })
+                )
             );
         }
     });

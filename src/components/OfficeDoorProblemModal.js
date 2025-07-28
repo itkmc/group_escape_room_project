@@ -1,61 +1,67 @@
 import React, { useState } from 'react';
-import './ProblemModal.css';
+import './ProblemModal.css'; // ProblemModal.css 파일이 동일한 디렉토리에 있다고 가정합니다.
 
 const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
   const [answer, setAnswer] = useState('');
   const [message, setMessage] = useState('');
   const [isCorrect, setIsCorrect] = useState(false);
 
+  // 사무실 문 퀴즈의 올바른 정답으로 변경 (BabylonScene.js의 correctAnswer4와 일치)
+  const correctAnswer = "1346"; 
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (answer.trim().toLowerCase() === 'school') {
-      setMessage('정답입니다!');
+    if (answer.trim() === correctAnswer) { // 대소문자 구분 없이 숫자로만 비교
+      setMessage('정답입니다! 문이 열립니다.');
       setIsCorrect(true);
       setTimeout(() => {
-        onCorrectAnswer();
-        onClose();
-        setAnswer('');
-        setMessage('');
-        setIsCorrect(false);
-      }, 1500);
+        onCorrectAnswer(); // BabylonScene.js의 onCorrectAnswer 콜백 호출
+        onClose(); // 모달 닫기
+        setAnswer(''); // 입력 필드 초기화
+        setMessage(''); // 메시지 초기화
+        setIsCorrect(false); // 정답 상태 초기화
+      }, 1500); // 1.5초 후 실행
     } else {
-      setMessage('틀렸습니다. 다시 풀어보세요!');
-      setAnswer('');
+      setMessage('오답입니다. 다시 시도해 보세요!');
+      setAnswer(''); // 오답 시 입력 필드 초기화
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) return null; // isOpen이 false면 아무것도 렌더링하지 않음
 
   return (
     <div className="problem-modal-overlay">
       <div className="problem-modal">
         <div className="problem-header">
-          <h2>식단표 문제</h2>
+          {/* 퀴즈 제목을 사무실 문 퀴즈에 맞게 변경 */}
+          <h2>사무실 문 잠금 해제</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         
         <div className="problem-content">
           <div className='problem-text'>
-            <p>비밀번호는??
-              오! 식단표 나왔다!
-              내가 좋아하는 계란 나오는 날은 체크 해놔야지~!
-              비밀번호는 작은수부터!
+            {/* 퀴즈 내용을 사무실 문 퀴즈에 맞게 변경 */}
+            <p>
+              사무실 문을 열려면 비밀번호를 맞춰야 합니다.<br/>
+              문 옆에 있는 메모를 확인해 보세요.
             </p>
           </div>
           <div className="problem-image">
-            <img src="/자물쇠.png" alt="사무실 문제" />
+            {/* 사무실 문 퀴즈에 맞는 이미지로 변경 (예: 문이나 잠금장치 관련 이미지) */}
+            <img src="/자물쇠.png" alt="사무실 문 문제" /> 
+            {/* 만약 다른 이미지가 있다면 해당 경로로 변경해주세요. */}
           </div>
           
           <form onSubmit={handleSubmit} className="answer-form">
             <div className="input-group">
-              <label htmlFor="answer">정답을 입력하세요:</label>
+              <label htmlFor="answer">비밀번호를 입력하세요:</label>
               <input
                 type="text"
                 id="answer"
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                placeholder="정답을 입력하세요"
-                disabled={isCorrect}
+                placeholder="비밀번호를 입력하세요"
+                disabled={isCorrect} // 정답 시 입력 비활성화
               />
             </div>
             
@@ -68,7 +74,7 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
               </button>
             </div>
             
-            {message && (
+            {message && ( // 메시지가 있을 때만 표시
               <div className={`message ${isCorrect ? 'correct' : 'incorrect'}`}>
                 {message}
               </div>
