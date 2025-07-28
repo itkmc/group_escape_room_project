@@ -100,48 +100,23 @@ export async function addDoctorOffice(
             // --- 문 상호작용 로직 ---
             doorMesh.actionManager = new BABYLON.ActionManager(scene);
             doorMesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                    BABYLON.ActionManager.OnPickTrigger, // 메쉬를 클릭했을 때 트리거
-                    function () {
-                        // 애니메이션이 이미 진행 중이라면, 추가 클릭을 무시합니다.
-                        if (isAnimating) return;
-
-                        // React로부터 문 잠금 해제 상태를 가져옴
-                        // `getIsOfficeDoorUnlocked` 함수를 직접 호출합니다.
-                        const unlocked = getIsOfficeDoorUnlocked();
-
-                        // 문이 잠금 해제되지 않았다면 (잠겨 있다면)
-                        if (!unlocked) {
-                            // `onOfficeDoorClick` 함수가 유효한지 확인하고 호출합니다.
-                            if (onOfficeDoorClick) {
-                                onOfficeDoorClick(); // React 퀴즈를 트리거합니다.
-                            }
-                            // 잠겨 있을 때는 문을 열거나 닫는 애니메이션을 실행하지 않고 즉시 종료합니다.
-                            return;
-                        }
-                        // 문이 잠금 해제되었다면 (문이 열리거나 닫힐 수 있는 상태)
-                        else {
-                            // 이제 문 애니메이션을 시작할 수 있습니다.
-                            isAnimating = true; // 애니메이션 시작을 알림
-
-                            if (!isDoorOpen) {
-                                // 문을 엽니다. 문이 열리는 동안 충돌을 비활성화합니다.
-                                doorMesh.checkCollisions = false;
-                                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                                    isDoorOpen = true;    // 문 열림 상태로 변경
-                                    isAnimating = false;  // 애니메이션 종료 알림
-                                });
-                            } else {
-                                // 문을 닫습니다. 애니메이션 완료 후 충돌을 다시 활성화합니다.
-                                scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
-                                    doorMesh.checkCollisions = true; // 문 닫힘 후 충돌 감지 다시 활성화
-                                    isDoorOpen = false;   // 문 닫힘 상태로 변경
-                                    isAnimating = false;  // 애니메이션 종료 알림
-                                });
-                            }
-                        }
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    if (isAnimating) return; // 애니메이션 중이면 무시
+                    isAnimating = true;
+                    if (!isDoorOpen) {
+                        doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                            isDoorOpen = true;
+                            isAnimating = false;
+                        });
+                    } else {
+                        scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                            doorMesh.checkCollisions = true; // 문이 닫힐 때 충돌 다시 켜기
+                            isDoorOpen = false;
+                            isAnimating = false;
+                        });
                     }
-                )
+                })
             );
         }
     });
@@ -399,6 +374,9 @@ export async function addDoctorOffice(
                                 // 찬장이 잠금 해제되었는지 React 함수를 호출하여 확인합니다.
                                 if (!getIsCupboardUnlocked()) {
                                     if (onCupboardClickForQuiz) {
+                                        // 종이 소리 효과음 재생
+                                        const audio = new Audio('/paper-rustle-81855.mp3');
+                                        audio.play();
                                         onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
                                         return; // 잠겨있으면 문 열기 로직 실행하지 않음
                                     }
@@ -410,6 +388,10 @@ export async function addDoctorOffice(
                                 if (activeDoorAnimationGroup && activeDoorAnimationGroup.isPlaying) {
                                     return;
                                 }
+
+                                // 찬장 문 열기/닫기 효과음 재생
+                                const audio = new Audio('/mixkit-scary-wooden-door-opening-190.wav');
+                                audio.play();
 
                                 const animationGroup = new BABYLON.AnimationGroup("metalCupboardDoorAnimationGroup");
 

@@ -284,7 +284,7 @@ const BabylonScene = ({ onGameLoaded }) => {
 
       const camera = new BABYLON.UniversalCamera(
         "camera",
-        // 첫 시작 위치
+        //첫시작
         new BABYLON.Vector3(-19.59, 7.85, -5.42),
         scene
       );
@@ -456,7 +456,7 @@ const BabylonScene = ({ onGameLoaded }) => {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
           flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.05);
-          flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+          flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
@@ -885,16 +885,23 @@ const BabylonScene = ({ onGameLoaded }) => {
         />
       )}
 
-      {/* 수술실 퀴즈 모달 */}
-      {showQuiz2 && (
-        <OperatingRoomProblemModal
-          answerInput={answerInput2}
-          setAnswerInput={setAnswerInput2}
-          quizMessage={quizMessage2}
-          handleAnswerSubmit={handleAnswerSubmit2}
-          onClose={() => setShowQuiz2(false)}
-        />
-      )}
+      {/* 수술실 퀴즈 팝업 */}
+      <OperatingRoomProblemModal
+        isOpen={showQuiz2}
+        
+
+    
+    
+        onClose={() => {
+          setShowQuiz(false);
+          setQuizMessage('');
+          setAnswerInput('');
+        }}
+        onCorrectAnswer={() => {
+          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
+          setHasKeyItem(true);
+        }}
+      />
 
       {/* 사무실 찬장 퀴즈 모달 */}
       {showOfficeQuiz && (
