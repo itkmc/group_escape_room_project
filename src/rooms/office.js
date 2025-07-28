@@ -95,6 +95,9 @@ export async function addDoctorOffice(
                     isAnimating = true;
                     if (!isDoorOpen) {
                         doorMesh.checkCollisions = false; // 문이 열릴 때 충돌 끄기
+                        // 문 열릴 때 효과음 재생
+                        const audio = new Audio('/squeaky-door-open-317165.mp3');
+                        audio.play();
                         scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
                             isDoorOpen = true;
                             isAnimating = false;
@@ -364,6 +367,9 @@ export async function addDoctorOffice(
                                 // 찬장이 잠금 해제되었는지 React 함수를 호출하여 확인합니다.
                                 if (!getIsCupboardUnlocked()) {
                                     if (onCupboardClickForQuiz) {
+                                        // 종이 소리 효과음 재생
+                                        const audio = new Audio('/paper-rustle-81855.mp3');
+                                        audio.play();
                                         onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
                                         return; // 잠겨있으면 문 열기 로직 실행하지 않음
                                     }
@@ -375,6 +381,10 @@ export async function addDoctorOffice(
                                 if (activeDoorAnimationGroup && activeDoorAnimationGroup.isPlaying) {
                                     return;
                                 }
+
+                                // 찬장 문 열기/닫기 효과음 재생
+                                const audio = new Audio('/mixkit-scary-wooden-door-opening-190.wav');
+                                audio.play();
 
                                 const animationGroup = new BABYLON.AnimationGroup("metalCupboardDoorAnimationGroup");
 

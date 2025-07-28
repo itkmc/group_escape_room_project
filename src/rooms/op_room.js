@@ -389,6 +389,9 @@ for (const mesh of combination_padlock.meshes) {
                       isDoorOpen = false;
                   });
               } else {
+                  // 문 열기 효과음 재생
+                  const audio = new Audio('/squeaky-door-open-317165.mp3');
+                  audio.play();
                   doorMesh.checkCollisions = false;
                   scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
                       isDoorOpen = true;
@@ -411,6 +414,9 @@ for (const mesh of combination_padlock.meshes) {
 
                 if (isAnimating) return;
                 isAnimating = true;
+                // 문 열기 효과음 재생
+                const audio = new Audio('/squeaky-door-open-317165.mp3');
+                audio.play();
                 doorMesh.checkCollisions = false;
                 scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
                     isDoorOpen = true;
@@ -563,6 +569,10 @@ for (const mesh of old__ancient_scrollResult.meshes) {
         mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
                 console.log("두루마리가 클릭되었습니다! 퀴즈를 표시합니다.");
+                
+                // 종이 소리 효과음 재생
+                const audio = new Audio('/paper-rustle-81855.mp3');
+                audio.play();
 
                 if (handleOperatingRoomScrollClick) {
                     handleOperatingRoomScrollClick();

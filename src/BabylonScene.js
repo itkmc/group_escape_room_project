@@ -252,7 +252,7 @@ const BabylonScene = ({ onGameLoaded }) => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-11.55, 7.85, -12.88),
+        new BABYLON.Vector3(-1.03, 7.85, 9.30),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -949,17 +949,13 @@ const BabylonScene = ({ onGameLoaded }) => {
       {/* 수술실 퀴즈 팝업 */}
       <OperatingRoomProblemModal
         isOpen={showQuiz2}
-        
-
-    
-    
         onClose={() => {
-          setShowQuiz(false);
-          setQuizMessage('');
-          setAnswerInput('');
+          setShowQuiz2(false);
+          setQuizMessage2('');
+          setAnswerInput2('');
         }}
         onCorrectAnswer={() => {
-          setQuizMessage("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
+          setQuizMessage2("정답입니다! 키 아이템을 획득했습니다. 👉 이제 E키를 눌러 문을 여세요!");
           setHasKeyItem(true);
         }}
       />
