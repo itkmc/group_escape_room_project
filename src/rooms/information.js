@@ -317,54 +317,6 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
       );
     
     }
-    
-const loadPaper = async () => {
-    const paperWorldPos = new BABYLON.Vector3(-17, 7.85, -8.8);
-    const paper = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "paper_tablet.glb", scene);
-
-    const textureUrl = `${process.env.PUBLIC_URL}/짱구문제4.png`;
-    const paperMaterial = new BABYLON.StandardMaterial("paperMat", scene);
-    paperMaterial.diffuseTexture = new BABYLON.Texture(textureUrl, scene);
-
-    // --- 여기는 텍스처 크기(스케일) 및 반복 설정 (기존 코드) ---
-    paperMaterial.diffuseTexture.hasAlpha = true;
-    paperMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-    paperMaterial.backFaceCulling = false;
-    paperMaterial.diffuseTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-    paperMaterial.diffuseTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-
-    paperMaterial.diffuseTexture.uScale = 0.92; // U 방향 (가로) 스케일
-    paperMaterial.diffuseTexture.vScale = 0.85; // V 방향 (세로) 스케일
-
-    paperMaterial.diffuseTexture.uOffset = 0.045; // U 방향 (가로) 오프셋
-    paperMaterial.diffuseTexture.vOffset = 0.065; // V 방향 (세로) 오프셋
-    // --- 여기까지 텍스처 위치(오프셋) 조절 ---
-
-    for (const mesh of paper.meshes) {
-        if (mesh.name === "Plane_Material_0") {
-            mesh.dispose();
-            continue;
-        }
-
-        if (mesh.name === "Plane.005_Material.002_0") {
-            mesh.material = paperMaterial;
-        }
-
-        if (mesh.name !== "__root__") {
-            mesh.parent = parentMesh;
-            mesh.position = BABYLON.Vector3.TransformCoordinates(
-                paperWorldPos,
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            mesh.scaling = new BABYLON.Vector3(200, 200, 200);
-            mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-            mesh.checkCollisions = true;
-        }
-    }
-};
-
-loadPaper();
 
     // 책상 위치
     const deskWorldPos = new BABYLON.Vector3(-6, 7, -12);
