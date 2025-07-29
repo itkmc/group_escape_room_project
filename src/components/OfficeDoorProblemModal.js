@@ -47,7 +47,7 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
           </div>
           <div className="problem-image">
             {/* 사무실 문 퀴즈에 맞는 이미지로 변경 (예: 문이나 잠금장치 관련 이미지) */}
-            <img src="/자물쇠.png" alt="사무실 문 문제" /> 
+            <img src="/자물쇠1.png" alt="사무실 문 문제" /> 
             {/* 만약 다른 이미지가 있다면 해당 경로로 변경해주세요. */}
           </div>
           

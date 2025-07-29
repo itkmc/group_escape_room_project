@@ -214,7 +214,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
 
       // EXIT
       const exitBodyPositions = [
-        new BABYLON.Vector3(19.70, 8, 6.48)
+        new BABYLON.Vector3(36.67, 8, 6.2)
       ];
       for (const pos of exitBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "exit_sign.glb", scene);
