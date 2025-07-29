@@ -1095,7 +1095,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                         zIndex: 2002, // 오버레이보다 높게
                         position: 'relative', // 자식 요소의 absolute 포지셔닝을 위해 필요할 수 있음
                     }}>
-                        
+                      <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#0056b3' }}>내가 좋아하는 계란 나오는 날은 체크 해놔야지~!!</h3>
                         {paperImagePopupContentUrl && (
                             <img
                                 src={paperImagePopupContentUrl} // 상태에 저장된 이미지 URL 사용
