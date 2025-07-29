@@ -34,7 +34,7 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
       <div className="problem-modal">
         <div className="problem-header">
           {/* 퀴즈 제목을 사무실 문 퀴즈에 맞게 변경 */}
-          <h2>사무실 문 잠금 해제</h2>
+          <h2>사무실 문 문제</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         
@@ -42,8 +42,8 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
           <div className='problem-text'>
             {/* 퀴즈 내용을 사무실 문 퀴즈에 맞게 변경 */}
             <p>
-              사무실 문을 열려면 비밀번호를 맞춰야 합니다.<br/>
-              문 옆에 있는 메모를 확인해 보세요.
+              오! 식단표 나왔다!<br/>
+              내가 좋아하는 계란 나오는 날은 체크 해놔야지~!
             </p>
           </div>
           <div className="problem-image">
@@ -54,7 +54,7 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
           
           <form onSubmit={handleSubmit} className="answer-form">
             <div className="input-group">
-              <label htmlFor="answer">비밀번호를 입력하세요:</label>
+              <label htmlFor="answer">비밀번호를 입력하세요(비밀번호는 작은수부터)</label>
               <input
                 type="text"
                 id="answer"
