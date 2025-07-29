@@ -1,19 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import './EscapeSuccessPage.css';
 
-function EscapeSuccessPage({ onRestart, onClose }) {
+function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
     const [isHovered, setIsHovered] = useState(false);
     
     console.log("EscapeSuccessPage 렌더링됨");
     
-    // 탈출 성공 페이지가 렌더링될 때 효과음 재생
+    // 탈출 성공 페이지가 렌더링될 때 효과음 재생 및 BGM 일시정지
     useEffect(() => {
+        // BGM 일시정지
+        if (bgmRef && bgmRef.current) {
+            bgmRef.current.pause();
+            console.log("탈출 성공 페이지에서 BGM 일시정지");
+        }
+        
+        // 탈출 성공 효과음 재생
         const audio = new Audio('/running-on-dirt-road-345729.mp3');
         audio.play().catch(error => {
             console.error("탈출 성공 효과음 재생 실패:", error);
         });
         console.log("탈출 성공 효과음 재생");
-    }, []);
+        
+        // 컴포넌트가 언마운트될 때 BGM 재생 (페이지를 닫을 때)
+        return () => {
+            if (bgmRef && bgmRef.current) {
+                bgmRef.current.play();
+                console.log("탈출 성공 페이지 닫힐 때 BGM 재생");
+            }
+        };
+    }, [bgmRef]);
 
     return (
         <div style={{
