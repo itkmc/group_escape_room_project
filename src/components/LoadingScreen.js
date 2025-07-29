@@ -1,6 +1,11 @@
 import React from 'react';
 
-function LoadingScreen() {
+// 'progress' prop을 받아서 진행률 바를 렌더링합니다.
+// progress 값이 제공되지 않으면 기본값은 0입니다.
+function LoadingScreen({ progress = 0 }) {
+  // progress 값이 항상 0에서 100 사이에 있도록 클램핑합니다.
+  const clampedProgress = Math.max(0, Math.min(100, progress));
+
   return (
     <div style={{
       position: 'fixed',
@@ -28,32 +33,38 @@ function LoadingScreen() {
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
       }}>
         <h1 style={{ marginBottom: '20px', color: '#fff' }}>게임 로딩 중...</h1>
-        
-        {/* 로딩 스피너 */}
+
+        {/* 진행률 바 컨테이너 */}
         <div style={{
-          width: '50px',
-          height: '50px',
-          border: '5px solid rgba(255, 255, 255, 0.3)',
-          borderTop: '5px solid #fff',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 20px'
-        }}></div>
-        
-        <p style={{ margin: '0', color: '#ccc' }}>3D 환경을 준비하고 있습니다...</p>
+          width: '200px', // 진행률 바의 고정 너비
+          height: '20px',
+          backgroundColor: 'rgba(255, 255, 255, 0.2)', // 바의 빈 부분 색상
+          borderRadius: '10px',
+          overflow: 'hidden',
+          margin: '0 auto 20px',
+          border: '1px solid rgba(255, 255, 255, 0.5)'
+        }}>
+          {/* 실제 진행률 바 */}
+          <div style={{
+            width: `${clampedProgress}%`, // 진행률에 따라 너비 설정
+            height: '100%',
+            backgroundColor: '#007bff', // 진행률 바의 채워지는 색상 (파란색)
+            borderRadius: '10px',
+            transition: 'width 1s linear' // 바가 부드럽게 채워지도록 전환 효과 추가
+          }}></div>
+        </div>
+
+        {/* 퍼센트 텍스트 */}
+        <p style={{ margin: '0', color: '#ccc', fontWeight: 'bold' }}>
+          {Math.round(clampedProgress)}% 로딩 완료
+        </p>
+
         <p style={{ margin: '10px 0 0 0', fontSize: '0.8em', color: '#999' }}>
-          잠시만 기다려주세요
+          3D 환경을 준비하고 있습니다... 잠시만 기다려주세요
         </p>
       </div>
-      
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }
 
-export default LoadingScreen; 
+export default LoadingScreen;
