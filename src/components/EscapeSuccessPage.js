@@ -26,21 +26,22 @@ function EscapeSuccessPage({ onRestart, onClose }) {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundImage: `url('${process.env.PUBLIC_URL}/31.png')`,
+            backgroundImage: `url('${process.env.PUBLIC_URL}/7.gif')`,
             backgroundSize: 'cover',
             backgroundRepeat: 'repeat',
             backgroundPosition: 'center center',
-            color: 'black',
+            color: 'white',
             fontSize: 'calc(10px + 2vmin)',
             zIndex: 9999,
             backgroundColor: 'rgba(0, 0, 0, 0.8)'
         }}>
-            <h1 style={{ color: 'black', fontSize: '3rem' }}>탈출 성공!</h1>
+            <h1 style={{ color: 'white', fontSize: '3rem' }}>Escape Successful</h1>
             <p style={{
                 fontSize: '1.2rem',
                 marginBottom: '40px',
                 textAlign: 'center',
-                color: '#333'
+                color: 'white',
+                fontWeight: 'bold'
             }}>
                 축하합니다! 모든 문제를 해결하고 성공적으로 탈출했습니다.
             </p>
@@ -50,11 +51,11 @@ function EscapeSuccessPage({ onRestart, onClose }) {
                 onMouseLeave={() => setIsHovered(false)}
                 style={{
                     padding: '16px 40px',
-                    fontSize: '1.5rem',
+                    fontSize: '1rem',
                     borderRadius: '10px',
                     border: 'none',
                     backgroundColor: isHovered ? 'rgba(124, 124, 124, 0.5)' : 'rgba(46, 46, 46, 0.5)',
-                    color: 'black',
+                    color: 'white',
                     cursor: 'pointer',
                     fontWeight: 'bold',
                     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.18)',
