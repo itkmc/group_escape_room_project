@@ -364,15 +364,21 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                const onDoorInteraction = (message) => { 
          // "문이 잠겨있습니다" 메시지는 표시하지 않음
         if (message.includes("문이 잠겨있습니다")) {
+          console.log("문이 잠겨있습니다 메시지 차단됨");
           return;
         }
-        setUndergroundDoorMessage(message);
-        setShowUndergroundDoorMessage(true);
-        setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
+        
+        // 문 열기 메시지는 표시하지 않음
 
         if (message.includes("열쇠로 문을 열었습니다!")) {
             setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
         }
+        // if (message.includes("OP_KEY_USED")) {
+        //     setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
+        // }
+        // if (message.includes("ID_CARD_USED")) {
+        //     setHasIdCardItem(false); // 여기서 ID 카드 소모 처리
+        // }
     };
 
     // ... (이전 코드 생략) ...
