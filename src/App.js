@@ -8,6 +8,8 @@ import BabylonScene from './BabylonScene'; // 일반적으로 components 폴더�
 // 로딩 화면 컴포넌트 임포트 (수정된 로딩 화면을 사용합니다)
 import LoadingScreen from './components/LoadingScreen';
 import BGMPlayer from './components/BGMPlayer';
+import GameTimer from './components/GameTimer';
+import TimeOverPage from './components/TimeOverPage';
 
 function App() {
     // 게임이 시작되었는지 여부를 관리하는 상태
@@ -17,6 +19,8 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     // 로딩 진행률을 관리하는 상태 (0부터 100까지)
     const [loadingProgress, setLoadingProgress] = useState(0);
+    // 타임오버 상태를 관리하는 상태
+    const [showTimeOver, setShowTimeOver] = useState(false);
 
     // BGM 제어를 위한 ref
     const bgmRef = useRef(null);
@@ -46,6 +50,13 @@ function App() {
         setIsGameStarted(false);
         setIsLoading(false);
         setLoadingProgress(0); // 재시작 시 진행률도 초기화
+        setShowTimeOver(false); // 타임오버 상태도 초기화
+    };
+
+    // 타임오버 핸들러 함수
+    const handleTimeOver = () => {
+        console.log("타임오버 발생");
+        setShowTimeOver(true);
     };
 
     // 로딩 진행률 시뮬레이션을 위한 useEffect 훅
@@ -96,11 +107,21 @@ function App() {
             ) : (
                 // 게임이 시작되면 BabylonScene과 로딩 화면을 함께 렌더링
                 <>
+                    {/* 게임 타이머 */}
+                    <GameTimer 
+                        isGameStarted={isGameStarted && !isLoading} 
+                        onTimeOver={handleTimeOver}
+                    />
                     {/* BGMPlayer 추가: 로딩이 끝난 후에만 BGM 재생 (isGameStarted가 true이고 isLoading이 false일 때) */}
                     <BGMPlayer ref={bgmRef} src="/horror-background-atmosphere-156462.mp3" isPlaying={isGameStarted && !isLoading} />
                     
                     {/* isLoading이 true일 때만 LoadingScreen을 렌더링하고, progress prop 전달 */}
                     {isLoading && <LoadingScreen progress={loadingProgress} />}
+                    
+                    {/* 타임오버 페이지 */}
+                    {showTimeOver && (
+                        <TimeOverPage onRestart={handleGameRestart} />
+                    )}
                     
                     {/* BabylonScene 렌더링 */}
                     <BabylonScene 

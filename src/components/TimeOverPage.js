@@ -1,34 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import './EscapeSuccessPage.css';
+import React, { useState } from 'react';
 
-function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
+function TimeOverPage({ onRestart }) {
     const [isHovered, setIsHovered] = useState(false);
-    
-    console.log("EscapeSuccessPage 렌더링됨");
-    
-    // 탈출 성공 페이지가 렌더링될 때 효과음 재생 및 BGM 일시정지
-    useEffect(() => {
-        // BGM 일시정지
-        if (bgmRef && bgmRef.current) {
-            bgmRef.current.pause();
-            console.log("탈출 성공 페이지에서 BGM 일시정지");
-        }
-        
-        // 탈출 성공 효과음 재생
-        const audio = new Audio('/running-on-dirt-road-345729.mp3');
-        audio.play().catch(error => {
-            console.error("탈출 성공 효과음 재생 실패:", error);
-        });
-        console.log("탈출 성공 효과음 재생");
-        
-        // 컴포넌트가 언마운트될 때 BGM 재생 (페이지를 닫을 때)
-        return () => {
-            if (bgmRef && bgmRef.current) {
-                bgmRef.current.play();
-                console.log("탈출 성공 페이지 닫힐 때 BGM 재생");
-            }
-        };
-    }, [bgmRef]);
+
+    console.log("TimeOverPage 렌더링됨");
 
     return (
         <div style={{
@@ -41,7 +16,7 @@ function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundImage: `url('${process.env.PUBLIC_URL}/7.gif')`,
+            backgroundImage: `black`,
             backgroundSize: 'cover',
             backgroundRepeat: 'repeat',
             backgroundPosition: 'center center',
@@ -50,7 +25,7 @@ function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
             zIndex: 9999,
             backgroundColor: 'rgba(0, 0, 0, 0.8)'
         }}>
-            <h1 style={{ color: 'white', fontSize: '3rem' }}>Escape Successful</h1>
+            <h1 style={{ color: 'white', fontSize: '3rem' }}>Time Over</h1>
             <p style={{
                 fontSize: '1.2rem',
                 marginBottom: '40px',
@@ -58,6 +33,7 @@ function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
                 color: 'white',
                 fontWeight: 'bold'
             }}>
+                시간이 다 되었습니다. 다시 도전해보세요.
             </p>
             <button
                 onClick={onRestart}
@@ -82,4 +58,4 @@ function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
     );
 }
 
-export default EscapeSuccessPage; 
+export default TimeOverPage; 
