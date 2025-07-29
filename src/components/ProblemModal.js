@@ -6,8 +6,6 @@ const ProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
   const [message, setMessage] = useState('');
   const [isCorrect, setIsCorrect] = useState(false);
 
-  console.log("ProblemModal 렌더링, isOpen:", isOpen);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (answer.trim() === '56') {

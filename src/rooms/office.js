@@ -32,13 +32,6 @@ export async function addDoctorOffice(
     idCardOptions = {},
     metalCupboardOptions = {}
 ) {
-    // --- 디버깅 로그 추가 ---
-    console.log("--- addDoctorOffice 함수 호출됨 ---");
-    console.log("getIsOfficeDoorUnlocked 매개변수 타입:", typeof getIsOfficeDoorUnlocked);
-    console.log("getIsOfficeDoorUnlocked 매개변수 값:", getIsOfficeDoorUnlocked);
-    console.log("onOfficeDoorClick 매개변수 타입:", typeof onOfficeDoorClick);
-    console.log("onOfficeDoorClick 매개변수 값:", onOfficeDoorClick);
-    // -------------------------
 
     if (!parentMesh) {
         console.warn("❗ parentMesh가 없습니다.");
@@ -359,163 +352,171 @@ export async function addDoctorOffice(
         );
     }
 
-    // --- 메탈 찬장 (metal_cupboard.glb) 추가 및 상호작용 로직 ---
-    const metalCupboardWorldPos = new BABYLON.Vector3(-17.95, 6.40, 11.42);
+   // --- 메탈 찬장 (metal_cupboard.glb) 추가 및 상호작용 로직 ---
+const metalCupboardWorldPos = new BABYLON.Vector3(-17.95, 6.40, 11.42);
 
-    try {
-        const metalCupboardResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cupboard.glb", scene);
-        if (metalCupboardResult && metalCupboardResult.meshes && metalCupboardResult.meshes.length > 0) {
-            const rootMetalCupboardMesh = metalCupboardResult.meshes[0];
+try {
+    const metalCupboardResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cupboard.glb", scene);
+    if (metalCupboardResult && metalCupboardResult.meshes && metalCupboardResult.meshes.length > 0) {
+        const rootMetalCupboardMesh = metalCupboardResult.meshes[0];
 
-            rootMetalCupboardMesh.parent = parentMesh;
-            rootMetalCupboardMesh.position = BABYLON.Vector3.TransformCoordinates(
-                metalCupboardWorldPos,
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            rootMetalCupboardMesh.scaling = metalCupboardOptions.scaling || new BABYLON.Vector3(0.4, 0.4, 0.4);
-            rootMetalCupboardMesh.rotationQuaternion = metalCupboardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+        rootMetalCupboardMesh.parent = parentMesh;
+        rootMetalCupboardMesh.position = BABYLON.Vector3.TransformCoordinates(
+            metalCupboardWorldPos,
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
+        rootMetalCupboardMesh.scaling = metalCupboardOptions.scaling || new BABYLON.Vector3(0.4, 0.4, 0.4);
+        rootMetalCupboardMesh.rotationQuaternion = metalCupboardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
-            // 모델 로드 후, 모든 기본 애니메이션 그룹 정지
-            if (metalCupboardResult.animationGroups && metalCupboardResult.animationGroups.length > 0) {
-                metalCupboardResult.animationGroups.forEach(group => {
-                    group.stop();
-                });
-            }
-
-            const doorMeshNames = ["cupbord_1.001_Material.001_0", "cupbord_1.002_Material.001_0"];
-            const doorMeshes = doorMeshNames
-                .map(name => metalCupboardResult.meshes.find(mesh => mesh.name === name))
-                .filter(mesh => mesh !== undefined);
-
-            if (doorMeshes.length === 0) {
-                console.warn("경고: 찬장 문 메시를 찾을 수 없습니다.");
-            }
-
-            const initialRotations = new Map();
-            doorMeshes.forEach(mesh => {
-                mesh.rotationQuaternion = mesh.rotationQuaternion || BABYLON.Quaternion.Identity();
-                initialRotations.set(mesh.name, mesh.rotationQuaternion.clone());
+        // 모델 로드 후, 모든 기본 애니메이션 그룹 정지
+        if (metalCupboardResult.animationGroups && metalCupboardResult.animationGroups.length > 0) {
+            metalCupboardResult.animationGroups.forEach(group => {
+                group.stop();
             });
+        }
 
-            let isDoorOpen = false; // 찬장 문이 현재 열려있는지 닫혀있는지 상태
+        const doorMeshNames = ["cupbord_1.001_Material.001_0", "cupbord_1.002_Material.001_0"];
+        const doorMeshes = doorMeshNames
+            .map(name => metalCupboardResult.meshes.find(mesh => mesh.name === name))
+            .filter(mesh => mesh !== undefined);
 
-            // 모든 찬장 관련 메시에 클릭 액션 등록
-            metalCupboardResult.meshes.forEach(mesh => {
-                mesh.checkCollisions = true;
-                mesh.isVisible = true;
-                mesh.isPickable = true;
+        if (doorMeshes.length === 0) {
+            console.warn("경고: 찬장 문 메시를 찾을 수 없습니다.");
+        }
 
-                if (!mesh.actionManager) {
-                    mesh.actionManager = new BABYLON.ActionManager(scene);
+        const initialRotations = new Map();
+        doorMeshes.forEach(mesh => {
+            mesh.rotationQuaternion = mesh.rotationQuaternion || BABYLON.Quaternion.Identity();
+            initialRotations.set(mesh.name, mesh.rotationQuaternion.clone());
+        });
 
-                    mesh.actionManager.registerAction(
-                        new BABYLON.ExecuteCodeAction(
-                            BABYLON.ActionManager.OnPickTrigger,
-                            function () {
-                                // 찬장이 잠금 해제되었는지 React 함수를 호출하여 확인합니다.
-                                if (!getIsCupboardUnlocked()) {
-                                    if (onCupboardClickForQuiz) {
-                                        // 종이 소리 효과음 재생
-                                        const audio = new Audio('/paper-rustle-81855.mp3');
-                                        audio.play();
-                                        onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
-                                        return; // 잠겨있으면 문 열기 로직 실행하지 않음
-                                    }
-                                    return;
-                                }
+        let isCupboardDoorOpen = false; // 찬장 문이 현재 열려있는지 닫혀있는지 상태
+        let isCupboardAnimating = false; // 찬장 애니메이션이 현재 실행 중인지 상태
 
-                                // 애니메이션 재생 중이면 클릭 무시
-                                const activeDoorAnimationGroup = scene.getAnimationGroupByName("metalCupboardDoorAnimationGroup");
-                                if (activeDoorAnimationGroup && activeDoorAnimationGroup.isPlaying) {
-                                    return;
-                                }
+        // 모든 찬장 관련 메시에 클릭 액션 등록
+        metalCupboardResult.meshes.forEach(mesh => {
+            mesh.checkCollisions = true;
+            mesh.isVisible = true;
+            mesh.isPickable = true;
 
-                                // 찬장 문 열기/닫기 효과음 재생
-                                const audio = new Audio('/mixkit-scary-wooden-door-opening-190.wav');
-                                audio.play();
+            if (!mesh.actionManager) {
+                mesh.actionManager = new BABYLON.ActionManager(scene);
 
-                                const animationGroup = new BABYLON.AnimationGroup("metalCupboardDoorAnimationGroup");
+                mesh.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(
+                        BABYLON.ActionManager.OnPickTrigger,
+                        function () {
+                            console.log("🗄️ 찬장 클릭 감지!"); // 클릭 감지 로그
 
-                                doorMeshes.forEach(currentDoorMesh => {
-                                    const startRotation = currentDoorMesh.rotationQuaternion.clone();
-                                    let targetRotation;
-
-                                    if (isDoorOpen) {
-                                        // 문 닫기
-                                        targetRotation = initialRotations.get(currentDoorMesh.name).clone();
-                                    } else {
-                                        // 문 열기
-                                        if (currentDoorMesh.name === "cupbord_1.001_Material.001_0") {
-                                            targetRotation = initialRotations.get(currentDoorMesh.name)
-                                                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2));
-                                        } else if (currentDoorMesh.name === "cupbord_1.002_Material.001_0") {
-                                            targetRotation = initialRotations.get(currentDoorMesh.name)
-                                                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
-                                        } else {
-                                            targetRotation = startRotation; // 그 외 메시는 회전 안함
-                                        }
-                                    }
-
-                                    const doorAnimation = new BABYLON.Animation(
-                                        `doorRotation_${currentDoorMesh.name}`,
-                                        "rotationQuaternion",
-                                        30, // FPS
-                                        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                                        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-                                    );
-
-                                    const keys = [];
-                                    keys.push({ frame: 0, value: startRotation });
-                                    keys.push({ frame: 60, value: targetRotation }); // 2초 (60프레임 / 30FPS)
-                                    doorAnimation.setKeys(keys);
-                                    animationGroup.addTargetedAnimation(doorAnimation, currentDoorMesh);
-                                });
-
-                                animationGroup.onAnimationGroupEndObservable.addOnce(() => {
-                                    isDoorOpen = !isDoorOpen; // 문 상태 토글
-
-                                    // ⭐ ID 카드 활성화/비활성화 로직 (문이 열린 후에만 ID 카드가 보이도록)
-                                    // isDoorOpen이 true이고, 찬장이 잠금 해제된 상태일 때만 ID 카드 활성화
-                                    // onIdCardAcquired(true)가 호출되면 ID 카드가 setEnabled(false)되므로 중복 활성화 방지
-                                    if (rootIdCardMesh) {
-                                        if (isDoorOpen && getIsCupboardUnlocked()) {
-                                            // 찬장이 열리고 잠금 해제된 경우에만 ID 카드 활성화 (아직 획득 안 했다면)
-                                            // onIdCardAcquired(true)가 호출되어 이미 ID 카드가 비활성화되었다면, 이 로직은 영향을 주지 않음
-                                            rootIdCardMesh.setEnabled(true);
-                                            rootIdCardMesh.isPickable = true;
-                                            console.log("✅ ID 카드 활성화됨: 찬장이 열렸고 잠금 해제되었습니다.", {
-                                                enabled: rootIdCardMesh.isEnabled(),
-                                                pickable: rootIdCardMesh.isPickable,
-                                                actionManager: !!rootIdCardMesh.actionManager
-                                            });
-                                        } else { // 문이 닫히거나, 찬장이 잠금 해제되지 않은 경우
-                                            // ID 카드가 획득되지 않은 상태에서 문이 닫히거나, 찬장이 잠금 해제되지 않았다면 숨김
-                                            // onIdCardAcquired(true)가 호출되어 이미 ID 카드가 비활성화되었다면, 이 로직은 영향을 주지 않음
-                                            rootIdCardMesh.setEnabled(false);
-                                            rootIdCardMesh.isPickable = false;
-                                            console.log("⛔️ ID 카드 비활성화됨: 찬장이 닫혔거나 잠금 해제되지 않았습니다.", {
-                                                enabled: rootIdCardMesh.isEnabled(),
-                                                pickable: rootIdCardMesh.isPickable,
-                                                actionManager: !!rootIdCardMesh.actionManager
-                                            });
-                                        }
-                                    }
-                                    animationGroup.dispose(); // 애니메이션 그룹 사용 완료 후 해제
-                                });
-
-                                animationGroup.play(false); // 애니메이션 재생 (반복 안함)
+                            // 애니메이션이 이미 진행 중이라면, 추가 클릭을 무시합니다.
+                            if (isCupboardAnimating) {
+                                console.log("찬장 애니메이션 진행 중. 클릭 무시.");
+                                return;
                             }
-                        )
-                    );
-                }
-            });
 
-        } 
-    } catch (error) {
-        console.error("metal_cupboard.glb 로드 중 오류: ", error);
-        return;
+                            // 찬장이 잠금 해제되었는지 React 함수를 호출하여 확인합니다.
+                            const unlocked = getIsCupboardUnlocked(); // getIsCupboardUnlocked() 호출 결과를 변수에 저장
+                            console.log("찬장 잠금 해제 상태 (getIsCupboardUnlocked 호출 결과):", unlocked); // 로그 추가
+
+                            if (!unlocked) { // unlocked 변수를 사용하여 조건 확인
+                                console.log("찬장이 잠겨 있습니다. 퀴즈를 트리거합니다.");
+                                if (onCupboardClickForQuiz) {
+                                    // 종이 소리 효과음 재생
+                                    const audio = new Audio('/paper-rustle-81855.mp3');
+                                    audio.play();
+                                    onCupboardClickForQuiz(); // 퀴즈 팝업 띄우는 함수 호출
+                                } else {
+                                    console.warn("onCupboardClickForQuiz 함수가 정의되지 않았습니다.");
+                                }
+                                return; // 잠겨있으면 문 열기 로직 실행하지 않음
+                            }
+
+                            // 문이 잠금 해제되었다면 (문이 열리거나 닫힐 수 있는 상태)
+                            console.log("찬장이 잠금 해제되었습니다. 찬장 문 애니메이션을 시작합니다.");
+                            isCupboardAnimating = true; // 애니메이션 시작을 알림
+
+                            // 찬장 문 열기/닫기 효과음 재생
+                            const audio = new Audio('/mixkit-scary-wooden-door-opening-190.wav');
+                            audio.play();
+
+                            const animationGroup = new BABYLON.AnimationGroup("metalCupboardDoorAnimationGroup");
+
+                            doorMeshes.forEach(currentDoorMesh => {
+                                const startRotation = currentDoorMesh.rotationQuaternion.clone();
+                                let targetRotation;
+
+                                if (isCupboardDoorOpen) {
+                                    // 문 닫기
+                                    targetRotation = initialRotations.get(currentDoorMesh.name).clone();
+                                } else {
+                                    // 문 열기
+                                    if (currentDoorMesh.name === "cupbord_1.001_Material.001_0") {
+                                        targetRotation = initialRotations.get(currentDoorMesh.name)
+                                            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2));
+                                    } else if (currentDoorMesh.name === "cupbord_1.002_Material.001_0") {
+                                        targetRotation = initialRotations.get(currentDoorMesh.name)
+                                            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2));
+                                    } else {
+                                        targetRotation = startRotation; // 그 외 메시는 회전 안함
+                                    }
+                                }
+
+                                const doorAnimation = new BABYLON.Animation(
+                                    `doorRotation_${currentDoorMesh.name}`,
+                                    "rotationQuaternion",
+                                    30, // FPS
+                                    BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                                );
+
+                                const keys = [];
+                                keys.push({ frame: 0, value: startRotation });
+                                keys.push({ frame: 60, value: targetRotation }); // 2초 (60프레임 / 30FPS)
+                                doorAnimation.setKeys(keys);
+                                animationGroup.addTargetedAnimation(doorAnimation, currentDoorMesh);
+                            });
+
+                            animationGroup.onAnimationGroupEndObservable.addOnce(() => {
+                                isCupboardDoorOpen = !isCupboardDoorOpen; // 문 상태 토글
+                                isCupboardAnimating = false; // 애니메이션 종료 알림
+                                console.log("찬장 문 애니메이션 완료.");
+
+                                // ⭐ ID 카드 활성화/비활성화 로직 (문이 열린 후에만 ID 카드가 보이도록)
+                                if (rootIdCardMesh) {
+                                    if (isCupboardDoorOpen && getIsCupboardUnlocked()) {
+                                        rootIdCardMesh.setEnabled(true);
+                                        rootIdCardMesh.isPickable = true;
+                                        console.log("✅ ID 카드 활성화됨: 찬장이 열렸고 잠금 해제되었습니다.", {
+                                            enabled: rootIdCardMesh.isEnabled(),
+                                            pickable: rootIdCardMesh.isPickable,
+                                            actionManager: !!rootIdCardMesh.actionManager
+                                        });
+                                    } else {
+                                        rootIdCardMesh.setEnabled(false);
+                                        rootIdCardMesh.isPickable = false;
+                                        console.log("⛔️ ID 카드 비활성화됨: 찬장이 닫혔거나 잠금 해제되지 않았습니다.", {
+                                            enabled: rootIdCardMesh.isEnabled(),
+                                            pickable: rootIdCardMesh.isPickable,
+                                            actionManager: !!rootIdCardMesh.actionManager
+                                        });
+                                    }
+                                }
+                                animationGroup.dispose(); // 애니메이션 그룹 사용 완료 후 해제
+                            });
+
+                            animationGroup.play(false); // 애니메이션 재생 (반복 안함)
+                        }
+                    )
+                );
+            }
+        });
+
     }
+} catch (error) {
+    console.error("metal_cupboard.glb 로드 중 오류: ", error);
+    return;
+}
 
     // --- ♿ 휠체어 (wheelchair.glb) 로더 함수 및 배치 ---
     const wheelchairWorldPos = [
