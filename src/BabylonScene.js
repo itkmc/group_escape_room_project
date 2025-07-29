@@ -65,9 +65,7 @@ const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef }) => {
     console.log("showProblemModal 상태 변경:", showProblemModal);
   }, [showProblemModal]);
 
-  // 앉기 기능 관련 상태
-  const [isCrouching, setIsCrouching] = useState(false);
-  const isCrouchingRef = useRef(false);
+  // 앉기 기능 제거됨
 
   const correctAnswer = "72";
 
@@ -263,9 +261,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
     isOfficeDoorUnlockedRef.current = isOfficeDoorUnlocked;
   }, [isOfficeDoorUnlocked]);
 
-  useEffect(() => {
-    isCrouchingRef.current = isCrouching;
-  }, [isCrouching]);
+  // 앉기 기능 관련 useEffect 제거됨
 
   const [centerMessage, setCenterMessage] = useState("");
   const [showCenterMessage, setShowCenterMessage] = useState(false);
@@ -311,11 +307,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       camera.applyGravity = true;
       camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
 
-      // 앉기 기능 관련 변수
-      const standingHeight = 1.8; // 기본 카메라 높이
-      const crouchingHeight = 1.0; // 앉았을 때 카메라 높이
-      const standingEllipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1); // 기본 충돌 박스
-      const crouchingEllipsoid = new BABYLON.Vector3(0.1, 0.4, 0.1); // 앉았을 때 충돌 박스
+      // 앉기 기능 관련 변수 제거됨
 
       const MAX_CAMERA_HEIGHT = 50;
       const MIN_CAMERA_HEIGHT = 0;
@@ -686,16 +678,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }
       }
 
-      // 앉기 기능 (C키)
-      if (evt.key === "c") {
-          if (!isCrouchingRef.current) {
-              camera.ellipsoid = crouchingEllipsoid;
-              setIsCrouching(true);
-          } else {
-              camera.ellipsoid = standingEllipsoid;
-              setIsCrouching(false);
-          }
-      }
+      // C키 앉기 기능 제거됨
 
       // 열쇠를 획득한 후 E키를 누르면 문이 열리게
       if (evt.key === 'e') {
@@ -783,15 +766,15 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
