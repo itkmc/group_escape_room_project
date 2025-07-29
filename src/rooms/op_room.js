@@ -407,17 +407,11 @@ for (const mesh of combination_padlock.meshes) {
                       const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
                       scaryAudio.play();
                       
-                      // scary-music-box 효과음이 끝난 후 music-box-scary 효과음 재생
+                      // scary-music-box 효과음이 끝난 후 BGM 재생
                       scaryAudio.onended = () => {
-                          const musicBoxAudio = new Audio('/music-box-scary-290198.mp3');
-                          musicBoxAudio.play();
-                          
-                          // music-box-scary 효과음이 끝난 후 BGM 재생
-                          musicBoxAudio.onended = () => {
-                              if (bgmRef && bgmRef.current) {
-                                  bgmRef.current.play();
-                              }
-                          };
+                          if (bgmRef && bgmRef.current) {
+                              bgmRef.current.play();
+                          }
                       };
                   });
               }
@@ -454,17 +448,11 @@ for (const mesh of combination_padlock.meshes) {
                     const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
                     scaryAudio.play();
                     
-                    // scary-music-box 효과음이 끝난 후 music-box-scary 효과음 재생
+                    // scary-music-box 효과음이 끝난 후 BGM 재생
                     scaryAudio.onended = () => {
-                        const musicBoxAudio = new Audio('/music-box-scary-290198.mp3');
-                        musicBoxAudio.play();
-                        
-                        // music-box-scary 효과음이 끝난 후 BGM 재생
-                        musicBoxAudio.onended = () => {
-                            if (bgmRef && bgmRef.current) {
-                                bgmRef.current.play();
-                            }
-                        };
+                        if (bgmRef && bgmRef.current) {
+                            bgmRef.current.play();
+                        }
                     };
                 });
             } else {
