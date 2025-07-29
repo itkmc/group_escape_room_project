@@ -592,7 +592,26 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }
         }
 
+       const meshToDelete = scene.getMeshByName("op_room_door_Cube.002_Cube.001_My_Ui_0"); // "삭제할_메시_이름"을 실제 메시 이름으로 변경하세요.
+
+        if (meshToDelete) {
+            meshToDelete.dispose();
+            console.log("메시가 성공적으로 삭제되었습니다.");
+        } else {
+            console.log("해당 이름의 메시를 찾을 수 없습니다.");
+        }
         
+
+          const meshToDelete1 = scene.getMeshByName("Cube.002_Cube.001_My_Ui_0"); // "삭제할_메시_이름"을 실제 메시 이름으로 변경하세요.
+
+        if (meshToDelete1) {
+            meshToDelete1.dispose();
+            console.log("메시가 성공적으로 삭제되었습니다.");
+        } else {
+            console.log("해당 이름의 메시를 찾을 수 없습니다.");
+        }
+
+
        // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
       if (!isOnLadder) {
         if (keysPressed["shift"]) {
@@ -768,15 +787,15 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
