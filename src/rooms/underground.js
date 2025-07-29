@@ -8,8 +8,9 @@ import "@babylonjs/loaders";
  * @param {Function} onDoorInteraction - 문 상호작용 시 호출될 콜백 함수
  * @param {Function} getHasOpKeyItem - ID 카드 보유 상태를 확인하는 함수
  * @param {Function} onProblemOpen - 문제 모달을 열기 위한 콜백 함수
+ * @param {Object} [bgmRef] - BGM 제어를 위한 ref
  */
-export async function addUnderground(scene, parentMesh, onDoorInteraction, getHasOpKeyItem, onProblemOpen) {
+export async function addUnderground(scene, parentMesh, onDoorInteraction, getHasOpKeyItem, onProblemOpen, bgmRef) {
   const desiredDoor2WorldPos = new BABYLON.Vector3(7, 6.4, 5.1);
   let doorMeshes = [];
   let isDoorOpen = false;
@@ -427,6 +428,27 @@ const toggleDoor = () => {
 
         isUnlocked = true; // 키가 있으면 잠금 해제 상태로 변경
         if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
+        
+        // BGM 일시정지
+        if (bgmRef && bgmRef.current) {
+            bgmRef.current.pause();
+            console.log("underground 문 열기 시 BGM 일시정지");
+        }
+        
+        // underground 문을 열 때 music-box-scary 효과음 재생
+        const audio = new Audio('/music-box-scary-290198.mp3');
+        audio.play().catch(error => {
+            console.error("underground 문 열기 효과음 재생 실패:", error);
+        });
+        console.log("underground 문 열기 효과음 재생");
+        
+        // 효과음이 끝난 후 BGM 재생
+        audio.onended = () => {
+            if (bgmRef && bgmRef.current) {
+                bgmRef.current.play();
+                console.log("underground 문 열기 효과음 끝난 후 BGM 재생");
+            }
+        };
     }
 
     if (doorMeshes.length === 0) {

@@ -443,7 +443,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                     // 일반적인 문제 모달 열기 요청
                     setShowProblemModal(true);
                 }
-            }
+            },
+            bgmRef
         );
         undergroundDoorRef.current = undergroundResult.toggleDoor;
         problemDoorRef.current = undergroundResult.openProblemDoor;
@@ -1181,6 +1182,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
               }
             }}
             onClose={() => setShowEscapeSuccessModal(false)}
+            bgmRef={bgmRef}
           />
         </>
       )}
