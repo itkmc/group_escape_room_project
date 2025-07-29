@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './App.css';
 
 // 새로운 Main 컴포넌트 임포트
@@ -15,6 +15,8 @@ function App() {
     const [isGameStarted, setIsGameStarted] = useState(false);
     // 로딩 상태를 관리하는 상태
     const [isLoading, setIsLoading] = useState(false);
+    // BGM 제어를 위한 ref
+    const bgmRef = useRef(null);
     // 사용자 닉네임 정보를 저장할 상태 (제거됨)
     // const [userNickname, setUserNickname] = useState('');
 
@@ -56,12 +58,13 @@ function App() {
                 // 게임이 시작되면 BabylonScene과 로딩 화면을 함께 렌더링
                 <>
                     {/* BGMPlayer 추가: 로딩이 끝난 후에만 BGM 재생 */}
-                    <BGMPlayer src="/horror-background-atmosphere-156462.mp3" isPlaying={isGameStarted && !isLoading} />
+                    <BGMPlayer ref={bgmRef} src="/horror-background-atmosphere-156462.mp3" isPlaying={isGameStarted && !isLoading} />
                     {isLoading && <LoadingScreen />}
                     <BabylonScene 
                         key="game-scene" 
                         onGameLoaded={handleGameLoaded}
                         onGameRestart={handleGameRestart}
+                        bgmRef={bgmRef}
                         /* userNickname={userNickname} */ 
                     />
                 </>

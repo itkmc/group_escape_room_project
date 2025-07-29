@@ -20,7 +20,7 @@ import OfficeProblemModal from "./components/OfficeProblemModal";
 import OfficeDoorProblemModal from "./components/OfficeDoorProblemModal";
 import EscapeSuccessPage from "./components/EscapeSuccessPage";
 
-const BabylonScene = ({ onGameLoaded, onGameRestart }) => {
+const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef }) => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
@@ -399,7 +399,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             },
             handleSurgeryBoxClick,
             onDoorInteraction,
-            () => hasIdCardItemRef.current
+            () => hasIdCardItemRef.current,
+            bgmRef
         );
 
         await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
