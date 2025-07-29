@@ -30,6 +30,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
   let isProblemDoorOpen = false;
   let isProblemSolved = false; // 문제가 해결되었는지 추적
   let problemDoorRoot = null; // 문제 문의 루트 메시
+  let escapeTriggered = false; // 탈출이 이미 트리거되었는지 확인
 
   // 문 추가 전에 씬 전체에서 같은 이름의 mesh를 모두 삭제
   ["Object_4", "Object_8"].forEach(name => {
@@ -413,6 +414,21 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     } else if (distance > disposeDistance) {
       disposeUndergroundModelsIfLoaded();
     }
+    
+    // 탈출 위치 체크 (문제가 해결되었고 아직 탈출이 트리거되지 않았을 때만)
+    if (isProblemSolved && !escapeTriggered) {
+      const playerPos = camera.position;
+      const escapePos = new BABYLON.Vector3(36.91, 7.36, 6.21);
+      const distanceToEscape = BABYLON.Vector3.Distance(playerPos, escapePos);
+      
+      if (distanceToEscape < 2.0) { // 2미터 이내에 들어오면 탈출
+        console.log("탈출 위치 도달! 탈출 성공 모달 표시");
+        escapeTriggered = true;
+        if (onProblemOpen) {
+          onProblemOpen('escape_success');
+        }
+      }
+    }
   });
 
    // 문 열기/닫기 애니메이션 함수
@@ -544,17 +560,9 @@ doorMeshes.forEach((mesh) => {
       console.log("문제 문 열림 - ID 카드 사라짐 콜백 호출");
     }
     
-    // 탈출 성공 모달 표시 (15초 후)
-    setTimeout(() => {
-      console.log("15초 후 탈출 성공 모달 표시 시도");
-      if (onProblemOpen) {
-        console.log("탈출 성공 모달 표시 요청");
-        // onProblemOpen을 통해 탈출 성공 콜백 호출
-        onProblemOpen('escape_success');
-      } else {
-        console.log("onProblemOpen 콜백이 없습니다");
-      }
-    }, 14000);
+    // 탈출 성공 모달 표시 (위치 기반으로 변경)
+    // setTimeout을 제거하고 위치 체크로 변경
+    console.log("문제 문 열림 - 위치 기반 탈출 체크 활성화");
   };
 
   // 문제 문 토글 함수 (열기/닫기)
