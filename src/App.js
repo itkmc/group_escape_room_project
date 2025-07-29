@@ -36,6 +36,13 @@ function App() {
         console.log("로딩 상태: false로 변경됨");
     };
 
+    // 게임 재시작 함수
+    const handleGameRestart = () => {
+        console.log("게임 재시작");
+        setIsGameStarted(false);
+        setIsLoading(false);
+    };
+
     console.log("App 렌더링 - isGameStarted:", isGameStarted, "isLoading:", isLoading);
     
     return (
@@ -54,6 +61,7 @@ function App() {
                     <BabylonScene 
                         key="game-scene" 
                         onGameLoaded={handleGameLoaded}
+                        onGameRestart={handleGameRestart}
                         /* userNickname={userNickname} */ 
                     />
                 </>

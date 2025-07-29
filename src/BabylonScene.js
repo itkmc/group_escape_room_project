@@ -18,8 +18,9 @@ import RooftopProblemModal from "./components/RooftopProblemModal";
 import OperatingRoomProblemModal from "./components/OperatingRoomProblemModal";
 import OfficeProblemModal from "./components/OfficeProblemModal";
 import OfficeDoorProblemModal from "./components/OfficeDoorProblemModal";
+import EscapeSuccessPage from "./components/EscapeSuccessPage";
 
-const BabylonScene = ({ onGameLoaded }) => {
+const BabylonScene = ({ onGameLoaded, onGameRestart }) => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
@@ -54,6 +55,9 @@ const BabylonScene = ({ onGameLoaded }) => {
   const [showProblemModal, setShowProblemModal] = useState(false);
   const problemDoorRef = useRef(null);
   const problemDoorToggleRef = useRef(null);
+
+  // 탈출 성공 모달 관련 상태
+  const [showEscapeSuccessModal, setShowEscapeSuccessModal] = useState(false);
 
   
   // showProblemModal 상태 변화 추적
@@ -288,7 +292,7 @@ const handleAnswerSubmit4 = () => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-19.59, 7.85, -5.42),
+        new BABYLON.Vector3(15.10, 7.85, 6.02),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -418,8 +422,17 @@ const handleAnswerSubmit4 = () => {
                 setTimeout(() => setShowUndergroundDoorMessage(false), 3000);
             },
             () => hasOpKeyItemRef.current, // 지하 문은 수술실 열쇠 상태를 확인
-            () => {
-                setShowProblemModal(true); // 문제 모달 열기 요청
+            (action) => {
+                console.log("underground 콜백 호출됨, action:", action);
+                if (action === 'escape_success') {
+                    console.log("탈출 성공 모달 표시");
+                    // 탈출 성공 모달 표시
+                    setShowEscapeSuccessModal(true);
+                } else {
+                    console.log("일반적인 문제 모달 열기");
+                    // 일반적인 문제 모달 열기 요청
+                    setShowProblemModal(true);
+                }
             }
         );
         undergroundDoorRef.current = undergroundResult.toggleDoor;
@@ -1116,13 +1129,16 @@ const handleAnswerSubmit4 = () => {
         isOpen={showProblemModal}
         onClose={() => setShowProblemModal(false)}
         onCorrectAnswer={() => {
+          console.log("ProblemModal onCorrectAnswer 호출됨");
           // 문제 문 열기
           if (problemDoorRef.current) {
+            console.log("problemDoorRef.current 호출");
             problemDoorRef.current();
+          } else {
+            console.log("problemDoorRef.current가 null입니다");
           }
           // ID 카드가 있다면 사라지도록 설정
           if (hasOpKeyItem) {
-            
             setHasOpKeyItem(false);
           }
         }}
@@ -1141,6 +1157,23 @@ const handleAnswerSubmit4 = () => {
           setHasKeyItem(true);
         }}
       />
+
+      {/* 탈출 성공 페이지 */}
+      {showEscapeSuccessModal && (
+        <>
+          {console.log("탈출 성공 페이지 렌더링 시도, showEscapeSuccessModal:", showEscapeSuccessModal)}
+          <EscapeSuccessPage
+            onRestart={() => {
+              setShowEscapeSuccessModal(false);
+              // 게임 재시작
+              if (onGameRestart) {
+                onGameRestart();
+              }
+            }}
+            onClose={() => setShowEscapeSuccessModal(false)}
+          />
+        </>
+      )}
 
       <CenterMessage message={centerMessage} visible={showCenterMessage} />
       <ScenarioMessage message={scenarioMessage} visible={showScenarioMessage} onClose={() => setShowScenarioMessage(false)}/>
