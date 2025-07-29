@@ -426,7 +426,7 @@ for (const mesh of combination_padlock.meshes) {
         if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e" && !isUnlocked) {
             if (getHasIdCardItem()) {
                 console.log("E키로 문 열기 - ID 카드 사용됨");
-                if (onDoorInteraction) onDoorInteraction("ID 카드로 문을 열었습니다!");
+                // if (onDoorInteraction) onDoorInteraction("ID 카드로 문을 열었습니다!");
                 isUnlocked = true;
 
                 if (isAnimating) return;
