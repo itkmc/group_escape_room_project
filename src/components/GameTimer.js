@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const GameTimer = ({ isGameStarted, onTimeOver }) => {
-  const [timeLeft, setTimeLeft] = useState(0.5 * 60); // 17분을 초로 변환
+  const [timeLeft, setTimeLeft] = useState(17 * 60); // 17분을 초로 변환
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
