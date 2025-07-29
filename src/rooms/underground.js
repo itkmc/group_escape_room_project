@@ -541,12 +541,13 @@ const toggleDoor = () => {
         const hasOpKey = getHasOpKeyItem ? getHasOpKeyItem() : false;
 
         if (!hasOpKey) {
-            if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다");
+            // 문이 잠겨있을 때는 아무것도 하지 않음
             return; // 키가 없으면 함수 종료
         }
 
         isUnlocked = true; // 키가 있으면 잠금 해제 상태로 변경
-        if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
+        // 열쇠 소모 처리 - onDoorInteraction을 통해 처리
+        // if (onDoorInteraction) onDoorInteraction("OP_KEY_USED");
         
         // BGM 일시정지
         if (bgmRef && bgmRef.current) {
@@ -621,7 +622,7 @@ const toggleDoor = () => {
 // 클릭으로 문 열기/닫기 함수
 const handleDoorClick = () => {
     if (!isUnlocked) {
-      // if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+      // 문이 잠겨있을 때는 아무것도 하지 않음
       return;
     }
     toggleDoor();
