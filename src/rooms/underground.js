@@ -108,7 +108,6 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
 
-
       // 미라
       const mummyBodyPositions = [
         new BABYLON.Vector3(15.55, 6, 5.08)
@@ -422,12 +421,12 @@ const toggleDoor = () => {
         const hasOpKey = getHasOpKeyItem ? getHasOpKeyItem() : false;
 
         if (!hasOpKey) {
-            if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+            if (onDoorInteraction) onDoorInteraction("ID카드로 문을 열었습니다!");
             return; // 키가 없으면 함수 종료
         }
 
         isUnlocked = true; // 키가 있으면 잠금 해제 상태로 변경
-        // if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
+        if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
     }
 
     if (doorMeshes.length === 0) {
