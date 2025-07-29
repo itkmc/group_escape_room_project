@@ -108,6 +108,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
 
+
       // 미라
       const mummyBodyPositions = [
         new BABYLON.Vector3(15.55, 6, 5.08)
