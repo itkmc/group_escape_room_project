@@ -42,8 +42,7 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
           <div className='problem-text'>
             {/* 퀴즈 내용을 사무실 문 퀴즈에 맞게 변경 */}
             <p>
-              오! 식단표 나왔다!<br/>
-              내가 좋아하는 계란 나오는 날은 체크 해놔야지~!
+              내가 좋아하는 계란 나오는 날은 체크 해놔야지~!!
             </p>
           </div>
           <div className="problem-image">

@@ -381,10 +381,6 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         if (message.includes("열쇠로 문을 열었습니다!")) {
             setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
         }
-        // ID 카드가 필요한 다른 문이 있다면 이곳에 해당 로직 추가
-        else if (message.includes("ID 카드로 문을 열었습니다")) {
-            setHasIdCardItem(false);
-        }
     };
 
     // ... (이전 코드 생략) ...
@@ -1099,11 +1095,11 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                         zIndex: 2002, // 오버레이보다 높게
                         position: 'relative', // 자식 요소의 absolute 포지셔닝을 위해 필요할 수 있음
                     }}>
-                        <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#0056b3' }}>식단표 문제</h3>
+                        
                         {paperImagePopupContentUrl && (
                             <img
                                 src={paperImagePopupContentUrl} // 상태에 저장된 이미지 URL 사용
-                                alt="식단표 문제"
+                                alt="식단표"
                                 style={{
                                     maxWidth: '100%', // 팝업 너비에 맞게 조절
                                     maxHeight: '100%', // 팝업 높이에 맞게 조절
