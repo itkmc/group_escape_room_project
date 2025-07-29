@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 // 새로운 Main 컴포넌트 임포트
 import Main from './components/Main';
 // BabylonScene 컴포넌트 임포트 (src/components 폴더에 있다고 가정)
-import BabylonScene from './BabylonScene';
-// 로딩 화면 컴포넌트 임포트
+import BabylonScene from './BabylonScene'; // 일반적으로 components 폴더에 위치합니다.
+// 로딩 화면 컴포넌트 임포트 (수정된 로딩 화면을 사용합니다)
 import LoadingScreen from './components/LoadingScreen';
 import BGMPlayer from './components/BGMPlayer';
 
@@ -15,26 +15,28 @@ function App() {
     const [isGameStarted, setIsGameStarted] = useState(false);
     // 로딩 상태를 관리하는 상태
     const [isLoading, setIsLoading] = useState(false);
+    // 로딩 진행률을 관리하는 상태 (0부터 100까지)
+    const [loadingProgress, setLoadingProgress] = useState(0);
+
     // BGM 제어를 위한 ref
     const bgmRef = useRef(null);
-    // 사용자 닉네임 정보를 저장할 상태 (제거됨)
-    // const [userNickname, setUserNickname] = useState('');
 
     // Main 컴포넌트에서 '게임 시작' 버튼을 눌렀을 때 호출될 함수
-    // 닉네임 인자를 받지 않음
     const handleStartGame = () => {
         console.log("게임 시작 버튼 클릭됨");
-        // 닉네임 저장 로직 제거
-        // setUserNickname(nickname);
         setIsLoading(true);         // 로딩 시작
         setIsGameStarted(true);     // isGameStarted 상태를 true로 변경하여 BabylonScene 렌더링
-        console.log("로딩 상태: true, 게임 시작 상태: true");
+        setLoadingProgress(0);      // 로딩 시작 시 진행률 초기화
+        console.log("로딩 상태: true, 게임 시작 상태: true, 진행률: 0");
     };
 
     // BabylonScene이 로드 완료되었을 때 호출될 함수
+    // 이 함수는 BabylonScene 내부의 모든 3D 리소스 로딩이 완료되었을 때 호출되어야 합니다.
     const handleGameLoaded = () => {
         console.log("handleGameLoaded 호출됨 - 로딩 완료");
-        setIsLoading(false);        // 로딩 완료
+        // 실제 게임 로딩이 완료되면 isLoading을 false로 설정합니다.
+        // BabylonScene에서 이 함수를 호출할 때 최종적으로 로딩 화면이 사라집니다.
+        setIsLoading(false);
         console.log("로딩 상태: false로 변경됨");
     };
 
@@ -43,13 +45,50 @@ function App() {
         console.log("게임 재시작");
         setIsGameStarted(false);
         setIsLoading(false);
+        setLoadingProgress(0); // 재시작 시 진행률도 초기화
     };
 
-    console.log("App 렌더링 - isGameStarted:", isGameStarted, "isLoading:", isLoading);
-    
+    // 로딩 진행률 시뮬레이션을 위한 useEffect 훅
+    // 이 훅은 isLoading이 true가 되고 isGameStarted가 true가 될 때 실행됩니다.
+    // 실제 BabylonScene의 로딩 로직에 따라 이 시뮬레이션 부분을 교체해야 합니다.
+    useEffect(() => {
+        let interval;
+        if (isLoading && isGameStarted) {
+            console.log("로딩 진행률 시뮬레이션 시작...");
+            let currentProgress = 0;
+            interval = setInterval(() => {
+                // 가상의 로딩 진행률을 0에서 100까지 점진적으로 증가시킵니다.
+                currentProgress += Math.random() * 3; // 임의로 진행률 증가
+                if (currentProgress >= 100) {
+                    currentProgress = 100;
+                    clearInterval(interval); // 100%에 도달하면 인터벌 중지
+                    console.log("시뮬레이션 로딩 100% 도달.");
+                }
+                setLoadingProgress(currentProgress); // 진행률 상태 업데이트
+            }, 100); // 100ms마다 진행률 업데이트
+
+        } else {
+            // 로딩이 완료되거나 게임이 시작되지 않은 경우 인터벌을 정리합니다.
+            if (interval) {
+                clearInterval(interval);
+                console.log("로딩 진행률 시뮬레이션 종료.");
+            }
+        }
+
+        // 컴포넌트 언마운트 시 또는 종속성(isLoading, isGameStarted)이 변경될 때 인터벌을 정리합니다.
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+                console.log("클린업: 로딩 진행률 시뮬레이션 종료.");
+            }
+        };
+    }, [isLoading, isGameStarted]); // isLoading 또는 isGameStarted 상태가 변경될 때마다 실행
+
+    console.log("App 렌더링 중 - isGameStarted:", isGameStarted, "isLoading:", isLoading, "loadingProgress:", Math.round(loadingProgress));
+
     return (
         <div className="App">
-            {/* 조건부 렌더링 */}
+            {/* 조건부 렌더링: isGameStarted 상태에 따라 Main 컴포넌트 또는 게임 컴포넌트 렌더링 */}
             {!isGameStarted ? (
                 // isGameStarted가 false이면 Main 컴포넌트를 렌더링
                 // Main 컴포넌트에 handleStartGame 함수를 prop으로 전달
@@ -57,15 +96,18 @@ function App() {
             ) : (
                 // 게임이 시작되면 BabylonScene과 로딩 화면을 함께 렌더링
                 <>
-                    {/* BGMPlayer 추가: 로딩이 끝난 후에만 BGM 재생 */}
+                    {/* BGMPlayer 추가: 로딩이 끝난 후에만 BGM 재생 (isGameStarted가 true이고 isLoading이 false일 때) */}
                     <BGMPlayer ref={bgmRef} src="/horror-background-atmosphere-156462.mp3" isPlaying={isGameStarted && !isLoading} />
-                    {isLoading && <LoadingScreen />}
+                    
+                    {/* isLoading이 true일 때만 LoadingScreen을 렌더링하고, progress prop 전달 */}
+                    {isLoading && <LoadingScreen progress={loadingProgress} />}
+                    
+                    {/* BabylonScene 렌더링 */}
                     <BabylonScene 
-                        key="game-scene" 
-                        onGameLoaded={handleGameLoaded}
-                        onGameRestart={handleGameRestart}
-                        bgmRef={bgmRef}
-                        /* userNickname={userNickname} */ 
+                        key="game-scene" // 컴포넌트 키를 사용하여 리마운트 시 강제 업데이트
+                        onGameLoaded={handleGameLoaded} // 게임 로드 완료 시 호출될 함수
+                        onGameRestart={handleGameRestart} // 게임 재시작 시 호출될 함수
+                        bgmRef={bgmRef} // BGM 제어를 위한 ref 전달
                     />
                 </>
             )}
