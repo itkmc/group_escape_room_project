@@ -42,10 +42,23 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
     
   // 문 열기/닫기 애니메이션 함수
     const toggleDoor1 = () => {
+      console.log("toggleDoor1 함수 호출됨, isDoorOpen:", isDoorOpen);
+      
       // 한 번이라도 열렸으면 isUnlocked = true
       if (!isUnlocked) {
         isUnlocked = true; // E키로 한 번 열면 해제
       }
+      
+      // 문을 열 때만 효과음 재생
+      if (!isDoorOpen) {
+        console.log("문을 열 때 효과음 재생 시도");
+        const audio = new Audio('/20131106_elevator-door-closing_zoomh6xy-87444.mp3');
+        audio.play().catch(error => {
+          console.error("효과음 재생 실패:", error);
+        });
+        console.log("효과음 재생 완료");
+      }
+      
       const animationGroup = new BABYLON.AnimationGroup("undergroundDoorAnimationGroup");
       doorMeshes.forEach((doorMesh) => {
         const startRotation = doorMesh.rotationQuaternion.clone();

@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './EscapeSuccessPage.css';
 
 function EscapeSuccessPage({ onRestart, onClose }) {
     const [isHovered, setIsHovered] = useState(false);
     
     console.log("EscapeSuccessPage 렌더링됨");
+    
+    // 탈출 성공 페이지가 렌더링될 때 효과음 재생
+    useEffect(() => {
+        const audio = new Audio('/running-on-dirt-road-345729.mp3');
+        audio.play().catch(error => {
+            console.error("탈출 성공 효과음 재생 실패:", error);
+        });
+        console.log("탈출 성공 효과음 재생");
+    }, []);
 
     return (
         <div style={{
