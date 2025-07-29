@@ -238,6 +238,15 @@ const handleAnswerSubmit4 = () => {
     setAnswerInput4(''); // 퀴즈 열릴 때 입력값 초기화
   }, []);
 
+  // --- ⭐ 새로 추가된 부분: 찬장 클릭 시 사무실 퀴즈 팝업을 띄우는 콜백 함수 ⭐ ---
+const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
+    console.log("handleCupboardClickToTriggerOfficeQuiz 호출됨: 사무실 퀴즈 팝업 표시 시도");
+    setShowOfficeQuiz(true); // 사무실 퀴즈 팝업 표시 상태를 true로 변경
+    setQuizMessage3(''); // 퀴즈 열릴 때 메시지 초기화 (OfficeProblemModal이 사용하는 메시지)
+    setAnswerInput3(''); // 퀴즈 열릴 때 입력값 초기화 (OfficeProblemModal이 사용하는 입력값)
+}, []);
+// --- ⭐ 새로 추가된 부분 끝 ⭐ ---s
+
   useEffect(() => {
     hasFlashlightItemRef.current = hasFlashlightItem;
   }, [hasFlashlightItem]);
@@ -397,7 +406,7 @@ const handleAnswerSubmit4 = () => {
         await addDoctorOffice(
             scene,
             parentMesh,
-            () => setIsOfficeCupboardUnlocked(true), // onCupboardClickForQuiz (찬장 클릭 시 퀴즈 대신 바로 잠금 해제)
+            handleCupboardClickToTriggerOfficeQuiz, // onCupboardClickForQuiz (찬장 클릭 시 퀴즈 대신 바로 잠금 해제)
             (status) => {
                 console.log("setHasIdCardItem 호출됨:", status);
                 setHasIdCardItem(status);
@@ -814,7 +823,7 @@ const handleAnswerSubmit4 = () => {
 
     initScene();
 
-  }, [handleOperatingRoomScrollClick, handleSurgeryBoxClick]);
+  }, [handleOperatingRoomScrollClick, handleSurgeryBoxClick, handleCupboardClickToTriggerOfficeQuiz]);
 
   useEffect(() => {
     window.setHasKeyItem = setHasKeyItem;
