@@ -1,7 +1,20 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 
-const BGMPlayer = ({ src, isPlaying }) => {
+const BGMPlayer = forwardRef(({ src, isPlaying }, ref) => {
   const audioRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    pause: () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    },
+    play: () => {
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+    }
+  }));
 
   useEffect(() => {
     if (isPlaying) {
@@ -15,6 +28,6 @@ const BGMPlayer = ({ src, isPlaying }) => {
   return (
     <audio ref={audioRef} src={src} loop />
   );
-};
+});
 
 export default BGMPlayer; 

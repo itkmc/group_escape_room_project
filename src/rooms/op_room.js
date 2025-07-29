@@ -12,8 +12,9 @@ import "@babylonjs/loaders";
  * @param {Function} [onSurgeryBoxClick] - 상자가 클릭되었을 때 호출될 콜백 함수 
  * @param {Function} [onDoorInteraction] - 문 관련 상호작용 메시지를 띄울 함수
  * @param {Function} [getHasIdCardItem]
+ * @param {Object} [bgmRef] - BGM 제어를 위한 ref
  */
-export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onOpKeyPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem) {
+export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onOpKeyPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem, bgmRef) {
   if (!parentMesh) {
     console.warn("parentMesh가 없습니다. 오브젝트들이 부모에 연결되지 않습니다.");
     return;
@@ -390,12 +391,34 @@ for (const mesh of combination_padlock.meshes) {
                   });
               } else {
                   // 문 열기 효과음 재생
-                  const audio = new Audio('/squeaky-door-open-317165.mp3');
-                  audio.play();
+                  const doorAudio = new Audio('/squeaky-door-open-317165.mp3');
+                  doorAudio.play();
                   doorMesh.checkCollisions = false;
                   scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
                       isDoorOpen = true;
                       isAnimating = false;
+                      
+                      // BGM 일시정지
+                      if (bgmRef && bgmRef.current) {
+                          bgmRef.current.pause();
+                      }
+                      
+                      // 문 열기 애니메이션 완료 후 scary-music-box 효과음 재생
+                      const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
+                      scaryAudio.play();
+                      
+                      // scary-music-box 효과음이 끝난 후 music-box-scary 효과음 재생
+                      scaryAudio.onended = () => {
+                          const musicBoxAudio = new Audio('/music-box-scary-290198.mp3');
+                          musicBoxAudio.play();
+                          
+                          // music-box-scary 효과음이 끝난 후 BGM 재생
+                          musicBoxAudio.onended = () => {
+                              if (bgmRef && bgmRef.current) {
+                                  bgmRef.current.play();
+                              }
+                          };
+                      };
                   });
               }
           })
@@ -415,12 +438,34 @@ for (const mesh of combination_padlock.meshes) {
                 if (isAnimating) return;
                 isAnimating = true;
                 // 문 열기 효과음 재생
-                const audio = new Audio('/squeaky-door-open-317165.mp3');
-                audio.play();
+                const doorAudio = new Audio('/squeaky-door-open-317165.mp3');
+                doorAudio.play();
                 doorMesh.checkCollisions = false;
                 scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
                     isDoorOpen = true;
                     isAnimating = false;
+                    
+                    // BGM 일시정지
+                    if (bgmRef && bgmRef.current) {
+                        bgmRef.current.pause();
+                    }
+                    
+                    // 문 열기 애니메이션 완료 후 scary-music-box 효과음 재생
+                    const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
+                    scaryAudio.play();
+                    
+                    // scary-music-box 효과음이 끝난 후 music-box-scary 효과음 재생
+                    scaryAudio.onended = () => {
+                        const musicBoxAudio = new Audio('/music-box-scary-290198.mp3');
+                        musicBoxAudio.play();
+                        
+                        // music-box-scary 효과음이 끝난 후 BGM 재생
+                        musicBoxAudio.onended = () => {
+                            if (bgmRef && bgmRef.current) {
+                                bgmRef.current.play();
+                            }
+                        };
+                    };
                 });
             } else {
                 // if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
