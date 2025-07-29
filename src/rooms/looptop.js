@@ -356,6 +356,8 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
     }
   });
 
+  
+
   // 🕒 시계(clock-2.glb) __root__만 parentMesh에 붙임
   const clockResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "clock-2.glb", scene);
   const clockRoot = clockResult.meshes.find(m => m.name === "__root__");
