@@ -119,8 +119,6 @@ export async function addVillain(scene, parentMesh, hasKeyItemFn) {
     } catch (error) {
         console.error("❌ walk.glb 로드 오류: ", error);
     }
-    // --- END NEW ADDITION ---
-
 
     // 문
     const door2Result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);

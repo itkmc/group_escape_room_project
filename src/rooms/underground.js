@@ -541,7 +541,7 @@ const toggleDoor = () => {
         const hasOpKey = getHasOpKeyItem ? getHasOpKeyItem() : false;
 
         if (!hasOpKey) {
-            if (onDoorInteraction) onDoorInteraction("ID카드로 문을 열었습니다!");
+            if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다");
             return; // 키가 없으면 함수 종료
         }
 
