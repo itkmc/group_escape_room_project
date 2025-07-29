@@ -381,10 +381,6 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         if (message.includes("열쇠로 문을 열었습니다!")) {
             setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
         }
-        // ID 카드가 필요한 다른 문이 있다면 이곳에 해당 로직 추가
-        else if (message.includes("ID 카드로 문을 열었습니다")) {
-            setHasIdCardItem(false);
-        }
     };
 
     // ... (이전 코드 생략) ...
