@@ -214,7 +214,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
 
       // EXIT
       const exitBodyPositions = [
-        new BABYLON.Vector3(36.67, 8, 6.2)
+        new BABYLON.Vector3(19.70, 8, 6.48)
       ];
       for (const pos of exitBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "exit_sign.glb", scene);
@@ -421,12 +421,12 @@ const toggleDoor = () => {
         const hasOpKey = getHasOpKeyItem ? getHasOpKeyItem() : false;
 
         if (!hasOpKey) {
-            if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
+            if (onDoorInteraction) onDoorInteraction("ID카드로 문을 열었습니다!");
             return; // 키가 없으면 함수 종료
         }
 
         isUnlocked = true; // 키가 있으면 잠금 해제 상태로 변경
-        // if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
+        if (onDoorInteraction) onDoorInteraction("열쇠로 문을 열었습니다!");
     }
 
     if (doorMeshes.length === 0) {
@@ -500,6 +500,7 @@ doorMeshes.forEach((mesh) => {
 
   // 문제 문 열기 함수
   const openProblemDoor = () => {
+    console.log("openProblemDoor 함수 호출됨");
     if (isProblemDoorOpen) return;
     
     console.log("문제 문을 엽니다...");
@@ -520,6 +521,18 @@ doorMeshes.forEach((mesh) => {
     if (onProblemOpen) {
       console.log("문제 문 열림 - ID 카드 사라짐 콜백 호출");
     }
+    
+    // 탈출 성공 모달 표시 (15초 후)
+    setTimeout(() => {
+      console.log("15초 후 탈출 성공 모달 표시 시도");
+      if (onProblemOpen) {
+        console.log("탈출 성공 모달 표시 요청");
+        // onProblemOpen을 통해 탈출 성공 콜백 호출
+        onProblemOpen('escape_success');
+      } else {
+        console.log("onProblemOpen 콜백이 없습니다");
+      }
+    }, 14000);
   };
 
   // 문제 문 토글 함수 (열기/닫기)
