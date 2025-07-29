@@ -17,7 +17,7 @@ function EscapeSuccessPage({ onRestart, onClose }) {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundImage: `url('${process.env.PUBLIC_URL}/resource.gif')`,
+            backgroundImage: `url('${process.env.PUBLIC_URL}/7.gif')`,
             backgroundSize: 'cover',
             backgroundRepeat: 'repeat',
             backgroundPosition: 'center center',
@@ -26,7 +26,7 @@ function EscapeSuccessPage({ onRestart, onClose }) {
             zIndex: 9999,
             backgroundColor: 'rgba(0, 0, 0, 0.8)'
         }}>
-            <h1 style={{ color: 'white', fontSize: '3rem' }}>탈출 성공!</h1>
+            <h1 style={{ color: 'white', fontSize: '3rem' }}>Escape Successful</h1>
             <p style={{
                 fontSize: '1.2rem',
                 marginBottom: '40px',
@@ -42,7 +42,7 @@ function EscapeSuccessPage({ onRestart, onClose }) {
                 onMouseLeave={() => setIsHovered(false)}
                 style={{
                     padding: '16px 40px',
-                    fontSize: '1.5rem',
+                    fontSize: '1rem',
                     borderRadius: '10px',
                     border: 'none',
                     backgroundColor: isHovered ? 'rgba(124, 124, 124, 0.5)' : 'rgba(46, 46, 46, 0.5)',
