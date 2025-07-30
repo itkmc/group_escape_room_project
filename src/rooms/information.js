@@ -243,24 +243,24 @@ export async function addInformation(scene, parentMesh, onDoorInteraction) {
     // }
   
     // 책상 위치
-    const deskWorldPos = new BABYLON.Vector3(-6, 7, -12);
-    const desk = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "secretary_desk_-_20mb (1).glb", scene);
+    // const deskWorldPos = new BABYLON.Vector3(-6, 7, -12);
+    // const desk = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "secretary_desk_-_20mb (1).glb", scene);
 
-    for (const mesh of desk.meshes) { 
-        if (mesh.name !== "__root__") {
-            mesh.parent = parentMesh;
-            mesh.position = BABYLON.Vector3.TransformCoordinates(
-                deskWorldPos,
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            mesh.scaling = new BABYLON.Vector3(0.6, 0.8, 0.6);
-            mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI));
-            mesh.checkCollisions = true;
-        }
-    }
+    // for (const mesh of desk.meshes) { 
+    //     if (mesh.name !== "__root__") {
+    //         mesh.parent = parentMesh;
+    //         mesh.position = BABYLON.Vector3.TransformCoordinates(
+    //             deskWorldPos,
+    //             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+    //         );
+    //         mesh.scaling = new BABYLON.Vector3(0.6, 0.8, 0.6);
+    //         mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
+    //             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+    //             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+    //             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI));
+    //         mesh.checkCollisions = true;
+    //     }
+    // }
 
 
 // 철문 위치
@@ -369,10 +369,13 @@ if (garageDoorMesh) {
   }
 
   // 커튼 관련 전역 변수들 (기존 코드와 동일)
-  const curtainWorldPos1 = new BABYLON.Vector3(-18.5, 6.2, -8.7);
-  const curtainWorldPos2 = new BABYLON.Vector3(-14.5, 6.2, -8.7);
-  const curtainWorldPos3 = new BABYLON.Vector3(-18, 6.2, -15.7);
-  // const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15);
+//   const curtainWorldPos1 = new BABYLON.Vector3(-18.5, 6.2, -5.7);
+//   const curtainWorldPos2 = new BABYLON.Vector3(-14.5, 6.2, -8.7);
+//   const curtainWorldPos3 = new BABYLON.Vector3(-18, 6.2, -15.7);
+//   const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15);
+  const curtainWorldPos5 = new BABYLON.Vector3(-0.15, 6.2, -14.7);
+//   const curtainWorldPos6 = new BABYLON.Vector3(-2, 6.2, -15.7);
+
 
   /**
    * 커튼 모델을 로드하고 설정합니다.
@@ -407,7 +410,7 @@ if (garageDoorMesh) {
           BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
       );
 
-      rootMesh.scaling = scaling || new BABYLON.Vector3(65, 55, 35);
+      rootMesh.scaling = scaling || new BABYLON.Vector3(80, 55, 50);
       rootMesh.rotationQuaternion = rotationQuaternion || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
           .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
@@ -479,71 +482,89 @@ if (garageDoorMesh) {
       } 
   }
 
-  const commonRotation3 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
-      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+//  const commonRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-  // const customRotation4 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-  //     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
-  //     .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+//   const commonRotation2 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-  const myCurtainTexture1 = "/asdfasdf.jpg"; 
-  const myCurtainTexture2 = "/asdfasdf.jpg"; 
-  const myCurtainTexture3 = "/asdfasdf.jpg"; 
-  // const myCurtainTexture4 = "/asdfasdf.jpg"; 
+//   const commonRotation3 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+
+//   const customRotation4 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+
+  const commonRotation5 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
+    //   .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
+    //   .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
+
+//   const customRotation6 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));    
+
+  const myCurtainTexture = "/asdfasdf.jpg"; 
 
   (async () => {
-      await curtain(curtainWorldPos1, parentMesh, scene, null, null, myCurtainTexture1);
-      await curtain(curtainWorldPos2, parentMesh, scene, null, null, myCurtainTexture2);
-      await curtain(curtainWorldPos3, parentMesh, scene, commonRotation3, new BABYLON.Vector3(55, 55, 40), myCurtainTexture3);
-      // await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.Vector3(80, 55, 40), myCurtainTexture4);
+    //   await curtain(curtainWorldPos1, parentMesh, scene, commonRotation1, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+    //   await curtain(curtainWorldPos2, parentMesh, scene, commonRotation2, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+    //   await curtain(curtainWorldPos3, parentMesh, scene, commonRotation3, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+    //   await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.Vector3(80, 55, 40), myCurtainTexture);
+      await curtain(curtainWorldPos5, parentMesh, scene, commonRotation5, new BABYLON.Vector3(80, 55, 40), myCurtainTexture);
+    //   await curtain(curtainWorldPos6, parentMesh, scene, customRotation6, new BABYLON.Vector3(80, 55, 40), myCurtainTexture);
   })();
 
-  // 의자
-      const chairWorldPos = [
-          new BABYLON.Vector3(-7.16, 6.50, -11.5), 
-          new BABYLON.Vector3(-4.14, 7, -13.5), 
-          new BABYLON.Vector3(-6.13, 6.50, -11.45)
-      ];
+//   // 의자
+//       const chairWorldPos = [
+//           new BABYLON.Vector3(-7.16, 6.50, -11.5), 
+//           new BABYLON.Vector3(-4.14, 7, -13.5), 
+//           new BABYLON.Vector3(-6.13, 6.50, -11.45)
+//       ];
   
-      // 의자 모델을 로드하고 설정하는 비동기 헬퍼 함수
-      async function loadAntiqueChair(worldPosition, parentMesh, scene, options = {}) {
-          try {
-              const chairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "antique_chair.glb", scene);
-              if (!chairResult || !chairResult.meshes || chairResult.meshes.length === 0) {
-                  return null;
-              }
+//       // 의자 모델을 로드하고 설정하는 비동기 헬퍼 함수
+//       async function loadAntiqueChair(worldPosition, parentMesh, scene, options = {}) {
+//           try {
+//               const chairResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "antique_chair.glb", scene);
+//               if (!chairResult || !chairResult.meshes || chairResult.meshes.length === 0) {
+//                   return null;
+//               }
   
-              const rootChairMesh = chairResult.meshes[0];
-              rootChairMesh.parent = parentMesh;
-              rootChairMesh.position = BABYLON.Vector3.TransformCoordinates(
-                  worldPosition,
-                  BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-              );
-              rootChairMesh.scaling = options.scaling || new BABYLON.Vector3(8,8,8);
-              rootChairMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-                  .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-              chairResult.meshes.forEach(mesh => {
-                  mesh.checkCollisions = true;
-                  mesh.isVisible = true;
-              });
-              return rootChairMesh;
-          } catch (error) {
-              console.error("antique_chair.glb 로드 오류: ", error);
-              return null;
-          }
-      }
+//               const rootChairMesh = chairResult.meshes[0];
+//               rootChairMesh.parent = parentMesh;
+//               rootChairMesh.position = BABYLON.Vector3.TransformCoordinates(
+//                   worldPosition,
+//                   BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+//               );
+//               rootChairMesh.scaling = options.scaling || new BABYLON.Vector3(8,8,8);
+//               rootChairMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+//                   .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+//               chairResult.meshes.forEach(mesh => {
+//                   mesh.checkCollisions = true;
+//                   mesh.isVisible = true;
+//               });
+//               return rootChairMesh;
+//           } catch (error) {
+//               console.error("antique_chair.glb 로드 오류: ", error);
+//               return null;
+//           }
+//       }
   
-      // 정의된 위치에 의자들을 로드하고 배치합니다.
-      await loadAntiqueChair(chairWorldPos[0], parentMesh, scene);
-      await loadAntiqueChair(chairWorldPos[1], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2)) });
-      await loadAntiqueChair(chairWorldPos[2], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)) });
+//       // 정의된 위치에 의자들을 로드하고 배치합니다.
+//       await loadAntiqueChair(chairWorldPos[0], parentMesh, scene);
+//       await loadAntiqueChair(chairWorldPos[1], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2)) });
+//       await loadAntiqueChair(chairWorldPos[2], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)) });
 
 // 침대 
     const bedWorldPos1 = new BABYLON.Vector3(-16.7, 6.5, -9.4);
     const bedWorldPos2 = new BABYLON.Vector3(-12.6, 6.5, -9.5);
     const bedWorldPos3 = new BABYLON.Vector3(-17, 6.5, -14); 
     const bedWorldPos4 = new BABYLON.Vector3(-11.5, 6.5, -14.7);
+    const bedWorldPos5 = new BABYLON.Vector3(-8, 6.5, -14); 
+    const bedWorldPos6 = new BABYLON.Vector3(-8, 6.5, -14.7);
+    const bedWorldPos7 = new BABYLON.Vector3(1.2, 6.5, -12.4);
 
     async function bed(worldPosition, parentMesh, scene, rotationQuaternion = null) {
         const bed = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "horror_bed.glb", scene);
@@ -562,7 +583,7 @@ if (garageDoorMesh) {
             rootMesh.rotationQuaternion = rotationQuaternion;
         } else {
             rootMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI/2));
         }
 
         for (const mesh of bed.meshes) {
@@ -584,12 +605,17 @@ if (garageDoorMesh) {
     const oppositeRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
+    const oppositeRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));    
+
     await bed(bedWorldPos3, parentMesh, scene, oppositeRotation);
     await bed(bedWorldPos4, parentMesh, scene, oppositeRotation);
-   
+    await bed(bedWorldPos5, parentMesh, scene, oppositeRotation);
+    await bed(bedWorldPos6, parentMesh, scene, oppositeRotation);
+    await bed(bedWorldPos7, parentMesh, scene, oppositeRotation1);
     
   // 냉장고
-  const old_fridgeWorldPos = new BABYLON.Vector3(-18.5, 6.5, -11.94);
+  const old_fridgeWorldPos = new BABYLON.Vector3(-7.80, 6.5, -6.80);
   const old_fridgeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_old_rusty_fridge_-_game_ready.glb", scene);
 
   // information에서만 사용하는 prefix 추가
