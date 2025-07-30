@@ -373,12 +373,12 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         if (message.includes("열쇠로 문을 열었습니다!")) {
             setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
         }
-        // if (message.includes("OP_KEY_USED")) {
-        //     setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
-        // }
-        // if (message.includes("ID_CARD_USED")) {
-        //     setHasIdCardItem(false); // 여기서 ID 카드 소모 처리
-        // }
+        if (message.includes("OP_KEY_USED")) {
+            setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
+        }
+        if (message.includes("ID_CARD_USED")) {
+            setHasIdCardItem(false); // 여기서 ID 카드 소모 처리
+        }
     };
 
     // ... (이전 코드 생략) ...
@@ -772,15 +772,15 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
