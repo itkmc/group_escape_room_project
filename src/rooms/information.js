@@ -351,7 +351,7 @@ if (garageDoorMesh) {
 
 
 //알람 위치
-  const alarmWorldPos = new BABYLON.Vector3(-9.145, 7.65, -13);
+  const alarmWorldPos = new BABYLON.Vector3(2.5, 7.65, -13);
   const alarm = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "fire_alarm.glb", scene);
 
   for (const mesh of alarm.meshes) { 
@@ -369,13 +369,12 @@ if (garageDoorMesh) {
   }
 
   // 커튼 관련 전역 변수들 (기존 코드와 동일)
-//   const curtainWorldPos1 = new BABYLON.Vector3(-18.5, 6.2, -5.7);
-//   const curtainWorldPos2 = new BABYLON.Vector3(-14.5, 6.2, -8.7);
-//   const curtainWorldPos3 = new BABYLON.Vector3(-18, 6.2, -15.7);
-//   const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15);
-  const curtainWorldPos5 = new BABYLON.Vector3(-0.15, 6.2, -14.7);
-//   const curtainWorldPos6 = new BABYLON.Vector3(-2, 6.2, -15.7);
-
+  const curtainWorldPos1 = new BABYLON.Vector3(-18.9, 6.2, -15.7);
+  const curtainWorldPos2 = new BABYLON.Vector3(-18.9, 6.2, -10.7);
+  const curtainWorldPos4 = new BABYLON.Vector3(-9, 6.2, -15.5);
+  const curtainWorldPos7 = new BABYLON.Vector3(-4, 6.2, -15.5);
+  const curtainWorldPos5 = new BABYLON.Vector3(3, 6.2, -5);
+  const curtainWorldPos6 = new BABYLON.Vector3(3, 6.2, -10);
 
   /**
    * 커튼 모델을 로드하고 설정합니다.
@@ -482,40 +481,44 @@ if (garageDoorMesh) {
       } 
   }
 
-//  const commonRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+  const commonRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-//   const commonRotation2 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+  const commonRotation2 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-//   const commonRotation3 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+  const customRotation4 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-//   const customRotation4 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+  const commonRotation5 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
 
-  const commonRotation5 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
-    //   .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
-    //   .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
+  const commonRotation6 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI));
 
-//   const customRotation6 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
-//       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));    
+ const customRotation7 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI))
+      .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-  const myCurtainTexture = "/asdfasdf.jpg"; 
+
+  const myCurtainTexture1 = "/asdfasdf.jpg"; 
+  const myCurtainTexture2 = "/asdfasdf.jpg"; 
+  const myCurtainTexture3 = "/asdfasdf.jpg"; 
+  // const myCurtainTexture4 = "/asdfasdf.jpg"; 
 
   (async () => {
-    //   await curtain(curtainWorldPos1, parentMesh, scene, commonRotation1, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
-    //   await curtain(curtainWorldPos2, parentMesh, scene, commonRotation2, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
-    //   await curtain(curtainWorldPos3, parentMesh, scene, commonRotation3, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
-    //   await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.Vector3(80, 55, 40), myCurtainTexture);
-      await curtain(curtainWorldPos5, parentMesh, scene, commonRotation5, new BABYLON.Vector3(80, 55, 40), myCurtainTexture);
-    //   await curtain(curtainWorldPos6, parentMesh, scene, customRotation6, new BABYLON.Vector3(80, 55, 40), myCurtainTexture);
-  })();
+      await curtain(curtainWorldPos1, parentMesh, scene, commonRotation1, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+      await curtain(curtainWorldPos2, parentMesh, scene, commonRotation2, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+      await curtain(curtainWorldPos4, parentMesh, scene, customRotation4, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+      await curtain(curtainWorldPos5, parentMesh, scene, commonRotation5, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+      await curtain(curtainWorldPos6, parentMesh, scene, commonRotation6, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
+ await curtain(curtainWorldPos7, parentMesh, scene, customRotation7, new BABYLON.Vector3(70, 55, 50), myCurtainTexture); 
+})();
 
 //   // 의자
 //       const chairWorldPos = [
@@ -558,13 +561,12 @@ if (garageDoorMesh) {
 //       await loadAntiqueChair(chairWorldPos[2], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)) });
 
 // 침대 
-    const bedWorldPos1 = new BABYLON.Vector3(-16.7, 6.5, -9.4);
-    const bedWorldPos2 = new BABYLON.Vector3(-12.6, 6.5, -9.5);
-    const bedWorldPos3 = new BABYLON.Vector3(-17, 6.5, -14); 
-    const bedWorldPos4 = new BABYLON.Vector3(-11.5, 6.5, -14.7);
-    const bedWorldPos5 = new BABYLON.Vector3(-8, 6.5, -14); 
-    const bedWorldPos6 = new BABYLON.Vector3(-8, 6.5, -14.7);
-    const bedWorldPos7 = new BABYLON.Vector3(1.2, 6.5, -12.4);
+     const bedWorldPos1 = new BABYLON.Vector3(-17.7, 6.5, -8.6);
+    const bedWorldPos2 = new BABYLON.Vector3(-17.7, 6.5, -13.5);
+    const bedWorldPos3 = new BABYLON.Vector3(-6.2, 6.5, -14.6); 
+    const bedWorldPos4 = new BABYLON.Vector3(-11.2, 6.5, -14.6);
+    const bedWorldPos5 = new BABYLON.Vector3(2, 6.5, -12); 
+    const bedWorldPos6 = new BABYLON.Vector3(2, 6.5, -6.9);
 
     async function bed(worldPosition, parentMesh, scene, rotationQuaternion = null) {
         const bed = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "horror_bed.glb", scene);
@@ -601,18 +603,15 @@ if (garageDoorMesh) {
     // 각 침대 모델을 로드하여 장면에 추가합니다.
     await bed(bedWorldPos1, parentMesh, scene);
     await bed(bedWorldPos2, parentMesh, scene);
+    await bed(bedWorldPos5, parentMesh, scene);
+    await bed(bedWorldPos6, parentMesh, scene);
 
     const oppositeRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-    const oppositeRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-        .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));    
-
     await bed(bedWorldPos3, parentMesh, scene, oppositeRotation);
     await bed(bedWorldPos4, parentMesh, scene, oppositeRotation);
-    await bed(bedWorldPos5, parentMesh, scene, oppositeRotation);
-    await bed(bedWorldPos6, parentMesh, scene, oppositeRotation);
-    await bed(bedWorldPos7, parentMesh, scene, oppositeRotation1);
+   
     
   // 냉장고
   const old_fridgeWorldPos = new BABYLON.Vector3(-7.80, 6.5, -6.80);
@@ -647,8 +646,8 @@ if (garageDoorMesh) {
       rootFridgeMesh.scaling = new BABYLON.Vector3(14, 14, 14);
 
       rootFridgeMesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2))
-          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI)); // Y축 180도 추가
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI))
+          .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI)); // Y축 180도 추가
 
       
       // 모든 mesh 정보 출력
@@ -752,13 +751,13 @@ if (garageDoorMesh) {
       if (mesh.name !== "__root__") {
           mesh.parent = parentMesh;
           mesh.position = BABYLON.Vector3.TransformCoordinates(
-              new BABYLON.Vector3(-18.49, 8.4, -11.95),
+              new BABYLON.Vector3(-7.80, 8.4, -6.80),
               BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
           mesh.scaling = new BABYLON.Vector3(15, 15, 15);
           mesh.checkCollisions = true;
           mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI / 2)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI));
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, Math.PI/2));
       }
   }
 
@@ -768,7 +767,7 @@ if (garageDoorMesh) {
       if (mesh.name !== "__root__") {
           mesh.parent = parentMesh;
           mesh.position = BABYLON.Vector3.TransformCoordinates(
-              new BABYLON.Vector3(-18.49, 7.2, -11.95),
+              new BABYLON.Vector3(-7.80, 7.3, -6.80),
               BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
           mesh.scaling = new BABYLON.Vector3(80,80,80);
