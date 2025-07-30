@@ -14,7 +14,7 @@ import "@babylonjs/loaders";
  * @param {Function} [getHasIdCardItem]
  * @param {Object} [bgmRef] - BGM 제어를 위한 ref
  */
-export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onOpKeyPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem, bgmRef) {
+export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScrollClick, onOpKeyPickedCallback, onSurgeryBoxClick, onDoorInteraction, getHasIdCardItem, bgmRef, onProgress) {
   if (!parentMesh) {
     console.warn("parentMesh가 없습니다. 오브젝트들이 부모에 연결되지 않습니다.");
     return;
@@ -22,7 +22,9 @@ export async function addOperatingRoom(scene, parentMesh, handleOperatingRoomScr
   
 // --- 상자 위치 ---
 const surgery_toolsWorldPos = new BABYLON.Vector3(6.30, 7.19, 11.10);
+if (onProgress) onProgress(1); // 상자 로딩 시작
 const surgery_toolsResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "first_aid_box_19_mb.glb", scene);
+if (onProgress) onProgress(1); // 상자 로딩 완료
 const rootSurgeryToolsMesh = surgery_toolsResult.meshes[0]; 
 rootSurgeryToolsMesh.parent = parentMesh;
 rootSurgeryToolsMesh.position = BABYLON.Vector3.TransformCoordinates(

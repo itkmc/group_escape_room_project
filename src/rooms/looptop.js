@@ -9,14 +9,16 @@ import "@babylonjs/loaders";
  * @param {Function} [onScrollClick] - 두루마리 클릭 시 호출될 콜백 함수 (선택 사항)
  * @param {Function} [hasKeyItemFn] - 키 아이템이 있는지 확인할 함수 (선택 사항)
  */
-export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn, showMessage, showMessage2) {
+export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn, showMessage, showMessage2, onProgress) {
   if (!parentMesh) {
     console.warn("❗ parentMesh가 없습니다.");
     return;
   }
 
   // 🚪 첫 번째 문 위치
+  if (onProgress) onProgress(1); // 문 로딩 시작
   const door1 = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+  if (onProgress) onProgress(1); // 문 로딩 완료
   door1.meshes.forEach((doorMesh) => {
     if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
       const pivot = new BABYLON.Vector3(0, -6.3, 0); // 모델에 맞춰 수동 설정 (이 값이 가장 중요!)
