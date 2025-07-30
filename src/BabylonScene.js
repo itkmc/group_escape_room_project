@@ -313,7 +313,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const MIN_CAMERA_HEIGHT = 0;
 
       // 플레이어 이동 속도 조절
-      const WALK_SPEED = 0.1;
+      const WALK_SPEED = 0.15;
       const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
 
@@ -526,8 +526,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       // --- 1. 수동으로 범위(트리거) 지정 ---
       const customTriggerConfigs = [
           {
-              center: new BABYLON.Vector3(-11.4, 7.29, 4), // 중앙계단
-              size: new BABYLON.Vector3(6.1, 15, 8)
+              center: new BABYLON.Vector3(-11.4, 7.29, 5), // 중앙계단
+              size: new BABYLON.Vector3(6.0, 15, 6)
           },
           {
               center: new BABYLON.Vector3(8.81, 6.36, 5.06), // 지하계단
@@ -554,7 +554,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
