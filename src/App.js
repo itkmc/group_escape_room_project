@@ -44,6 +44,12 @@ function App() {
         console.log("로딩 상태: false로 변경됨");
     };
 
+    // 실제 로딩 진행률 업데이트 함수
+    const handleLoadingProgress = (progress) => {
+        console.log("실제 로딩 진행률:", progress);
+        setLoadingProgress(progress);
+    };
+
     // 게임 재시작 함수
     const handleGameRestart = () => {
         console.log("게임 재시작");
@@ -59,41 +65,7 @@ function App() {
         setShowTimeOver(true);
     };
 
-    // 로딩 진행률 시뮬레이션을 위한 useEffect 훅
-    // 이 훅은 isLoading이 true가 되고 isGameStarted가 true가 될 때 실행됩니다.
-    // 실제 BabylonScene의 로딩 로직에 따라 이 시뮬레이션 부분을 교체해야 합니다.
-    useEffect(() => {
-        let interval;
-        if (isLoading && isGameStarted) {
-            console.log("로딩 진행률 시뮬레이션 시작...");
-            let currentProgress = 0;
-            interval = setInterval(() => {
-                // 가상의 로딩 진행률을 0에서 100까지 점진적으로 증가시킵니다.
-                currentProgress += Math.random() * 3; // 임의로 진행률 증가
-                if (currentProgress >= 100) {
-                    currentProgress = 100;
-                    clearInterval(interval); // 100%에 도달하면 인터벌 중지
-                    console.log("시뮬레이션 로딩 100% 도달.");
-                }
-                setLoadingProgress(currentProgress); // 진행률 상태 업데이트
-            }, 100); // 100ms마다 진행률 업데이트
-
-        } else {
-            // 로딩이 완료되거나 게임이 시작되지 않은 경우 인터벌을 정리합니다.
-            if (interval) {
-                clearInterval(interval);
-                console.log("로딩 진행률 시뮬레이션 종료.");
-            }
-        }
-
-        // 컴포넌트 언마운트 시 또는 종속성(isLoading, isGameStarted)이 변경될 때 인터벌을 정리합니다.
-        return () => {
-            if (interval) {
-                clearInterval(interval);
-                console.log("클린업: 로딩 진행률 시뮬레이션 종료.");
-            }
-        };
-    }, [isLoading, isGameStarted]); // isLoading 또는 isGameStarted 상태가 변경될 때마다 실행
+    // 시뮬레이션 로딩 제거 - 실제 로딩 진행률 사용
 
     console.log("App 렌더링 중 - isGameStarted:", isGameStarted, "isLoading:", isLoading, "loadingProgress:", Math.round(loadingProgress));
 
@@ -128,6 +100,7 @@ function App() {
                         key="game-scene" // 컴포넌트 키를 사용하여 리마운트 시 강제 업데이트
                         onGameLoaded={handleGameLoaded} // 게임 로드 완료 시 호출될 함수
                         onGameRestart={handleGameRestart} // 게임 재시작 시 호출될 함수
+                        onLoadingProgress={handleLoadingProgress} // 실제 로딩 진행률 업데이트 함수
                         bgmRef={bgmRef} // BGM 제어를 위한 ref 전달
                     />
                 </>
