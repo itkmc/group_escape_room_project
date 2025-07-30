@@ -297,7 +297,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(15.10, 7.85, 6.02),
+        new BABYLON.Vector3(-5.44, 7.85, -9.42),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -554,7 +554,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -636,7 +636,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         if (rootFlashlightMeshRef.current) {
           flashlightHolderRef.current = new BABYLON.TransformNode("flashlightHolder", scene);
           // 씬 내에서 손전등 아이템의 초기 위치, 스케일, 회전 조절
-          flashlightHolderRef.current.position = new BABYLON.Vector3(-9.18, 8.25, -13.25);
+          flashlightHolderRef.current.position = new BABYLON.Vector3(-0.11, 8.25, -13.19);
           flashlightHolderRef.current.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
           flashlightHolderRef.current.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI/2)
             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
