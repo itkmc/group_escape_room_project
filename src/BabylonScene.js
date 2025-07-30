@@ -485,16 +485,16 @@ const canvas = document.getElementById("renderCanvas");
 // Define an array to hold multiple trigger configurations
 const customTriggerConfigs = [
     {
-        center: new BABYLON.Vector3(-9.51, 7.29, 5.86), // First stair area
-        size: new BABYLON.Vector3(10, 10, 10)
+        center: new BABYLON.Vector3(-12.2, 7.29, 4), // 중앙계단
+        size: new BABYLON.Vector3(7, 10, 8)
     },
     {
-        center: new BABYLON.Vector3(10.81, 6.36, 5.16), // Second stair area (example coordinates)
-        size: new BABYLON.Vector3(1, 2, 10)
+        center: new BABYLON.Vector3(8.81, 6.36, 5.16), // 지하계단
+        size: new BABYLON.Vector3(1.5, 1.5, 3.5)
     },
     {
-        center: new BABYLON.Vector3(-20, 15, 0), // Third stair area (example coordinates)
-        size: new BABYLON.Vector3(12, 12, 12)
+        center: new BABYLON.Vector3(-33.44,14.45,2.55), // Third stair area (example coordinates)
+        size: new BABYLON.Vector3(9.5,2.5,3.5)
     }
     // 필요한 만큼 여기에 더 많은 트리거 영역을 추가하세요.
 ];
@@ -556,7 +556,7 @@ scene.onBeforeRenderObservable.add(() => {
 // --- 3. 'W' 키 상태 관리 (onKeyboardObservable 사용) ---
 let isWKeyPressed = false; // 'W' 키가 현재 눌려있는지 여부
 
-camera.speed = 0.8; // This is likely what you meant by CAMERA.SPEED
+camera.speed = 0.9; // This is likely what you meant by CAMERA.SPEED
 
 scene.onKeyboardObservable.add((kbInfo) => {
     switch (kbInfo.type) {
