@@ -20,7 +20,7 @@ import OfficeProblemModal from "./components/OfficeProblemModal";
 import OfficeDoorProblemModal from "./components/OfficeDoorProblemModal";
 import EscapeSuccessPage from "./components/EscapeSuccessPage";
 
-const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef }) => {
+const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }) => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
@@ -340,7 +340,24 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       //     gravityBox.checkCollisions = false; // 충돌 감지에서 제외
       // });
 
+      // 실제 로딩 진행률 추적
+      let currentProgress = 0;
+      
+      const updateProgress = (increment = 1) => {
+        currentProgress += increment;
+        if (onLoadingProgress) {
+          onLoadingProgress(Math.min(currentProgress, 100));
+        }
+      };
+      
+      // 초기 진행률 설정
+      updateProgress(0);
+      
+      // 1단계: 메인 건물 로딩 (1-15%)
+      updateProgress(1); // 시작
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
+      updateProgress(14); // 메인 건물 로딩 완료
+      
       let parentMesh = null;
       result.meshes.forEach((mesh) => {
         if (mesh.name.startsWith("Hospital_02_")) {
@@ -383,7 +400,9 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
     // ... (이전 코드 생략) ...
 
-    if (parentMesh) {
+          if (parentMesh) {
+        // 2단계: 수술실 로딩 (15-30%)
+        updateProgress(1); // 수술실 로딩 시작
         await addOperatingRoom(
             scene,
             parentMesh,
@@ -394,10 +413,18 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             handleSurgeryBoxClick,
             onDoorInteraction,
             () => hasIdCardItemRef.current,
-            bgmRef
+            bgmRef,
+            (progress) => updateProgress(progress) // 진행률 콜백 추가
         );
+        updateProgress(14); // 수술실 로딩 완료
 
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
+        // 3단계: 옥상 로딩 (30-45%)
+        updateProgress(1); // 옥상 로딩 시작
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2, (progress) => updateProgress(progress));
+        updateProgress(14); // 옥상 로딩 완료
+
+        // 4단계: 사무실 로딩 (45-60%)
+        updateProgress(1); // 사무실 로딩 시작
         await addDoctorOffice(
             scene,
             parentMesh,
@@ -409,14 +436,28 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             () => isOfficeCupboardUnlockedRef.current, // getIsCupboardUnlocked
             handlePaperClickForImage, // onPaperClickForContent
             handleOfficeDoorClick, // onOfficeDoorClick
-            () => isOfficeDoorUnlockedRef.current // getIsOfficeDoorUnlocked
+            () => isOfficeDoorUnlockedRef.current, // getIsOfficeDoorUnlocked
+            (progress) => updateProgress(progress) // 진행률 콜백 추가
         );
+        updateProgress(14); // 사무실 로딩 완료
 
-        await addRestroomObject(scene, parentMesh, showMessage);
-        await addInformation(scene, parentMesh);
-        await addVillain(scene, parentMesh);
+        // 5단계: 화장실 로딩 (60-75%)
+        updateProgress(1); // 화장실 로딩 시작
+        await addRestroomObject(scene, parentMesh, showMessage, (progress) => updateProgress(progress));
+        updateProgress(14); // 화장실 로딩 완료
 
-        // underground 문 추가 및 상호작용 설정
+        // 6단계: 정보실 로딩 (75-90%)
+        updateProgress(1); // 정보실 로딩 시작
+        await addInformation(scene, parentMesh, (progress) => updateProgress(progress));
+        updateProgress(14); // 정보실 로딩 완료
+
+        // 7단계: 악당 로딩 (90-95%)
+        updateProgress(1); // 악당 로딩 시작
+        await addVillain(scene, parentMesh, (progress) => updateProgress(progress));
+        updateProgress(4); // 악당 로딩 완료
+
+        // 8단계: underground 로딩 (95-100%)
+        updateProgress(1); // underground 로딩 시작
         const undergroundResult = await addUnderground(
             scene,
             parentMesh,
@@ -438,8 +479,10 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                     setShowProblemModal(true);
                 }
             },
-            bgmRef
+            bgmRef,
+            (progress) => updateProgress(progress) // 진행률 콜백 추가
         );
+        updateProgress(4); // underground 로딩 완료
         undergroundDoorRef.current = undergroundResult.toggleDoor;
         problemDoorRef.current = undergroundResult.openProblemDoor;
         problemDoorToggleRef.current = undergroundResult.toggleProblemDoor;
