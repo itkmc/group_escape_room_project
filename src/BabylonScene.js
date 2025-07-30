@@ -482,27 +482,28 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 const canvas = document.getElementById("renderCanvas");
 
 // --- 1. 수동으로 범위(트리거) 지정 ---
-// Define an array to hold multiple trigger configurations
 const customTriggerConfigs = [
     {
-        center: new BABYLON.Vector3(-12.2, 7.29, 4), // 중앙계단
-        size: new BABYLON.Vector3(7, 10, 8)
+        center: new BABYLON.Vector3(-11.4, 7.29, 4), // 중앙계단
+        size: new BABYLON.Vector3(6.1, 15, 8)
     },
     {
-        center: new BABYLON.Vector3(8.81, 6.36, 5.16), // 지하계단
-        size: new BABYLON.Vector3(1.5, 1.5, 3.5)
+        center: new BABYLON.Vector3(8.81, 6.36, 5.06), // 지하계단
+        size: new BABYLON.Vector3(1.5, 5, 2.8)
     },
     {
-        center: new BABYLON.Vector3(-33.44,14.45,2.55), // 옥상계단
-        size: new BABYLON.Vector3(9.5,2.5,3.5)
+        center: new BABYLON.Vector3(-31.44,14.45,2.55), // 옥상계단
+        size: new BABYLON.Vector3(5.5,2.5,3.5)
+    },
+    {
+        center: new BABYLON.Vector3(-20.51,1.26,-7.55), // 화장실계단
+        size: new BABYLON.Vector3(1.5, 7, 2.2)
     }
     // 필요한 만큼 여기에 더 많은 트리거 영역을 추가하세요.
 ];
 
-// Array to store the actual trigger meshes
 const triggerBoxes = [];
 
-// Create each trigger box based on the configurations
 customTriggerConfigs.forEach((config, index) => {
     const triggerBox = BABYLON.MeshBuilder.CreateBox(`customTriggerBox${index}`, {
         width: config.size.x,
@@ -511,7 +512,7 @@ customTriggerConfigs.forEach((config, index) => {
     }, scene);
     triggerBox.position = config.center;
 
-    triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
+    triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
     triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
     const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -556,7 +557,7 @@ scene.onBeforeRenderObservable.add(() => {
 // --- 3. 'W' 키 상태 관리 (onKeyboardObservable 사용) ---
 let isWKeyPressed = false; // 'W' 키가 현재 눌려있는지 여부
 
-camera.speed = 0.9; // This is likely what you meant by CAMERA.SPEED
+camera.speed = 0.8; // This is likely what you meant by CAMERA.SPEED
 
 scene.onKeyboardObservable.add((kbInfo) => {
     switch (kbInfo.type) {
