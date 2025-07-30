@@ -340,6 +340,9 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       //     gravityBox.checkCollisions = false; // 충돌 감지에서 제외
       // });
 
+<<<<<<< HEAD
+      
+=======
       // 실제 로딩 진행률 추적
       let currentProgress = 0;
       
@@ -355,6 +358,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       
       // 1단계: 메인 건물 로딩 (1-15%)
       updateProgress(1); // 시작
+>>>>>>> dev
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
       updateProgress(14); // 메인 건물 로딩 완료
       
@@ -378,7 +382,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
 
-               const onDoorInteraction = (message) => { 
+      const onDoorInteraction = (message) => { 
          // "문이 잠겨있습니다" 메시지는 표시하지 않음
         if (message.includes("문이 잠겨있습니다")) {
           console.log("문이 잠겨있습니다 메시지 차단됨");
@@ -390,12 +394,12 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         if (message.includes("열쇠로 문을 열었습니다!")) {
             setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
         }
-        // if (message.includes("OP_KEY_USED")) {
-        //     setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
-        // }
-        // if (message.includes("ID_CARD_USED")) {
-        //     setHasIdCardItem(false); // 여기서 ID 카드 소모 처리
-        // }
+        if (message.includes("OP_KEY_USED")) {
+            setHasOpKeyItem(false); // 여기서 열쇠 소모 처리
+        }
+        if (message.includes("ID_CARD_USED")) {
+            setHasIdCardItem(false); // 여기서 ID 카드 소모 처리
+        }
     };
 
     // ... (이전 코드 생략) ...
@@ -519,6 +523,104 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       // 어두운 구역 설정
       const darkZoneCenter = new BABYLON.Vector3(7, 7, 12);
       const darkZoneRadius = 14;
+
+
+const canvas = document.getElementById("renderCanvas");
+
+// --- 1. 수동으로 범위(트리거) 지정 ---
+const customTriggerConfigs = [
+    {
+        center: new BABYLON.Vector3(-11.4, 7.29, 4), // 중앙계단
+        size: new BABYLON.Vector3(6.1, 15, 8)
+    },
+    {
+        center: new BABYLON.Vector3(8.81, 6.36, 5.06), // 지하계단
+        size: new BABYLON.Vector3(1.5, 5, 2.8)
+    },
+    {
+        center: new BABYLON.Vector3(-31.44,14.45,2.55), // 옥상계단
+        size: new BABYLON.Vector3(5.5,2.5,3.5)
+    },
+    {
+        center: new BABYLON.Vector3(-20.51,1.26,-7.55), // 화장실계단
+        size: new BABYLON.Vector3(1.5, 7, 2.2)
+    }
+    // 필요한 만큼 여기에 더 많은 트리거 영역을 추가하세요.
+];
+
+const triggerBoxes = [];
+
+customTriggerConfigs.forEach((config, index) => {
+    const triggerBox = BABYLON.MeshBuilder.CreateBox(`customTriggerBox${index}`, {
+        width: config.size.x,
+        height: config.size.y,
+        depth: config.size.z
+    }, scene);
+    triggerBox.position = config.center;
+
+    triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
+    triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
+
+    const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
+    triggerMat.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색으로 설정
+    triggerMat.alpha = 0.5; // 반투명하게 만들어 내부를 볼 수 있도록 (선택 사항)
+    triggerBox.material = triggerMat;
+
+    triggerBoxes.push(triggerBox); // 배열에 추가합니다.
+});
+
+// --- 2. 카메라 충돌 감지 로직 ---
+let isInCustomArea = false; // 카메라가 지정된 영역 안에 있는지 여부
+const customMoveAngle = BABYLON.Tools.ToRadians(45); // 위로 바라볼 각도 (라디안 변환)
+
+scene.onBeforeRenderObservable.add(() => {
+    const cameraPosition = camera.position;
+    let cameraIsInAnyTrigger = false; // 카메라가 어떤 트리거 영역 안에 있는지 추적하는 플래그
+
+    // **이 루프가 핵심입니다.**
+    // 'triggerBoxes' 배열에 있는 모든 트리거 박스를 순회하며 충돌을 감지합니다.
+    for (const box of triggerBoxes) { // 'triggerBoxes' 배열을 사용합니다.
+        const triggerBounds = box.getBoundingInfo().boundingBox;
+        if (triggerBounds.intersectsPoint(cameraPosition)) {
+            cameraIsInAnyTrigger = true;
+            break; // 하나라도 영역 안에 들어왔으면 더 이상 확인할 필요가 없습니다.
+        }
+    }
+
+    if (cameraIsInAnyTrigger) {
+        if (!isInCustomArea) {
+            isInCustomArea = true;
+            console.log("지정된 영역 진입: 'W' 키 이동 각도 변경됨.");
+        }
+    } else {
+        if (isInCustomArea) {
+            isInCustomArea = false;
+            console.log("지정된 영역 이탈: 'W' 키 이동 각도 원상 복귀.");
+        }
+    }
+});
+
+// --- 3. 'W' 키 상태 관리 (onKeyboardObservable 사용) ---
+let isWKeyPressed = false; // 'W' 키가 현재 눌려있는지 여부
+
+camera.speed = 0.8; // This is likely what you meant by CAMERA.SPEED
+
+scene.onKeyboardObservable.add((kbInfo) => {
+    switch (kbInfo.type) {
+        case BABYLON.KeyboardEventTypes.KEYDOWN:
+            if (kbInfo.event.key === "w" || kbInfo.event.key === "W") {
+                isWKeyPressed = true;
+            }
+            break;
+        case BABYLON.KeyboardEventTypes.KEYUP:
+            if (kbInfo.event.key === "w" || kbInfo.event.key === "W") {
+                isWKeyPressed = false;
+            }
+            break;
+    }
+});
+
+
 
 
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
@@ -815,15 +917,15 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
@@ -833,10 +935,55 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
 
-      engine.runRenderLoop(() => {
-        scene.render();
-      });
+      // --- 4. 메인 렌더 루프 ---
+engine.runRenderLoop(() => {
+    // 카메라의 기본 입력을 처리할지 여부를 결정
+    // isInCustomArea가 true일 때만 수동으로 'W' 키 이동을 제어합니다.
+    if (isInCustomArea) {
+        // FreeCamera의 기본 WASD 이동 로직을 비활성화합니다.
+        // 마우스 시점 변경은 유지되도록 clear 후 다시 attachControl을 호출합니다.
+        if (camera.inputs.attached.length > 0) {
+            camera.inputs.clear(); // 모든 입력 핸들러 제거
+            if (canvas) {
+                camera.attachControl(canvas, true); // 마우스 및 터치 컨트롤만 다시 연결 (true는 preventDefault)
+            }
+        }
 
+        // 'W' 키가 눌려있는 상태인지 확인
+        if (isWKeyPressed) {
+            // 카메라의 현재 앞 방향 벡터
+            let forwardVector = camera.getDirection(BABYLON.Vector3.Forward());
+
+            // 카메라의 로컬 오른쪽 벡터를 가져옵니다.
+            const rightVector = camera.getDirection(BABYLON.Vector3.Right());
+
+            // 오른쪽 축을 기준으로 45도 위로 회전하는 쿼터니언을 생성합니다.
+            const rotationQuaternion = BABYLON.Quaternion.RotationAxis(rightVector, -customMoveAngle);
+
+            // *** 오류 수정 부분: Matrix.FromQuaternion 대신 toRotationMatrix() 사용 ***
+            let rotationMatrix = new BABYLON.Matrix(); // 새로운 행렬 객체 생성
+            rotationQuaternion.toRotationMatrix(rotationMatrix); // 쿼터니언을 행렬로 변환하여 할당
+
+            // 원래의 앞 방향 벡터에 회전을 적용하여 새로운 이동 방향 벡터를 얻습니다.
+            let newMoveDirection = BABYLON.Vector3.TransformNormal(forwardVector, rotationMatrix);
+            newMoveDirection.normalize(); // 방향 벡터 정규화
+
+            // 계산된 방향으로 카메라를 이동시킵니다.
+            camera.position.addInPlace(newMoveDirection.scale(camera.speed));
+        }
+    } else {
+        // 지정된 영역 밖에 있을 때: FreeCamera의 기본 입력 제어를 재활성화합니다.
+        // (아직 연결되어 있지 않다면)
+        if (camera.inputs.attached.length === 0) {
+            if (canvas) {
+                camera.attachControl(canvas, true);
+            }
+        }
+    }
+
+    // 씬을 렌더링합니다. (이 부분은 engine.runRenderLoop의 가장 마지막에 있어야 합니다.)
+    scene.render();
+});
       const onResize = () => engine.resize();
       window.addEventListener("resize", onResize);
 
