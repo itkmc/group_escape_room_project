@@ -493,7 +493,7 @@ const customTriggerConfigs = [
         size: new BABYLON.Vector3(1.5, 1.5, 3.5)
     },
     {
-        center: new BABYLON.Vector3(-33.44,14.45,2.55), // Third stair area (example coordinates)
+        center: new BABYLON.Vector3(-33.44,14.45,2.55), // 옥상계단
         size: new BABYLON.Vector3(9.5,2.5,3.5)
     }
     // 필요한 만큼 여기에 더 많은 트리거 영역을 추가하세요.
