@@ -20,7 +20,7 @@ import OfficeProblemModal from "./components/OfficeProblemModal";
 import OfficeDoorProblemModal from "./components/OfficeDoorProblemModal";
 import EscapeSuccessPage from "./components/EscapeSuccessPage";
 
-const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef }) => {
+const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }) => {
   const canvasRef = useRef(null);
   const [playerPos, setPlayerPos] = useState({ x: 0, y: 0, z: 0 });
   const [isOnLadder, setIsOnLadder] = useState(false);
@@ -297,7 +297,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-33.44, 15.21, 2.55),
+        new BABYLON.Vector3(15.10, 7.85, 6.02),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -340,8 +340,24 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       //     gravityBox.checkCollisions = false; // 충돌 감지에서 제외
       // });
 
+      // 실제 로딩 진행률 추적
+      let currentProgress = 0;
       
+      const updateProgress = (increment = 1) => {
+        currentProgress += increment;
+        if (onLoadingProgress) {
+          onLoadingProgress(Math.min(currentProgress, 100));
+        }
+      };
+      
+      // 초기 진행률 설정
+      updateProgress(0);
+      
+      // 1단계: 메인 건물 로딩 (1-15%)
+      updateProgress(1); // 시작
       const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "abandoned_hospital_part_two.glb", scene);
+      updateProgress(14); // 메인 건물 로딩 완료
+      
       let parentMesh = null;
       result.meshes.forEach((mesh) => {
         if (mesh.name.startsWith("Hospital_02_")) {
@@ -384,7 +400,9 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
     // ... (이전 코드 생략) ...
 
-    if (parentMesh) {
+          if (parentMesh) {
+        // 2단계: 수술실 로딩 (15-30%)
+        updateProgress(1); // 수술실 로딩 시작
         await addOperatingRoom(
             scene,
             parentMesh,
@@ -395,10 +413,18 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             handleSurgeryBoxClick,
             onDoorInteraction,
             () => hasIdCardItemRef.current,
-            bgmRef
+            bgmRef,
+            (progress) => updateProgress(progress) // 진행률 콜백 추가
         );
+        updateProgress(14); // 수술실 로딩 완료
 
-        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2);
+        // 3단계: 옥상 로딩 (30-45%)
+        updateProgress(1); // 옥상 로딩 시작
+        await addDoorAndChair(scene, parentMesh, () => setShowQuiz(true), () => hasKeyItemRef.current, showMessage, showMessage2, (progress) => updateProgress(progress));
+        updateProgress(14); // 옥상 로딩 완료
+
+        // 4단계: 사무실 로딩 (45-60%)
+        updateProgress(1); // 사무실 로딩 시작
         await addDoctorOffice(
             scene,
             parentMesh,
@@ -410,14 +436,28 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             () => isOfficeCupboardUnlockedRef.current, // getIsCupboardUnlocked
             handlePaperClickForImage, // onPaperClickForContent
             handleOfficeDoorClick, // onOfficeDoorClick
-            () => isOfficeDoorUnlockedRef.current // getIsOfficeDoorUnlocked
+            () => isOfficeDoorUnlockedRef.current, // getIsOfficeDoorUnlocked
+            (progress) => updateProgress(progress) // 진행률 콜백 추가
         );
+        updateProgress(14); // 사무실 로딩 완료
 
-        await addRestroomObject(scene, parentMesh, showMessage);
-        await addInformation(scene, parentMesh);
-        await addVillain(scene, parentMesh);
+        // 5단계: 화장실 로딩 (60-75%)
+        updateProgress(1); // 화장실 로딩 시작
+        await addRestroomObject(scene, parentMesh, showMessage, (progress) => updateProgress(progress));
+        updateProgress(14); // 화장실 로딩 완료
 
-        // underground 문 추가 및 상호작용 설정
+        // 6단계: 정보실 로딩 (75-90%)
+        updateProgress(1); // 정보실 로딩 시작
+        await addInformation(scene, parentMesh, (progress) => updateProgress(progress));
+        updateProgress(14); // 정보실 로딩 완료
+
+        // 7단계: 악당 로딩 (90-95%)
+        updateProgress(1); // 악당 로딩 시작
+        await addVillain(scene, parentMesh, (progress) => updateProgress(progress));
+        updateProgress(4); // 악당 로딩 완료
+
+        // 8단계: underground 로딩 (95-100%)
+        updateProgress(1); // underground 로딩 시작
         const undergroundResult = await addUnderground(
             scene,
             parentMesh,
@@ -439,8 +479,10 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                     setShowProblemModal(true);
                 }
             },
-            bgmRef
+            bgmRef,
+            (progress) => updateProgress(progress) // 진행률 콜백 추가
         );
+        updateProgress(4); // underground 로딩 완료
         undergroundDoorRef.current = undergroundResult.toggleDoor;
         problemDoorRef.current = undergroundResult.openProblemDoor;
         problemDoorToggleRef.current = undergroundResult.toggleProblemDoor;
@@ -482,27 +524,28 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 const canvas = document.getElementById("renderCanvas");
 
 // --- 1. 수동으로 범위(트리거) 지정 ---
-// Define an array to hold multiple trigger configurations
 const customTriggerConfigs = [
     {
-        center: new BABYLON.Vector3(-9.51, 7.29, 5.86), // First stair area
-        size: new BABYLON.Vector3(10, 10, 10)
+        center: new BABYLON.Vector3(-11.4, 7.29, 4), // 중앙계단
+        size: new BABYLON.Vector3(6.1, 15, 8)
     },
     {
-        center: new BABYLON.Vector3(10.81, 6.36, 5.16), // Second stair area (example coordinates)
-        size: new BABYLON.Vector3(1, 2, 10)
+        center: new BABYLON.Vector3(8.81, 6.36, 5.06), // 지하계단
+        size: new BABYLON.Vector3(1.5, 5, 2.8)
     },
     {
-        center: new BABYLON.Vector3(-31.44, 14.45, 2.55), // Third stair area (example coordinates)
-        size: new BABYLON.Vector3(5.5, 2.5, 3.5)
+        center: new BABYLON.Vector3(-31.44,14.45,2.55), // 옥상계단
+        size: new BABYLON.Vector3(5.5,2.5,3.5)
+    },
+    {
+        center: new BABYLON.Vector3(-20.51,1.26,-7.55), // 화장실계단
+        size: new BABYLON.Vector3(1.5, 7, 2.2)
     }
     // 필요한 만큼 여기에 더 많은 트리거 영역을 추가하세요.
 ];
 
-// Array to store the actual trigger meshes
 const triggerBoxes = [];
 
-// Create each trigger box based on the configurations
 customTriggerConfigs.forEach((config, index) => {
     const triggerBox = BABYLON.MeshBuilder.CreateBox(`customTriggerBox${index}`, {
         width: config.size.x,
@@ -511,7 +554,7 @@ customTriggerConfigs.forEach((config, index) => {
     }, scene);
     triggerBox.position = config.center;
 
-    triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
+    triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
     triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
     const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -704,7 +747,7 @@ scene.onKeyboardObservable.add((kbInfo) => {
         }
 
 
-       // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지
+       // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
       if (!isOnLadder) {
         if (keysPressed["shift"]) {
           camera.speed = RUN_SPEED;
