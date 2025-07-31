@@ -297,7 +297,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-4.07,7.85,-11.23),
+        new BABYLON.Vector3(15.94,7.85,6.62),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -952,15 +952,15 @@ applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
