@@ -67,6 +67,24 @@ const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }
     console.log("showProblemModal 상태 변경:", showProblemModal);
   }, [showProblemModal]);
 
+  // // 스크롤 방지
+  // useEffect(() => {
+  //   const preventScroll = (e) => {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //     return false;
+  //   };
+
+  //   // 전체 페이지에서 스크롤 방지
+  //   document.addEventListener('wheel', preventScroll, { passive: false });
+  //   document.addEventListener('touchmove', preventScroll, { passive: false });
+
+  //   return () => {
+  //     document.removeEventListener('wheel', preventScroll);
+  //     document.removeEventListener('touchmove', preventScroll);
+  //   };
+  // }, []);
+
   // 앉기 기능 제거됨
 
   const correctAnswer = "72";
@@ -299,7 +317,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-13.30,7.36,-7.40),
+        new BABYLON.Vector3(12.30,7.36,5.25),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -917,6 +935,9 @@ if (sourceMesh && targetMesh) {
 
       canvasRef.current.addEventListener("wheel", (evt) => {
         evt.preventDefault();
+        // 스크롤
+        // evt.stopPropagation();
+        // return false;
         const delta = evt.deltaY < 0 ? 1 : -1;
         const forward = camera.getDirection(BABYLON.Axis.Z);
         camera.position.addInPlace(forward.scale(delta));

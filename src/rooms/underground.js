@@ -31,6 +31,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
   let isProblemSolved = false; // 문제가 해결되었는지 추적
   let problemDoorRoot = null; // 문제 문의 루트 메시
   let escapeTriggered = false; // 탈출이 이미 트리거되었는지 확인
+  let screamTriggered = false; // 비명 소리가 이미 트리거되었는지 확인
 
   // 문 추가 전에 씬 전체에서 같은 이름의 mesh를 모두 삭제
   ["Object_4", "Object_8"].forEach(name => {
@@ -568,6 +569,37 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
     }
+    
+    // 특정 위치에서 비명 소리 효과음 재생
+    const screamPos = new BABYLON.Vector3(22.24, 7.36, 6.65);
+    const distanceToScream = BABYLON.Vector3.Distance(camera.position, screamPos);
+    
+    if (distanceToScream < 3.0 && !screamTriggered) { // 3미터 이내에 들어오면 비명 소리 재생
+      console.log("비명 소리 위치 도달! 효과음 재생");
+      screamTriggered = true;
+      
+      // 배경음 일시정지
+      if (bgmRef && bgmRef.current) {
+        bgmRef.current.pause();
+        console.log("비명 소리 재생 시 배경음 일시정지");
+      }
+      
+      // 비명 소리 효과음 재생
+      const screamAudio = new Audio('/man-scream-09-277551.mp3');
+      screamAudio.play().then(() => {
+        console.log("비명 소리 효과음 재생 성공");
+      }).catch(error => {
+        console.error("비명 소리 효과음 재생 실패:", error);
+      });
+      
+      // 비명 소리 효과음이 끝난 후 배경음 재생
+      screamAudio.onended = () => {
+        if (bgmRef && bgmRef.current) {
+          bgmRef.current.play();
+          console.log("비명 소리 끝남 - 배경음 재생");
+        }
+      };
+    }
   });
 
    // 문 열기/닫기 애니메이션 함수
@@ -667,7 +699,12 @@ doorMeshes.forEach((mesh) => {
     
     // 정답을 맞추고 문이 열릴 때 효과음 재생
     const audio = new Audio('/metal-door-creaking-closing-47323.mp3');
-    audio.play();
+    console.log("문 열기 효과음 재생 시도");
+    audio.play().then(() => {
+      console.log("문 열기 효과음 재생 성공");
+    }).catch(error => {
+      console.error("문 열기 효과음 재생 실패:", error);
+    });
     
     problemDoorAnimationGroups.forEach(animationGroup => {
       console.log("애니메이션 재생:", animationGroup.name);
