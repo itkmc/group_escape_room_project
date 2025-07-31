@@ -10,7 +10,6 @@ import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
-import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
 import ScenarioMessage from "./components/ScenarioMessage";
 import ProblemModal from "./components/ProblemModal";
@@ -360,7 +359,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       //     gravityBox.checkCollisions = false; // 충돌 감지에서 제외
       // });
 
-       // 실제 로딩 진행률 추적
+      // 실제 로딩 진행률 추적
       let currentProgress = 0;
       
       const updateProgress = (increment = 1) => {
@@ -471,12 +470,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         await addInformation(scene, parentMesh, (progress) => updateProgress(progress));
         updateProgress(14); // 정보실 로딩 완료
 
-        // 7단계: 악당 로딩 (90-95%)
-        updateProgress(1); // 악당 로딩 시작
-        await addVillain(scene, parentMesh, (progress) => updateProgress(progress));
-        updateProgress(4); // 악당 로딩 완료
-
-        // 8단계: underground 로딩 (95-100%)
+        // 7단계: underground 로딩 (95-100%)
         updateProgress(1); // underground 로딩 시작
         const undergroundResult = await addUnderground(
             scene,
@@ -799,7 +793,6 @@ if (sourceMesh && targetMesh) {
             console.log("메시가 성공적으로 삭제되었습니다.");
         } 
 
-
        // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
       if (!isOnLadder) {
         if (keysPressed["shift"]) {
@@ -810,8 +803,6 @@ if (sourceMesh && targetMesh) {
       } else {
         camera.speed = 0;
       }
-
-
 
         setPlayerPos({
           x: camera.position.x.toFixed(2),

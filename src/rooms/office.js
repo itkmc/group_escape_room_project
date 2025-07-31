@@ -40,94 +40,111 @@ export async function addDoctorOffice(
 
 
 // --- 2. door.glb (문) 모델 배치 및 로직 ---
-    const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
-    doorResult.meshes.forEach((doorMesh) => {
-        if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
-            const pivot = new BABYLON.Vector3(0, -6.3, 0); // 문을 회전시킬 축의 피벗 포인트 설정
-            doorMesh.setPivotPoint(pivot);
+const doorResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door.glb", scene);
+doorResult.meshes.forEach((doorMesh) => {
+    if (doorMesh.name === "Cube.002_Cube.000_My_Ui_0") { // 문짝만!
+        const pivot = new BABYLON.Vector3(0, -6.3, 0); // 문을 회전시킬 축의 피벗 포인트 설정
+        doorMesh.setPivotPoint(pivot);
 
-            doorMesh.parent = parentMesh;
-            // 문 메시의 월드 위치를 부모 메시의 로컬 좌표계로 변환하여 설정
-            doorMesh.position = BABYLON.Vector3.TransformCoordinates(
-                new BABYLON.Vector3(-19.55, 4.95, -2.15),
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
+        doorMesh.parent = parentMesh;
+        // 문 메시의 월드 위치를 부모 메시의 로컬 좌표계로 변환하여 설정
+        doorMesh.position = BABYLON.Vector3.TransformCoordinates(
+            new BABYLON.Vector3(-19.55, 4.95, -2.15),
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+        );
 
-            // 초기 회전 설정 (X축 90도, Y축 90도 회전)
-            const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+        // 초기 회전 설정 (X축 90도, Y축 90도 회전)
+        const baseRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
 
-            doorMesh.rotationQuaternion = baseRotation.clone(); // 문 메시의 초기 회전 쿼터니언 설정
-            doorMesh.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 문 메시의 스케일 설정
-            doorMesh.checkCollisions = true; // 충돌 감지 활성화
+        doorMesh.rotationQuaternion = baseRotation.clone(); // 문 메시의 초기 회전 쿼터니언 설정
+        doorMesh.scaling = new BABYLON.Vector3(31.8, 32.5, 31.8); // 문 메시의 스케일 설정
+        doorMesh.checkCollisions = true; // 충돌 감지 활성화
 
-            const startRotation = doorMesh.rotationQuaternion.clone(); // 문이 닫힌 상태의 회전 값
-            const openAngle = Math.PI / 2; // 문이 열릴 각도 (90도)
-            // 문이 열린 상태의 회전 값 (Z축 기준으로 회전)
-            const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
+        const startRotation = doorMesh.rotationQuaternion.clone(); // 문이 닫힌 상태의 회전 값
+        const openAngle = Math.PI / 2; // 문이 열릴 각도 (90도)
+        // 문이 열린 상태의 회전 값 (Z축 기준으로 회전)
+        const endRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, openAngle).multiply(startRotation);
 
-            // 문 열림 애니메이션 정의
-            const openAnim = new BABYLON.Animation(
-                "doorOpen", // 애니메이션 이름
-                "rotationQuaternion", // 애니메이션 적용할 속성
-                30, // 초당 프레임 수 (FPS)
-                BABYLON.Animation.ANIMATIONTYPE_QUATERNION, // 애니메이션 타입 (쿼터니언)
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // 애니메이션 반복 모드 (한 번만 실행)
-            );
-            openAnim.setKeys([
-                { frame: 0, value: startRotation }, // 0프레임: 시작 회전
-                { frame: 30, value: endRotation }, // 30프레임: 종료 회전
-            ]);
+        // 문 열림 애니메이션 정의
+        const openAnim = new BABYLON.Animation(
+            "doorOpen", // 애니메이션 이름
+            "rotationQuaternion", // 애니메이션 적용할 속성
+            30, // 초당 프레임 수 (FPS)
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION, // 애니메이션 타입 (쿼터니언)
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // 애니메이션 반복 모드 (한 번만 실행)
+        );
+        openAnim.setKeys([
+            { frame: 0, value: startRotation }, // 0프레임: 시작 회전
+            { frame: 30, value: endRotation }, // 30프레임: 종료 회전
+        ]);
 
-            // 문 닫힘 애니메이션 정의
-            const closeAnim = new BABYLON.Animation(
-                "doorClose", // 애니메이션 이름
-                "rotationQuaternion", // 애니메이션 적용할 속성
-                30, // 초당 프레임 수 (FPS)
-                BABYLON.Animation.ANIMATIONTYPE_QUATERNION, // 애니메이션 타입 (쿼터니언)
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // 애니메이션 반복 모드 (한 번만 실행)
-            );
-            closeAnim.setKeys([
-                { frame: 0, value: endRotation }, // 0프레임: 시작 회전 (열린 상태)
-                { frame: 30, value: startRotation }, // 30프레임: 종료 회전 (닫힌 상태)
-            ]);
+        // 문 닫힘 애니메이션 정의
+        const closeAnim = new BABYLON.Animation(
+            "doorClose", // 애니메이션 이름
+            "rotationQuaternion", // 애니메이션 적용할 속성
+            30, // 초당 프레임 수 (FPS)
+            BABYLON.Animation.ANIMATIONTYPE_QUATERNION, // 애니메이션 타입 (쿼터니언)
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // 애니메이션 반복 모드 (한 번만 실행)
+        );
+        closeAnim.setKeys([
+            { frame: 0, value: endRotation }, // 0프레임: 시작 회전 (열린 상태)
+            { frame: 30, value: startRotation }, // 30프레임: 종료 회전 (닫힌 상태)
+        ]);
 
-            let isDoorOpen = false; // 문이 현재 열려있는지 닫혀있는지 상태
-            let isAnimating = false; // 문 애니메이션이 현재 실행 중인지 상태
+        let isDoorOpen = false; // 문이 현재 열려있는지 닫혀있는지 상태
+        let isAnimating = false; // 문 애니메이션이 현재 실행 중인지 상태
 
-            // --- 문 상호작용 로직 ---
-            doorMesh.actionManager = new BABYLON.ActionManager(scene);
-            doorMesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                    BABYLON.ActionManager.OnPickTrigger,
-                    function () {
-                        console.log("🚪 사무실 문 클릭 감지!"); // 클릭 감지 로그
-                        // 애니메이션이 이미 진행 중이라면, 추가 클릭을 무시합니다.
+        // 전역 ActionManager가 이미 Scene에 설정되어 있지 않다면 추가합니다.
+        if (!scene.actionManager) {
+            scene.actionManager = new BABYLON.ActionManager(scene);
+        }
+
+        // --- 문 클릭 로직 (퀴즈 트리거) ---
+        doorMesh.actionManager = new BABYLON.ActionManager(scene);
+        doorMesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPickTrigger,
+                function () {
+                    // 애니메이션이 이미 진행 중이라면, 추가 클릭을 무시합니다.
+                    if (isAnimating) {
+                        return;
+                    }
+
+                    // React로부터 문 잠금 해제 상태를 가져옴
+                    const unlocked = getIsOfficeDoorUnlocked();
+
+                    // 문이 잠금 해제되지 않았다면 (잠겨 있다면)
+                    if (!unlocked) {
+                        // `onOfficeDoorClick` 함수가 유효한지 확인하고 호출합니다.
+                        if (onOfficeDoorClick) {
+                            onOfficeDoorClick(); // React 퀴즈를 트리거합니다.
+                        } 
+                        return; // 잠겨 있을 때는 애니메이션 실행하지 않고 종료
+                    }
+                    // 문이 잠금 해제되었더라도, 클릭 시에는 문을 열지 않음.
+                    // E 키로만 문을 열 수 있도록 함.
+                }
+            )
+        );
+
+        // --- 'E' 키 입력 로직 (문 열고 닫기) ---
+        scene.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnKeyUpTrigger,
+                function (evt) {
+                    // 'E' 키가 눌렸는지 확인합니다. (keyCode 69는 'E'를 나타냅니다)
+                    if (evt.sourceEvent.keyCode === 69) {
+                        // 애니메이션이 이미 진행 중이라면, 추가 키 입력을 무시합니다.
                         if (isAnimating) {
-                            console.log("애니메이션 진행 중. 클릭 무시.");
                             return;
                         }
 
                         // React로부터 문 잠금 해제 상태를 가져옴
                         const unlocked = getIsOfficeDoorUnlocked();
-                        console.log("문 잠금 해제 상태 (getIsOfficeDoorUnlocked 호출 결과):", unlocked);
 
-                        // 문이 잠금 해제되지 않았다면 (잠겨 있다면)
-                        if (!unlocked) {
-                            console.log("문이 잠겨 있습니다. 퀴즈를 트리거합니다.");
-                            // `onOfficeDoorClick` 함수가 유효한지 확인하고 호출합니다.
-                            if (onOfficeDoorClick) {
-                                onOfficeDoorClick(); // React 퀴즈를 트리거합니다.
-                            } else {
-                                console.warn("onOfficeDoorClick 함수가 정의되지 않았습니다.");
-                            }
-                            // 잠겨 있을 때는 문을 열거나 닫는 애니메이션을 실행하지 않고 즉시 종료합니다.
-                            return;
-                        }
-                        // 문이 잠금 해제되었다면 (문이 열리거나 닫힐 수 있는 상태)
-                        else {
-                            console.log("문이 잠금 해제되었습니다. 문 애니메이션을 시작합니다.");
-                            // 이제 문 애니메이션을 시작할 수 있습니다.
+                        // 문이 잠금 해제된 경우에만 'E' 키로 문을 열고 닫습니다.
+                        if (unlocked) {
                             isAnimating = true; // 애니메이션 시작을 알림
 
                             if (!isDoorOpen) {
@@ -138,7 +155,6 @@ export async function addDoctorOffice(
                                 scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
                                     isDoorOpen = true;    // 문 열림 상태로 변경
                                     isAnimating = false;  // 애니메이션 종료 알림
-                                    console.log("문 열림 애니메이션 완료.");
                                 });
                             } else {
                                 // 문을 닫습니다. 애니메이션 완료 후 충돌을 다시 활성화합니다.
@@ -146,15 +162,15 @@ export async function addDoctorOffice(
                                     doorMesh.checkCollisions = true; // 문 닫힘 후 충돌 감지 다시 활성화
                                     isDoorOpen = false;   // 문 닫힘 상태로 변경
                                     isAnimating = false;  // 애니메이션 종료 알림
-                                    console.log("문 닫힘 애니메이션 완료.");
                                 });
                             }
                         }
                     }
-                )
-            );
-        }
-    });
+                }
+            )
+        );
+    }
+});
 
     // --- 📚 책장 (wooden_book.glb) 로드 및 설정 ---
     const desiredBookcaseWorldPos = new BABYLON.Vector3(-24.05, 6.45, 11.85);
@@ -248,47 +264,47 @@ export async function addDoctorOffice(
     await loadAntiqueChair(chairWorldPos[4], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2)) });
     await loadAntiqueChair(chairWorldPos[5], parentMesh, scene, { rotation: BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2).multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2)) });
 
-    // --- 메탈 캐비닛 (metal_cabinet.glb) 로더 함수 및 배치 ---
-    const metalCabinetWorldPos = [
-        new BABYLON.Vector3(-21.85, 7.40, -2.15),
-        new BABYLON.Vector3(-23.25, 7.40, -2.15)
-    ];
+    // // --- 메탈 캐비닛 (metal_cabinet.glb) 로더 함수 및 배치 ---
+    // const metalCabinetWorldPos = [
+    //     new BABYLON.Vector3(-21.85, 7.40, -2.15),
+    //     new BABYLON.Vector3(-23.25, 7.40, -2.15)
+    // ];
 
-    // 메탈 캐비닛 모델을 로드하고 설정하는 비동기 헬퍼 함수
-    async function loadMetalCabinet(worldPosition, parentMesh, scene, options = {}) {
-        try {
-            const metalCabinetResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cabinet.glb", scene);
-            if (!metalCabinetResult || !metalCabinetResult.meshes || metalCabinetResult.meshes.length === 0) {
-                return null;
-            }
+    // // 메탈 캐비닛 모델을 로드하고 설정하는 비동기 헬퍼 함수
+    // async function loadMetalCabinet(worldPosition, parentMesh, scene, options = {}) {
+    //     try {
+    //         const metalCabinetResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cabinet.glb", scene);
+    //         if (!metalCabinetResult || !metalCabinetResult.meshes || metalCabinetResult.meshes.length === 0) {
+    //             return null;
+    //         }
 
-            const rootMetalCabinetMesh = metalCabinetResult.meshes[0];
-            rootMetalCabinetMesh.parent = parentMesh;
-            rootMetalCabinetMesh.position = BABYLON.Vector3.TransformCoordinates(
-                worldPosition,
-                BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-            );
-            rootMetalCabinetMesh.scaling = options.scaling || new BABYLON.Vector3(130, 200, 100);
-            rootMetalCabinetMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 36));
-            metalCabinetResult.meshes.forEach(mesh => {
-                mesh.checkCollisions = true;
-                mesh.isVisible = true;
-            });
-            return rootMetalCabinetMesh;
-        } catch (error) {
-            console.error("metal_cabinet.glb 로드 오류: ", error);
-            return null;
-        }
-    }
+    //         const rootMetalCabinetMesh = metalCabinetResult.meshes[0];
+    //         rootMetalCabinetMesh.parent = parentMesh;
+    //         rootMetalCabinetMesh.position = BABYLON.Vector3.TransformCoordinates(
+    //             worldPosition,
+    //             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+    //         );
+    //         rootMetalCabinetMesh.scaling = options.scaling || new BABYLON.Vector3(130, 200, 100);
+    //         rootMetalCabinetMesh.rotationQuaternion = options.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+    //             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 36));
+    //         metalCabinetResult.meshes.forEach(mesh => {
+    //             mesh.checkCollisions = true;
+    //             mesh.isVisible = true;
+    //         });
+    //         return rootMetalCabinetMesh;
+    //     } catch (error) {
+    //         console.error("metal_cabinet.glb 로드 오류: ", error);
+    //         return null;
+    //     }
+    // }
 
-    // 정의된 위치에 메탈 캐비닛들을 로드하고 배치합니다.
-    await loadMetalCabinet(metalCabinetWorldPos[0], parentMesh, scene);
-    await loadMetalCabinet(metalCabinetWorldPos[1], parentMesh, scene);
+    // // 정의된 위치에 메탈 캐비닛들을 로드하고 배치합니다.
+    // await loadMetalCabinet(metalCabinetWorldPos[0], parentMesh, scene);
+    // await loadMetalCabinet(metalCabinetWorldPos[1], parentMesh, scene);
 
     // --- 🆔 ID 카드 (id_card.glb) 로드 및 초기 설정 ---
     // ID 카드는 찬장 안에 있다고 가정하고, 초기에는 숨김 처리됩니다.
-    const defaultIdCardWorldPos = new BABYLON.Vector3(-17.85, 6.60, 11.20); // 찬장 내부로 예상되는 월드 위치
+    const defaultIdCardWorldPos = new BABYLON.Vector3(-22.63, 7.85, -4.34); // 찬장 내부로 예상되는 월드 위치
     const finalIdCardWorldPos = idCardOptions.position || defaultIdCardWorldPos;
 
     let rootIdCardMesh = null; // ID 카드 메시의 루트를 저장할 변수 초기화
@@ -298,12 +314,11 @@ export async function addDoctorOffice(
             rootIdCardMesh = idCardResult.meshes[0];
             rootIdCardMesh.parent = parentMesh;
             rootIdCardMesh.position = BABYLON.Vector3.TransformCoordinates(
-                new BABYLON.Vector3(-17.85, 6.60, 11.20),
+                new BABYLON.Vector3(-22.63, 6.70, -5.34),
                 BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
             );
             rootIdCardMesh.scaling = idCardOptions.scaling || new BABYLON.Vector3(7,7,7);
-            rootIdCardMesh.rotationQuaternion = idCardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, -Math.PI)
-                .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+            rootIdCardMesh.rotationQuaternion = idCardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 38);
 
             // 모든 mesh에 대해 pickable/actionManager 등록
             idCardResult.meshes.forEach(mesh => {
@@ -353,7 +368,7 @@ export async function addDoctorOffice(
     }
 
    // --- 메탈 찬장 (metal_cupboard.glb) 추가 및 상호작용 로직 ---
-const metalCupboardWorldPos = new BABYLON.Vector3(-17.95, 6.40, 11.42);
+const metalCupboardWorldPos = new BABYLON.Vector3(-22.52, 6.45, -5.55);
 
 try {
     const metalCupboardResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "metal_cupboard.glb", scene);
@@ -367,7 +382,7 @@ try {
         );
         rootMetalCupboardMesh.scaling = metalCupboardOptions.scaling || new BABYLON.Vector3(0.4, 0.4, 0.4);
         rootMetalCupboardMesh.rotationQuaternion = metalCupboardOptions.rotation || BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
-            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+            .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 2));
 
         // 모델 로드 후, 모든 기본 애니메이션 그룹 정지
         if (metalCupboardResult.animationGroups && metalCupboardResult.animationGroups.length > 0) {
