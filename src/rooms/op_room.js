@@ -447,16 +447,23 @@ for (const mesh of combination_padlock.meshes) {
                         bgmRef.current.pause();
                     }
                     
-                    // 문 열기 애니메이션 완료 후 scary-music-box 효과음 재생
+                    // 문 열기 애니메이션 완료 후 배경음을 scary-music-box로 변경 (계속 재생)
+                    console.log("문 열기 완료 - 배경음을 scary-music-box로 변경");
+                    
+                    // 현재 BGM 중지
+                    if (bgmRef && bgmRef.current) {
+                        bgmRef.current.pause();
+                    }
+                    
+                    // scary-music-box를 새로운 배경음으로 설정 (반복 재생)
                     const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
+                    scaryAudio.loop = true; // 반복 재생 설정
                     scaryAudio.play();
                     
-                    // scary-music-box 효과음이 끝난 후 BGM 재생
-                    scaryAudio.onended = () => {
-                        if (bgmRef && bgmRef.current) {
-                            bgmRef.current.play();
-                        }
-                    };
+                    // bgmRef를 scary-music-box로 업데이트
+                    if (bgmRef) {
+                        bgmRef.current = scaryAudio;
+                    }
                 });
             } else {
                 // if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
@@ -563,6 +570,21 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
                             onOpKeyPickedCallback();
                         } else {
                             console.warn("onOpKeyPickedCallback 함수가 제공되지 않았습니다. UI 상태가 업데이트되지 않을 수 있습니다.");
+                        }
+                        
+                        // 열쇠 획득 후 원래 배경음으로 복원
+                        console.log("열쇠 획득 - 원래 배경음으로 복원");
+                        
+                        // 현재 재생 중인 모든 오디오를 중지
+                        const allAudios = document.querySelectorAll('audio');
+                        allAudios.forEach(audio => {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        });
+                        
+                        // 원래 배경음 재생
+                        if (bgmRef && bgmRef.current) {
+                            bgmRef.current.play();
                         }
                         
                         // 열쇠 획득 후 즉시 사라지도록 설정

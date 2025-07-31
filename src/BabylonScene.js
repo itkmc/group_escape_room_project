@@ -13,6 +13,7 @@ import { addUnderground } from "./rooms/underground";
 import CenterMessage from "./components/CenterMessage";
 import ScenarioMessage from "./components/ScenarioMessage";
 import ProblemModal from "./components/ProblemModal";
+import AnswerInputModal from "./components/AnswerInputModal";
 import RooftopProblemModal from "./components/RooftopProblemModal";
 import OperatingRoomProblemModal from "./components/OperatingRoomProblemModal";
 import OfficeProblemModal from "./components/OfficeProblemModal";
@@ -52,6 +53,7 @@ const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }
 
   // 지하실 문제 모달 관련 상태
   const [showProblemModal, setShowProblemModal] = useState(false);
+  const [showAnswerInputModal, setShowAnswerInputModal] = useState(false);
   const problemDoorRef = useRef(null);
   const problemDoorToggleRef = useRef(null);
 
@@ -185,7 +187,7 @@ const handleAnswerSubmit4 = () => {
     return new Promise(resolve => {
       setShowBoxPasswordInput(true); // 비밀번호 입력 UI를 띄움
       setBoxPasswordInput(''); // 입력 필드 초기화
-      setBoxPasswordMessage("자물쇠 비밀번호를 입력하세요!"); // 메시지 설정
+      setBoxPasswordMessage(''); // 초기 메시지 제거
 
       // Promise resolve 함수를 useRef에 저장
       resolveBoxPasswordPromiseRef.current = resolve;
@@ -205,7 +207,7 @@ const handleAnswerSubmit4 = () => {
         resolveBoxPasswordPromiseRef.current = null; // 사용 후 초기화
       }
     } else {
-      setBoxPasswordMessage("비밀번호가 틀렸습니다!");
+      setBoxPasswordMessage("틀렸습니다!");
       setBoxPasswordInput(''); // 입력 필드 초기화
       if (resolveBoxPasswordPromiseRef.current) {
         console.log("Promise 해결 시도: false (비밀번호 틀림)");
@@ -296,7 +298,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21.84,15.69,11.13),
+        new BABYLON.Vector3(-13.30,7.36,-7.40),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -467,6 +469,15 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                     console.log("탈출 성공 모달 표시");
                     // 탈출 성공 모달 표시
                     setShowEscapeSuccessModal(true);
+                } else if (action === 'show_problem_only') {
+                    console.log("문제만 표시하는 모달 열기");
+                    // 문제만 보여주는 모달 열기 (정답 입력 칸 없이)
+                    setShowProblemModal(true);
+                    setShowAnswerInputModal(false); // 정답 입력 모달은 닫기
+                } else if (action === 'show_answer_input_only') {
+                    console.log("정답 입력 모달만 열기");
+                    // 정답 입력 모달만 열기 (문제는 보여주지 않음)
+                    setShowAnswerInputModal(true);
                 } else {
                     console.log("일반적인 문제 모달 열기");
                     // 일반적인 문제 모달 열기 요청
@@ -1127,40 +1138,42 @@ if (sourceMesh && targetMesh) {
 
       {/* --- 상자 비밀번호 입력 팝업 --- */}
       {showBoxPasswordInput && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          background: "rgba(0,0,0,0.7)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 2002 // 다른 팝업보다 높은 z-index
-        }}>
-          <div style={{ background: "white", padding: 24, borderRadius: 12, textAlign: "center", minWidth: 320 }}>
-            <div style={{ fontSize: 20, marginBottom: 16, color: "#222" }}>{boxPasswordMessage}</div>
-            <input
-              type="password" // 비밀번호 필드로 설정하여 입력 내용이 *로 표시되게 할 수 있습니다.
-              value={boxPasswordInput}
-              onChange={(e) => setBoxPasswordInput(e.target.value)}
-              placeholder="비밀번호 입력"
-              style={{ padding: "8px 12px", fontSize: 16, borderRadius: 6, border: "1px solid #ccc", marginBottom: 12, width: "calc(100% - 24px)" }}
-            />
-            <button
-              onClick={handleBoxPasswordSubmit}
-              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#007bff", color: "white", border: "none", cursor: "pointer", marginRight: 8 }}
-            >
-              확인
-            </button>
-            <button
-              onClick={handleCloseBoxPasswordInput}
-              style={{ padding: "8px 20px", fontSize: 16, borderRadius: 6, background: "#333", color: "white", border: "none", cursor: "pointer" }}
-            >
-              닫기
-            </button>
+        <div className="problem-modal-overlay">
+          <div className="problem-modal">
+            <div className="problem-header">
+              <h2>상자 비밀번호</h2>
+              <button className="close-button" onClick={handleCloseBoxPasswordInput}>×</button>
+            </div>
+            
+            <div className="problem-content">
+              <form onSubmit={(e) => { e.preventDefault(); handleBoxPasswordSubmit(); }} className="answer-form">
+                <div className="input-group">
+                  <label htmlFor="boxPassword">자물쇠 비밀번호를 입력하세요:</label>
+                  <input
+                    type="password"
+                    id="boxPassword"
+                    value={boxPasswordInput}
+                    onChange={(e) => setBoxPasswordInput(e.target.value)}
+                    placeholder="비밀번호를 입력하세요"
+                  />
+                </div>
+                
+                <div className="button-group">
+                  <button type="submit">
+                    제출
+                  </button>
+                  <button type="button" onClick={handleCloseBoxPasswordInput}>
+                    취소
+                  </button>
+                </div>
+                
+                {boxPasswordMessage && !boxPasswordMessage.includes('정답') && (
+                  <div className="message incorrect">
+                    {boxPasswordMessage}
+                  </div>
+                )}
+              </form>
+            </div>
           </div>
         </div>
       )}
@@ -1346,6 +1359,27 @@ if (sourceMesh && targetMesh) {
         onClose={() => setShowProblemModal(false)}
         onCorrectAnswer={() => {
           console.log("ProblemModal onCorrectAnswer 호출됨");
+          // 문제 문 열기
+          if (problemDoorRef.current) {
+            console.log("problemDoorRef.current 호출");
+            problemDoorRef.current();
+          } else {
+            console.log("problemDoorRef.current가 null입니다");
+          }
+          // ID 카드가 있다면 사라지도록 설정
+          if (hasOpKeyItem) {
+            setHasOpKeyItem(false);
+          }
+        }}
+        showAnswerInput={false} // 문제만 보여주고 정답 입력 칸은 숨김
+      />
+
+      {/* 지하실 정답 입력 모달 */}
+      <AnswerInputModal
+        isOpen={showAnswerInputModal}
+        onClose={() => setShowAnswerInputModal(false)}
+        onCorrectAnswer={() => {
+          console.log("AnswerInputModal onCorrectAnswer 호출됨");
           // 문제 문 열기
           if (problemDoorRef.current) {
             console.log("problemDoorRef.current 호출");
