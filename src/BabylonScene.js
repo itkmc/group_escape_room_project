@@ -316,7 +316,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(12.30,7.36,5.25),
+        new BABYLON.Vector3(-21.84,15.69,11.13),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -536,38 +536,65 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절 0.15
+      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절 0.15
       hemiLight.intensity = originalHemiLightIntensity;
 
-      // 어두운 구역 설정
-      const darkZoneCenter = new BABYLON.Vector3(7, 7, 12);
+      const darkZoneCenter = new BABYLON.Vector3(6, 7, 14.5);
       const darkZoneRadius = 14;
 
+      scene.onBeforeRenderObservable.add(() => {
+        
+          const minX = darkZoneCenter.x - darkZoneRadius;
+          const maxX = darkZoneCenter.x + darkZoneRadius;
+          const minY = darkZoneCenter.y - darkZoneRadius;
+          const maxY = darkZoneCenter.y + darkZoneRadius;
+          const minZ = darkZoneCenter.z - darkZoneRadius;
+          const maxZ = darkZoneCenter.z + darkZoneRadius;
 
-// 텍스처를 변경할 대상 메쉬
-const targetMeshName = "Hospital_02_44m_0";
-// 텍스처를 가져올 원본 메쉬
-const sourceMeshName = "Hospital_02_26m_0";
+          const cameraPosition = camera.position;
 
-// 씬에서 원본 메쉬(Hospital_02_44m_0)를 찾습니다.
-const sourceMesh = scene.getMeshByName(sourceMeshName);
+          // 카메라가 직육면체 구역 안에 있는지 확인합니다.
+          const isInDarkZone = (
+              cameraPosition.x >= minX && cameraPosition.x <= maxX &&
+              cameraPosition.y >= minY && cameraPosition.y <= maxY &&
+              cameraPosition.z >= minZ && cameraPosition.z <= maxZ
+          );
 
-// 씬에서 대상 메쉬(Hospital_02_26m_0)를 찾습니다.
-const targetMesh = scene.getMeshByName(targetMeshName);
+          // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
+          if (isInDarkZone) {
+              hemiLight.intensity = 0.005; // 어두운 구역에서는 배경 조명 어둡게
+              scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
+              // console.log("어두운 직육면체 구역에 진입했습니다!"); // 디버깅용
+          } else {
+              hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
+              // scene.clearColor = originalSceneClearColor; // 원래 씬 색상으로
+          }
+      });
+      // --- 조명 컨트롤 끝 ---
+      // 텍스처를 변경할 대상 메쉬
+      const targetMeshName = "Hospital_02_44m_0";
+      // 텍스처를 가져올 원본 메쉬
+      const sourceMeshName = "Hospital_02_26m_0";
 
-if (sourceMesh && targetMesh) {
-    // 원본 메쉬의 재질이 있는지 확인합니다.
-    if (sourceMesh.material) {
-        // 대상 메쉬의 재질을 원본 메쉬의 재질로 설정합니다.
-        targetMesh.material = sourceMesh.material;
-        console.log(`${targetMeshName}의 텍스처(재질)가 ${sourceMeshName}의 것으로 성공적으로 변경되었습니다!`);
-    } else {
-        console.warn(`${sourceMeshName} 메쉬에 할당된 재질이 없습니다. 텍스처를 복사할 수 없습니다.`);
-    }
-} else {
-    // 두 메쉬 중 하나라도 찾을 수 없는 경우 경고를 출력합니다.
-    console.warn(`"${targetMeshName}" 또는 "${sourceMeshName}" 메쉬를 찾을 수 없습니다. 이름이 정확한지 확인해주세요.`);
-}
+      // 씬에서 원본 메쉬(Hospital_02_44m_0)를 찾습니다.
+      const sourceMesh = scene.getMeshByName(sourceMeshName);
+
+      // 씬에서 대상 메쉬(Hospital_02_26m_0)를 찾습니다.
+      const targetMesh = scene.getMeshByName(targetMeshName);
+
+      if (sourceMesh && targetMesh) {
+          // 원본 메쉬의 재질이 있는지 확인합니다.
+          if (sourceMesh.material) {
+              // 대상 메쉬의 재질을 원본 메쉬의 재질로 설정합니다.
+              targetMesh.material = sourceMesh.material;
+              console.log(`${targetMeshName}의 텍스처(재질)가 ${sourceMeshName}의 것으로 성공적으로 변경되었습니다!`);
+          } else {
+              console.warn(`${sourceMeshName} 메쉬에 할당된 재질이 없습니다. 텍스처를 복사할 수 없습니다.`);
+          }
+      } else {
+          // 두 메쉬 중 하나라도 찾을 수 없는 경우 경고를 출력합니다.
+          console.warn(`"${targetMeshName}" 또는 "${sourceMeshName}" 메쉬를 찾을 수 없습니다. 이름이 정확한지 확인해주세요.`);
+      }
 
 
       const canvas = document.getElementById("renderCanvas");
@@ -814,13 +841,13 @@ if (sourceMesh && targetMesh) {
         const distanceToDarkZone = BABYLON.Vector3.Distance(camera.position, darkZoneCenter);
 
         // 어두운 구역 진입 시 배경 조명 및 씬 색상 조절
-        if (distanceToDarkZone < darkZoneRadius) {
-          hemiLight.intensity = 0.5; // 어두운 구역에서는 배경 조명 어둡게
-          scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
-        } else {
-          hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
-          // scene.clearColor = originalSceneClearColor;
-        }
+        // if (distanceToDarkZone < darkZoneRadius) {
+        //   hemiLight.intensity = 0.05; // 어두운 구역에서는 배경 조명 어둡게
+        //   scene.clearColor = new BABYLON.Color4(0.005, 0.005, 0.005, 1);
+        // } else {
+        //   hemiLight.intensity = originalHemiLightIntensity; // 원래 밝기로
+        //   // scene.clearColor = originalSceneClearColor;
+        // }
       });
 
       camera.keysUp.push(87);
