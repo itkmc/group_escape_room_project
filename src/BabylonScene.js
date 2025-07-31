@@ -10,7 +10,6 @@ import { handleLadderMovement } from "./ladder";
 import { addRestroomObject } from "./rooms/restroom";
 import { addInformation } from "./rooms/information";
 import { addUnderground } from "./rooms/underground";
-import { addVillain } from "./rooms/villain";
 import CenterMessage from "./components/CenterMessage";
 import ScenarioMessage from "./components/ScenarioMessage";
 import ProblemModal from "./components/ProblemModal";
@@ -451,12 +450,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         await addInformation(scene, parentMesh, (progress) => updateProgress(progress));
         updateProgress(14); // 정보실 로딩 완료
 
-        // 7단계: 악당 로딩 (90-95%)
-        updateProgress(1); // 악당 로딩 시작
-        await addVillain(scene, parentMesh, (progress) => updateProgress(progress));
-        updateProgress(4); // 악당 로딩 완료
-
-        // 8단계: underground 로딩 (95-100%)
+        // 7단계: underground 로딩 (95-100%)
         updateProgress(1); // underground 로딩 시작
         const undergroundResult = await addUnderground(
             scene,
@@ -781,8 +775,6 @@ if (sourceMesh && targetMesh) {
         camera.speed = 0;
       }
 
-
-
         setPlayerPos({
           x: camera.position.x.toFixed(2),
           y: camera.position.y.toFixed(2),
@@ -1048,7 +1040,7 @@ if (sourceMesh && targetMesh) {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      {/* <div
+      <div
         style={{
           position: "absolute",
           top: 10,
@@ -1067,7 +1059,7 @@ if (sourceMesh && targetMesh) {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div> */}
+      </div>
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
