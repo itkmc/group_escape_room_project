@@ -497,7 +497,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           mesh.parent = parentMesh;
           // 지정된 위치로 설정
           mesh.position = BABYLON.Vector3.TransformCoordinates(
-            new BABYLON.Vector3(16.15, 6.85, 5.05),
+            new BABYLON.Vector3(16.15, 6.89, 4.80),
             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
           // 지정된 크기로 설정
