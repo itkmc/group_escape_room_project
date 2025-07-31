@@ -43,7 +43,7 @@ const OfficeDoorProblemModal = ({ isOpen, onClose, onCorrectAnswer }) => {
             {/* 퀴즈 내용을 사무실 문 퀴즈에 맞게 변경 */}
             <p>
               사무실 문을 열려면 비밀번호를 맞춰야 합니다.<br/>
-              문 옆에 있는 메모를 확인해 보세요
+              문 근처를 확인해 보세요
             </p>
           </div>
           <div className="problem-image">

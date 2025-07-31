@@ -94,23 +94,7 @@ if (glassMesh) {
     console.warn("Glass_Material.001_0 메쉬를 찾을 수 없습니다. 이름이 정확한지 확인해주세요.");
 }
   
-// 책상 위치
-// const deskWorldPos = new BABYLON.Vector3(-7, 7, -8);
-// const desk = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "secretary_desk_-_20mb (1).glb", scene);
 
-// for (const mesh of desk.meshes) { 
-//     if (mesh.name !== "__root__") {
-//         mesh.parent = parentMesh;
-//         mesh.position = BABYLON.Vector3.TransformCoordinates(
-//             deskWorldPos,
-//             BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
-//         );
-//         mesh.scaling = new BABYLON.Vector3(0.6, 0.8, 0.6);
-//         mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-//             .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
-//         mesh.checkCollisions = true;
-//     }
-// }
 
 
 // 철문 위치
@@ -226,7 +210,6 @@ if (garageDoorMesh) {
   const curtainWorldPos5 = new BABYLON.Vector3(3, 6.2, -5);
   const curtainWorldPos6 = new BABYLON.Vector3(3, 6.2, -10);
 
-
   /**
    * 커튼 모델을 로드하고 설정합니다.
    * @param worldPosition - 커튼이 배치될 월드 좌표계 위치.
@@ -332,7 +315,7 @@ if (garageDoorMesh) {
       } 
   }
 
- const commonRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
+  const commonRotation1 = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI / 2))
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
@@ -390,7 +373,7 @@ if (garageDoorMesh) {
   }
 
 // 침대 
-    const bedWorldPos1 = new BABYLON.Vector3(-17.7, 6.5, -8.6);
+     const bedWorldPos1 = new BABYLON.Vector3(-17.7, 6.5, -8.6);
     const bedWorldPos2 = new BABYLON.Vector3(-17.7, 6.5, -13.5);
     const bedWorldPos3 = new BABYLON.Vector3(-6.2, 6.5, -14.6); 
     const bedWorldPos4 = new BABYLON.Vector3(-11.2, 6.5, -14.6);
@@ -438,10 +421,9 @@ if (garageDoorMesh) {
     const oppositeRotation = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2)
         .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
-
     await bed(bedWorldPos3, parentMesh, scene, oppositeRotation);
     await bed(bedWorldPos4, parentMesh, scene, oppositeRotation);
-    
+   
     
   // 냉장고
   const old_fridgeWorldPos = new BABYLON.Vector3(-7.80, 6.5, -6.80);

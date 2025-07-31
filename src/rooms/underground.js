@@ -31,6 +31,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
   let isProblemSolved = false; // 문제가 해결되었는지 추적
   let problemDoorRoot = null; // 문제 문의 루트 메시
   let escapeTriggered = false; // 탈출이 이미 트리거되었는지 확인
+  let screamTriggered = false; // 비명 소리가 이미 트리거되었는지 확인
 
   // 문 추가 전에 씬 전체에서 같은 이름의 mesh를 모두 삭제
   ["Object_4", "Object_8"].forEach(name => {
@@ -70,7 +71,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
           if (m.name !== "__root__") {
             m.parent = parentMesh;
             m.position = BABYLON.Vector3.TransformCoordinates(pos, BABYLON.Matrix.Invert(parentMesh.getWorldMatrix()));
-            m.scaling = new BABYLON.Vector3(0.8, 0.8, 0.8);
+            m.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
             m.checkCollisions = true;
             loadedMeshes.push(m);
           }
@@ -79,7 +80,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
 
       // 사슴 시체(deer_dead_body) 배치
       const deerDeadBodyPositions = [
-        new BABYLON.Vector3(16.3, 6.8, 3.9)
+        new BABYLON.Vector3(16.3, 6.8, 4.5)
       ];
       for (const pos of deerDeadBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "deer_dead_body.glb", scene);
@@ -112,7 +113,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
 
       // 미라
       const mummyBodyPositions = [
-        new BABYLON.Vector3(15.55, 6, 5.08)
+        new BABYLON.Vector3(15.55, 6, 5.5)
       ];
       for (const pos of mummyBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "zombie_smoke_mummy_character_12_mb.glb", scene);
@@ -182,7 +183,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
       
       // 시체 table
       const tableBodyPositions = [
-        new BABYLON.Vector3(16.3, 6, 3.9)
+        new BABYLON.Vector3(16.3, 6, 4.5)
       ];
       for (const pos of tableBodyPositions) {
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "autopsy_table.glb", scene);
@@ -489,6 +490,42 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
 
+      // 🗞️ 고대 두루마리 추가 (underground에 배치)
+      const scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
+      scrollResult.meshes.forEach((mesh) => {
+        if (mesh.name !== "__root__") {
+          mesh.parent = parentMesh;
+          // 지정된 위치로 설정
+          mesh.position = BABYLON.Vector3.TransformCoordinates(
+            new BABYLON.Vector3(16.15, 6.85, 5.05),
+            BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
+          );
+          // 지정된 크기로 설정
+          mesh.scaling = new BABYLON.Vector3(50, 50, 50);
+          // 왼쪽으로 90도 회전 (Y축 기준 -90도)
+          mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Z, -Math.PI / 2);
+          mesh.checkCollisions = true;
+          loadedMeshes.push(mesh);
+
+          // 두루마리 클릭 이벤트 처리 추가
+          if (!mesh.actionManager) {
+            mesh.actionManager = new BABYLON.ActionManager(scene);
+          }
+          mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+              // 종이 소리 효과음 재생
+              const audio = new Audio('/paper-rustle-81855.mp3');
+              audio.play();
+              
+              console.log("두루마리가 클릭되었습니다! 문제만 표시합니다.");
+              if (onProblemOpen) { // 콜백 함수가 있는지 확인 후 호출
+                onProblemOpen('show_problem_only'); // 문제만 보여주는 플래그 전달
+              }
+            })
+          );
+        }
+      });
+
       modelsLoaded = true;
       console.log("underground 모델 로드 완료");
     } catch (error) {
@@ -532,6 +569,37 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
         }
       }
     }
+    
+    // 특정 위치에서 비명 소리 효과음 재생
+    const screamPos = new BABYLON.Vector3(22.24, 7.36, 6.65);
+    const distanceToScream = BABYLON.Vector3.Distance(camera.position, screamPos);
+    
+    if (distanceToScream < 3.0 && !screamTriggered) { // 3미터 이내에 들어오면 비명 소리 재생
+      console.log("비명 소리 위치 도달! 효과음 재생");
+      screamTriggered = true;
+      
+      // 배경음 일시정지
+      if (bgmRef && bgmRef.current) {
+        bgmRef.current.pause();
+        console.log("비명 소리 재생 시 배경음 일시정지");
+      }
+      
+      // 비명 소리 효과음 재생
+      const screamAudio = new Audio('/man-scream-09-277551.mp3');
+      screamAudio.play().then(() => {
+        console.log("비명 소리 효과음 재생 성공");
+      }).catch(error => {
+        console.error("비명 소리 효과음 재생 실패:", error);
+      });
+      
+      // 비명 소리 효과음이 끝난 후 배경음 재생
+      screamAudio.onended = () => {
+        if (bgmRef && bgmRef.current) {
+          bgmRef.current.play();
+          console.log("비명 소리 끝남 - 배경음 재생");
+        }
+      };
+    }
   });
 
    // 문 열기/닫기 애니메이션 함수
@@ -549,26 +617,8 @@ const toggleDoor = () => {
         // 열쇠 소모 처리 - onDoorInteraction을 통해 처리
         // if (onDoorInteraction) onDoorInteraction("OP_KEY_USED");
         
-        // BGM 일시정지
-        if (bgmRef && bgmRef.current) {
-            bgmRef.current.pause();
-            console.log("underground 문 열기 시 BGM 일시정지");
-        }
-        
-        // underground 문을 열 때 music-box-scary 효과음 재생
-        const audio = new Audio('/music-box-scary-290198.mp3');
-        audio.play().catch(error => {
-            console.error("underground 문 열기 효과음 재생 실패:", error);
-        });
-        console.log("underground 문 열기 효과음 재생");
-        
-        // 효과음이 끝난 후 BGM 재생
-        audio.onended = () => {
-            if (bgmRef && bgmRef.current) {
-                bgmRef.current.play();
-                console.log("underground 문 열기 효과음 끝난 후 BGM 재생");
-            }
-        };
+        // E키로 문을 열 때는 효과음 없이 배경음 유지
+        console.log("underground 문 열기 - 효과음 없이 배경음 유지");
     }
 
     if (doorMeshes.length === 0) {
@@ -649,7 +699,12 @@ doorMeshes.forEach((mesh) => {
     
     // 정답을 맞추고 문이 열릴 때 효과음 재생
     const audio = new Audio('/metal-door-creaking-closing-47323.mp3');
-    audio.play();
+    console.log("문 열기 효과음 재생 시도");
+    audio.play().then(() => {
+      console.log("문 열기 효과음 재생 성공");
+    }).catch(error => {
+      console.error("문 열기 효과음 재생 실패:", error);
+    });
     
     problemDoorAnimationGroups.forEach(animationGroup => {
       console.log("애니메이션 재생:", animationGroup.name);
@@ -674,16 +729,16 @@ doorMeshes.forEach((mesh) => {
     console.log("toggleProblemDoor 호출됨, isProblemSolved:", isProblemSolved);
     
     if (!isProblemSolved) {
-      // 문제가 해결되지 않았으면 문제 모달 열기
-      console.log("문제가 해결되지 않음, 모달 열기 시도");
+      // 문제가 해결되지 않았으면 정답 입력 모달 열기
+      console.log("문제가 해결되지 않음, 정답 입력 모달 열기 시도");
       
       // 종이 효과음 재생
       const audio = new Audio('/paper-rustle-81855.mp3');
       audio.play();
       
       if (onProblemOpen) {
-        console.log("onProblemOpen 콜백 호출");
-        onProblemOpen();
+        console.log("onProblemOpen 콜백 호출 - 정답 입력 모달");
+        onProblemOpen('show_answer_input_only'); // 정답 입력 모달만 보여주는 플래그 전달
       } else {
         console.log("onProblemOpen 콜백이 없음");
       }
