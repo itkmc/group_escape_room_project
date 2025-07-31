@@ -297,7 +297,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-4.07,7.85,-11.23),
+        new BABYLON.Vector3(-21.84,15.69,11.13),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -513,52 +513,39 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절 0.15
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
       const darkZoneCenter = new BABYLON.Vector3(7, 7, 12);
       const darkZoneRadius = 14;
 
-// 텍스처 경로 (모든 메쉬에 동일하게 적용)
-const texturePath = "/흰색.jpg";
 
-// 텍스처와 재질을 한 번만 생성하여 여러 메쉬에 재사용합니다.
-// 이렇게 하면 메모리 사용량과 성능 측면에서 효율적입니다.
-const sharedTexture = new BABYLON.Texture(texturePath, scene);
+// 텍스처를 변경할 대상 메쉬
+const targetMeshName = "Hospital_02_44m_0";
+// 텍스처를 가져올 원본 메쉬
+const sourceMeshName = "Hospital_02_26m_0";
 
-// // 텍스처 반복 (타일링)을 비활성화합니다.
-// sharedTexture.uScale = 1; // U(가로) 방향으로 1번만 적용
-// sharedTexture.vScale = 1; // V(세로) 방향으로 1번만 적용
+// 씬에서 원본 메쉬(Hospital_02_44m_0)를 찾습니다.
+const sourceMesh = scene.getMeshByName(sourceMeshName);
 
-// 텍스처가 메쉬 크기에 맞게 늘어나도록 래핑 모드를 설정합니다.
-// sharedTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-// sharedTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+// 씬에서 대상 메쉬(Hospital_02_26m_0)를 찾습니다.
+const targetMesh = scene.getMeshByName(targetMeshName);
 
-// 새로운 재질(Material)을 생성합니다.
-// *** 여기를 BABYLON.PBRMaterial로 변경하여 더 사실적인 재질을 시도할 수 있습니다. ***
-// const sharedMaterial = new BABYLON.StandardMaterial("sharedCustomMaterial", scene);
-const sharedMaterial = new BABYLON.StandardMaterial("sharedCustomMaterial", scene); // PBRMaterial로 변경하려면 이 줄을 주석 처리하고 아래 줄을 사용하세요.
-// const sharedMaterial = new BABYLON.PBRMaterial("sharedCustomMaterialPBR", scene); // PBRMaterial 예시
-
-// 재질의 diffuseTexture(기본 색상 텍스처)로 생성한 텍스처를 지정합니다.
-sharedMaterial.diffuseTexture = sharedTexture;
-
-
-// 두 메쉬에 동일한 재질을 적용하는 함수
-function applyTextureToMesh(meshName, materialToApply) {
-    const mesh = scene.getMeshByName(meshName);
-    if (mesh) {
-        mesh.material = materialToApply;
-        console.log(`${meshName} 메쉬의 텍스처가 '${texturePath}'로 반복 없이 성공적으로 변경되었습니다!`);
+if (sourceMesh && targetMesh) {
+    // 원본 메쉬의 재질이 있는지 확인합니다.
+    if (sourceMesh.material) {
+        // 대상 메쉬의 재질을 원본 메쉬의 재질로 설정합니다.
+        targetMesh.material = sourceMesh.material;
+        console.log(`${targetMeshName}의 텍스처(재질)가 ${sourceMeshName}의 것으로 성공적으로 변경되었습니다!`);
     } else {
-        console.warn(`${meshName} 메쉬를 찾을 수 없습니다. 이름이 정확한지 확인해주세요.`);
+        console.warn(`${sourceMeshName} 메쉬에 할당된 재질이 없습니다. 텍스처를 복사할 수 없습니다.`);
     }
+} else {
+    // 두 메쉬 중 하나라도 찾을 수 없는 경우 경고를 출력합니다.
+    console.warn(`"${targetMeshName}" 또는 "${sourceMeshName}" 메쉬를 찾을 수 없습니다. 이름이 정확한지 확인해주세요.`);
 }
 
-// 각각의 메쉬에 함수를 호출하여 텍스처를 적용합니다.
-// applyTextureToMesh("Hospital_02_44m_0", sharedMaterial);
-applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
 
       const canvas = document.getElementById("renderCanvas");
 
@@ -781,7 +768,7 @@ applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
         if (meshToDelete1) {
             meshToDelete1.dispose();
             console.log("메시가 성공적으로 삭제되었습니다.");
-        }
+        } 
 
        // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
       if (!isOnLadder) {
@@ -949,15 +936,15 @@ applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
@@ -1061,7 +1048,7 @@ applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      <div
+      {/* <div
         style={{
           position: "absolute",
           top: 10,
@@ -1080,7 +1067,7 @@ applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div>
+      </div> */}
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
