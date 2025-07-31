@@ -764,13 +764,13 @@ if (garageDoorMesh) {
       if (mesh.name !== "__root__") {
           mesh.parent = parentMesh;
           mesh.position = BABYLON.Vector3.TransformCoordinates(
-              new BABYLON.Vector3(-7.80, 7.3, -6.80),
+              new BABYLON.Vector3(-7.80, 7.35, -6.90),
               BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
           );
           mesh.scaling = new BABYLON.Vector3(80,80,80);
           mesh.checkCollisions = true;
           mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI)
-              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
+              .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, -Math.PI / 6));
       }
   }
 
