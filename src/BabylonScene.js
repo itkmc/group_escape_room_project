@@ -316,7 +316,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21.84,15.69,11.13),
+        new BABYLON.Vector3(-21.04,15.59,11.35),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;

@@ -596,7 +596,7 @@ if (garageDoorMesh) {
 //       batStartPos,
 //       BABYLON.Matrix.Invert(parentMesh.getWorldMatrix())
 //   );
-//   const vampireBatResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "vampire_bat.glb", scene);
+//   const vampsireBatResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "vampire_bat.glb", scene);
 //   for (const mesh of vampireBatResult.meshes) {
 //       if (mesh.name !== "__root__") {
 //           mesh.parent = batGroup;
