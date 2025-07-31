@@ -513,12 +513,38 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절
+      originalHemiLightIntensity = 0.7; // 씬의 기본 밝기 조절 0.15
       hemiLight.intensity = originalHemiLightIntensity;
 
       // 어두운 구역 설정
       const darkZoneCenter = new BABYLON.Vector3(7, 7, 12);
       const darkZoneRadius = 14;
+
+
+// 텍스처를 변경할 대상 메쉬
+const targetMeshName = "Hospital_02_44m_0";
+// 텍스처를 가져올 원본 메쉬
+const sourceMeshName = "Hospital_02_26m_0";
+
+// 씬에서 원본 메쉬(Hospital_02_44m_0)를 찾습니다.
+const sourceMesh = scene.getMeshByName(sourceMeshName);
+
+// 씬에서 대상 메쉬(Hospital_02_26m_0)를 찾습니다.
+const targetMesh = scene.getMeshByName(targetMeshName);
+
+if (sourceMesh && targetMesh) {
+    // 원본 메쉬의 재질이 있는지 확인합니다.
+    if (sourceMesh.material) {
+        // 대상 메쉬의 재질을 원본 메쉬의 재질로 설정합니다.
+        targetMesh.material = sourceMesh.material;
+        console.log(`${targetMeshName}의 텍스처(재질)가 ${sourceMeshName}의 것으로 성공적으로 변경되었습니다!`);
+    } else {
+        console.warn(`${sourceMeshName} 메쉬에 할당된 재질이 없습니다. 텍스처를 복사할 수 없습니다.`);
+    }
+} else {
+    // 두 메쉬 중 하나라도 찾을 수 없는 경우 경고를 출력합니다.
+    console.warn(`"${targetMeshName}" 또는 "${sourceMeshName}" 메쉬를 찾을 수 없습니다. 이름이 정확한지 확인해주세요.`);
+}
 
 
       const canvas = document.getElementById("renderCanvas");
@@ -742,9 +768,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         if (meshToDelete1) {
             meshToDelete1.dispose();
             console.log("메시가 성공적으로 삭제되었습니다.");
-        } else {
-            console.log("해당 이름의 메시를 찾을 수 없습니다.");
-        }
+        } 
 
 
        // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
@@ -1025,7 +1049,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      <div
+      {/* <div
         style={{
           position: "absolute",
           top: 10,
@@ -1044,7 +1068,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div>
+      </div> */}
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
