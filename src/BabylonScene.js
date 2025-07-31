@@ -781,10 +781,7 @@ applyTextureToMesh("Hospital_02_25m_0", sharedMaterial);
         if (meshToDelete1) {
             meshToDelete1.dispose();
             console.log("메시가 성공적으로 삭제되었습니다.");
-        } else {
-            console.log("해당 이름의 메시를 찾을 수 없습니다.");
         }
-
 
        // ladder 상태값을 더 신뢰할 수 있게 prop으로 넘기든지,
       if (!isOnLadder) {

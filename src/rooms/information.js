@@ -506,10 +506,7 @@ if (garageDoorMesh) {
       .multiply(BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI));
 
 
-  const myCurtainTexture1 = "/asdfasdf.jpg"; 
-  const myCurtainTexture2 = "/asdfasdf.jpg"; 
-  const myCurtainTexture3 = "/asdfasdf.jpg"; 
-  // const myCurtainTexture4 = "/asdfasdf.jpg"; 
+  const myCurtainTexture = "/asdfasdf.jpg"; 
 
   (async () => {
       await curtain(curtainWorldPos1, parentMesh, scene, commonRotation1, new BABYLON.Vector3(70, 55, 50), myCurtainTexture);
