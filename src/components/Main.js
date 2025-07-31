@@ -32,7 +32,7 @@ function Main({ onStartGame }) {
             color: 'black',
             fontSize: 'calc(10px + 2vmin)' // 텍스트 크기 조절
         }}>
-            <h1>Welcome</h1>
+            <h1>Escape 404</h1>
             {!showDifficulty ? (
                 <button
                     onClick={handleStartClick}
@@ -64,7 +64,7 @@ function Main({ onStartGame }) {
                     </div>
                     <div className="difficulty-card normal" onClick={() => handleSelectDifficulty('normal')} style={{ cursor: 'pointer' }}>
                         <h2>NORMAL</h2>
-                        <p>코드 블랙: 시체의 톱니바퀴</p>
+                        <p>코드 블랙: 사라진 환자들</p>
                     </div>
                     <div className="difficulty-card hard" onClick={() => handleSelectDifficulty('hard')} style={{ cursor: 'pointer' }}>
                         <h2>HARD</h2>

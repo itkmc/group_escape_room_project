@@ -420,7 +420,7 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
                     
                     if (showMessage2) {
                         const scenarioText = `
-"코드 블랙: 탈출자는 없다"
+"코드 블랙: 사라진 환자들"
 
 2025년 8월 11일, 새벽 2시 13분.
 불 꺼진 병원 옥상, 차가운 의자에 묶인 채 깨어난 당신.
@@ -429,8 +429,8 @@ export async function addDoorAndChair(scene, parentMesh, showQuiz, hasKeyItemFn,
 KI 병원 - 장기 적출 기록
 ...
 심서진 (2024.10.10 / 23:10 / 옥상) - 장기 적출 완료 (간)
-강민창 (2025.02.19 / 01:45 / 지하 1층 수술실) - 장기 적출 완료 (콩팥)
-김소령 (2025.07.15 / 17:20 / 지하 1층 영안실) - 장기 적출 완료 (심장)
+강민창 (2025.02.19 / 01:45 / 수술실) - 장기 적출 완료 (콩팥)
+김소령 (2025.07.15 / 17:20 / 영안실) - 장기 적출 완료 (심장)
 ...
 2025.08.11 / 02:30 / 옥상 - 대기 중
 

@@ -11,10 +11,9 @@
   height: 450px;
   border-radius: 40px;
   background: rgba(70, 130, 180, 0.35); /* 기본 반투명 파랑 */
-  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  /* box-shadow: 0 4px 24px rgba(0,0,0,0.18); */
   display: flex;
   flex-direction: column;
-  
   align-items: center;
   justify-content: flex-start;
   padding: 32px 16px 0 16px;
@@ -22,29 +21,31 @@
   transition: box-shadow 0.2s;
 }
 .difficulty-card:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+  box-shadow: 0 8px 32px rgba(70, 130, 180, 0.35);
 }
 .difficulty-card.easy {
-  background: rgba(70, 130, 180, 0.35); /* 파랑 */
+  background: rgba(85, 85, 85, 0.35) 
 }
 .difficulty-card.normal {
-  background: rgba(70, 130, 180, 0.35); /* easy, hard와 동일한 파랑 */
+  background: rgba(85, 85, 85, 0.35) 
 }
 .difficulty-card.normal:hover {
-  background: rgba(85, 85, 85, 0.35); /* hover 시 연녹색 */
+  background: rgba(70, 130, 180, 0.35); 
 }
 .difficulty-card.hard {
-  background: rgba(70, 130, 180, 0.35); /* 파랑 */
+  background: rgba(85, 85, 85, 0.35);
 }
 .difficulty-card.easy:hover,
 .difficulty-card.hard:hover {
-  background: rgba(85, 85, 85, 0.35); /* hover 시 연녹색 */
+  background: rgba(70, 130, 180, 0.35); 
 }
 .difficulty-card h2 {
   margin-bottom: 18px;
   font-size: 2rem;
   font-weight: 600;
   letter-spacing: 1px;
+  text-decoration: underline;
+  text-underline-offset: 5px;
 }
 .image-placeholder {
   width: 220px;
@@ -59,5 +60,5 @@
   font-size: 1.2rem;
   color: #222;
   text-align: center;
-  font-weight: 500;
+  font-weight: bold;
 } 
