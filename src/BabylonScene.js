@@ -535,7 +535,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.8; // 씬의 기본 밝기 조절 0.15
+      originalHemiLightIntensity = 0.08; // 씬의 기본 밝기 조절 0.15
       hemiLight.intensity = originalHemiLightIntensity;
 
       const darkZoneCenter = new BABYLON.Vector3(6, 7, 14.5);
