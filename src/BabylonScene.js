@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-13.88, 7.36, -2.86),
+        new BABYLON.Vector3(-21.04, 15.59, 11.35),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -535,7 +535,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.15; // 씬의 기본 밝기 조절 0.15
+      originalHemiLightIntensity = 0.08; // 씬의 기본 밝기 조절 0.15
       hemiLight.intensity = originalHemiLightIntensity;
 
       const darkZoneCenter = new BABYLON.Vector3(6, 7, 14.5);
@@ -629,7 +629,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
