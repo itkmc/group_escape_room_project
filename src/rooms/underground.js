@@ -242,7 +242,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
 
       // 마지막 문
           const door2Result = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "door_wood.glb", scene);
-      
+           door2.checkCollisions = true;
           let frame2Mesh = null;
           let door2Mesh = null;
           let handle2Mesh = null;
