@@ -66,25 +66,24 @@ const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }
     console.log("showProblemModal 상태 변경:", showProblemModal);
   }, [showProblemModal]);
 
-  // // 스크롤 방지
-  // useEffect(() => {
-  //   const preventScroll = (e) => {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //     return false;
-  //   };
+  // 스크롤 방지
+  useEffect(() => {
+    const preventScroll = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
 
-  //   // 전체 페이지에서 스크롤 방지
-  //   document.addEventListener('wheel', preventScroll, { passive: false });
-  //   document.addEventListener('touchmove', preventScroll, { passive: false });
+    // 전체 페이지에서 스크롤 방지
+    document.addEventListener('wheel', preventScroll, { passive: false });
+    document.addEventListener('touchmove', preventScroll, { passive: false });
 
-  //   return () => {
-  //     document.removeEventListener('wheel', preventScroll);
-  //     document.removeEventListener('touchmove', preventScroll);
-  //   };
-  // }, []);
+    return () => {
+      document.removeEventListener('wheel', preventScroll);
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, []);
 
-  // 앉기 기능 제거됨
 
   const correctAnswer = "72";
 
@@ -332,8 +331,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const MIN_CAMERA_HEIGHT = 0;
 
       // 플레이어 이동 속도 조절
-      const WALK_SPEED = 0.15;
-      const RUN_SPEED = 0.3;
+      const WALK_SPEED = 0.1;
+      const RUN_SPEED = 0.4;
       camera.speed = WALK_SPEED;
 
       const specialPositions = [
@@ -536,7 +535,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.2; // 씬의 기본 밝기 조절 0.15
+      originalHemiLightIntensity = 0.15; // 씬의 기본 밝기 조절 0.15
       hemiLight.intensity = originalHemiLightIntensity;
 
       const darkZoneCenter = new BABYLON.Vector3(6, 7, 14.5);
@@ -602,8 +601,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       // --- 1. 수동으로 범위(트리거) 지정 ---
       const customTriggerConfigs = [
           {
-              center: new BABYLON.Vector3(-11.4, 7.29, 5), // 중앙계단
-              size: new BABYLON.Vector3(6.0, 15, 6)
+              center: new BABYLON.Vector3(-11.4, 5, 4.7), // 중앙계단
+              size: new BABYLON.Vector3(6.0, 7, 6)
           },
           {
               center: new BABYLON.Vector3(8.81, 6.36, 5.06), // 지하계단
@@ -641,41 +640,55 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           triggerBoxes.push(triggerBox); // 배열에 추가합니다.
       });
 
-      // --- 2. 카메라 충돌 감지 로직 ---
-      let isInCustomArea = false; // 카메라가 지정된 영역 안에 있는지 여부
-      const customMoveAngle = BABYLON.Tools.ToRadians(45); // 위로 바라볼 각도 (라디안 변환)
+  // --- 2. 카메라 충돌 감지 로직 ---
+let isInCustomArea = false;
+const customMoveAngle = BABYLON.Tools.ToRadians(45); // 위/아래로 바라볼 각도 (라디안 변환)
+const minCameraRotationX = BABYLON.Tools.ToRadians(0); // 최소 회전 각도 (아래로 20도)
+const maxCameraRotationX = BABYLON.Tools.ToRadians(20); // 최대 회전 각도 (위로 45도)
 
-      scene.onBeforeRenderObservable.add(() => {
-          const cameraPosition = camera.position;
-          let cameraIsInAnyTrigger = false; // 카메라가 어떤 트리거 영역 안에 있는지 추적하는 플래그
+scene.onBeforeRenderObservable.add(() => {
+    const cameraPosition = camera.position;
+    let cameraIsInAnyTrigger = false;
 
-          // **이 루프가 핵심입니다.**
-          // 'triggerBoxes' 배열에 있는 모든 트리거 박스를 순회하며 충돌을 감지합니다.
-          for (const box of triggerBoxes) { // 'triggerBoxes' 배열을 사용합니다.
-              const triggerBounds = box.getBoundingInfo().boundingBox;
-              if (triggerBounds.intersectsPoint(cameraPosition)) {
-                  cameraIsInAnyTrigger = true;
-                  break; // 하나라도 영역 안에 들어왔으면 더 이상 확인할 필요가 없습니다.
-              }
-          }
+    // 'triggerBoxes' 배열에 있는 모든 트리거 박스를 순회하며 충돌을 감지합니다.
+    for (const box of triggerBoxes) {
+        const triggerBounds = box.getBoundingInfo().boundingBox;
+        if (triggerBounds.intersectsPoint(cameraPosition)) {
+            cameraIsInAnyTrigger = true;
+            break;
+        }
+    }
 
-          if (cameraIsInAnyTrigger) {
-              if (!isInCustomArea) {
-                  isInCustomArea = true;
-                  console.log("지정된 영역 진입: 'W' 키 이동 각도 변경됨.");
-              }
-          } else {
-              if (isInCustomArea) {
-                  isInCustomArea = false;
-                  console.log("지정된 영역 이탈: 'W' 키 이동 각도 원상 복귀.");
-              }
-          }
-      });
+    if (cameraIsInAnyTrigger) {
+        if (!isInCustomArea) {
+            isInCustomArea = true;
+            console.log("지정된 영역 진입: 'W'/'S' 키 이동 각도 변경됨.");
+        }
+        
+        // --- 추가된 부분 ---
+        // 지정된 범위 내에서는 카메라의 X축 회전을 제한합니다.
+        // 현재 카메라의 X축 회전 각도가 최소/최대 범위를 벗어나면 강제로 조정합니다.
+        if (camera.rotation.x < minCameraRotationX) {
+            camera.rotation.x = minCameraRotationX;
+        }
+        if (camera.rotation.x > maxCameraRotationX) {
+            camera.rotation.x = maxCameraRotationX;
+        }
+        // --- 끝 ---
 
-      // --- 3. 'W' 키 상태 관리 (onKeyboardObservable 사용) ---
-      let isWKeyPressed = false; // 'W' 키가 현재 눌려있는지 여부
+    } else {
+        if (isInCustomArea) {
+            isInCustomArea = false;
+            console.log("지정된 영역 이탈: 'W'/'S' 키 이동 각도 원상 복귀.");
+        }
+    }
+});
 
-      camera.speed = 0.8; // This is likely what you meant by CAMERA.SPEED
+      // --- 3. 'W', 'S' 키 상태 관리 (onKeyboardObservable 사용) ---
+      let isWKeyPressed = false;
+      let isSKeyPressed = false;
+
+      camera.speed = 0.3;
 
       scene.onKeyboardObservable.add((kbInfo) => {
           switch (kbInfo.type) {
@@ -683,16 +696,20 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                   if (kbInfo.event.key === "w" || kbInfo.event.key === "W") {
                       isWKeyPressed = true;
                   }
+                  if (kbInfo.event.key === "s" || kbInfo.event.key === "S") {
+                      isSKeyPressed = true;
+                  }
                   break;
               case BABYLON.KeyboardEventTypes.KEYUP:
                   if (kbInfo.event.key === "w" || kbInfo.event.key === "W") {
                       isWKeyPressed = false;
                   }
+                  if (kbInfo.event.key === "s" || kbInfo.event.key === "S") {
+                      isSKeyPressed = false;
+                  }
                   break;
           }
       });
-
-
 
 
       // 손전등 모델 및 스팟 라이트 초기화 (한 번만 실행)
@@ -896,7 +913,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }
       }
 
-      // C키 앉기 기능 제거됨
+   
 
       // 열쇠를 획득한 후 E키를 누르면 문이 열리게
       if (evt.key === 'e') {
@@ -954,8 +971,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       canvasRef.current.addEventListener("wheel", (evt) => {
         evt.preventDefault();
         // 스크롤
-        // evt.stopPropagation();
-        // return false;
+        evt.stopPropagation();
+        return false;
         const delta = evt.deltaY < 0 ? 1 : -1;
         const forward = camera.getDirection(BABYLON.Axis.Z);
         camera.position.addInPlace(forward.scale(delta));
@@ -1005,45 +1022,75 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
       });
 
+// // 바닥 Mesh 생성
+// const ground = BABYLON.MeshBuilder.CreateBox("ground", {
+//     width: 2.2,
+//     height:0.3, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
+//     depth: 6.5
+// }, scene);
+
+// // 바닥의 재질 설정
+// const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+// groundMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
+// ground.material = groundMaterial;
+// // ground.isVisible = false;
+
+// // 충돌 감지 활성화
+// ground.checkCollisions = true;
+
+// // -------------------------------------------------------------
+// // 바닥의 위치를 변경하는 부분입니다.
+// ground.position = new BABYLON.Vector3(-13.3, 2.3, 4.9);
+
+// // -------------------------------------------------------------
+// // 바닥의 각도를 변경하는 부분입니다.
+// // x, y, z 축을 기준으로 회전할 각도를 라디안으로 설정합니다.
+// // 예를 들어, x축을 기준으로 45도 회전하려면 아래와 같이 작성합니다.
+// ground.rotation = new BABYLON.Vector3(
+//     BABYLON.Tools.ToRadians(-26.3), // x축으로 45도 회전
+//     BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
+//     BABYLON.Tools.ToRadians(0)   // z축으로 0도 회전
+// );
+
+// -------------------------------------------------------------
       // --- 4. 메인 렌더 루프 ---
-      engine.runRenderLoop(() => {
-      // 카메라의 기본 입력을 처리할지 여부를 결정
-      // isInCustomArea가 true일 때만 수동으로 'W' 키 이동을 제어합니다.
-      if (isInCustomArea) {
+engine.runRenderLoop(() => {
+    if (isInCustomArea) {
         // FreeCamera의 기본 WASD 이동 로직을 비활성화합니다.
-        // 마우스 시점 변경은 유지되도록 clear 후 다시 attachControl을 호출합니다.
         if (camera.inputs.attached.length > 0) {
-            camera.inputs.clear(); // 모든 입력 핸들러 제거
+            camera.inputs.clear();
             if (canvas) {
-                camera.attachControl(canvas, true); // 마우스 및 터치 컨트롤만 다시 연결 (true는 preventDefault)
+                camera.attachControl(canvas, true);
             }
         }
 
-        // 'W' 키가 눌려있는 상태인지 확인
-        if (isWKeyPressed) {
-            // 카메라의 현재 앞 방향 벡터
-            let forwardVector = camera.getDirection(BABYLON.Vector3.Forward());
-
-            // 카메라의 로컬 오른쪽 벡터를 가져옵니다.
+        // 'W' 또는 'S' 키가 눌렸을 때만 이동 로직을 실행합니다.
+        if (isWKeyPressed || isSKeyPressed) {
+            const forwardVector = camera.getDirection(BABYLON.Vector3.Forward());
             const rightVector = camera.getDirection(BABYLON.Vector3.Right());
 
-            // 오른쪽 축을 기준으로 45도 위로 회전하는 쿼터니언을 생성합니다.
-            const rotationQuaternion = BABYLON.Quaternion.RotationAxis(rightVector, -customMoveAngle);
+            let moveAngle;
+            let moveDirectionMultiplier = 1;
 
-            // *** 오류 수정 부분: Matrix.FromQuaternion 대신 toRotationMatrix() 사용 ***
-            let rotationMatrix = new BABYLON.Matrix(); // 새로운 행렬 객체 생성
-            rotationQuaternion.toRotationMatrix(rotationMatrix); // 쿼터니언을 행렬로 변환하여 할당
+            if (isWKeyPressed) {
+                moveAngle = -customMoveAngle;
+            } else { // isSKeyPressed
+                moveAngle = customMoveAngle;
+                moveDirectionMultiplier = -1;
+            }
 
-            // 원래의 앞 방향 벡터에 회전을 적용하여 새로운 이동 방향 벡터를 얻습니다.
+            const rotationQuaternion = BABYLON.Quaternion.RotationAxis(rightVector, moveAngle);
+            let rotationMatrix = new BABYLON.Matrix();
+            rotationQuaternion.toRotationMatrix(rotationMatrix);
+
             let newMoveDirection = BABYLON.Vector3.TransformNormal(forwardVector, rotationMatrix);
-            newMoveDirection.normalize(); // 방향 벡터 정규화
+            newMoveDirection.normalize();
 
-            // 계산된 방향으로 카메라를 이동시킵니다.
-            camera.position.addInPlace(newMoveDirection.scale(camera.speed));
+            camera.position.addInPlace(newMoveDirection.scale(camera.speed * moveDirectionMultiplier));
         }
+
     } else {
         // 지정된 영역 밖에 있을 때: FreeCamera의 기본 입력 제어를 재활성화합니다.
-        // (아직 연결되어 있지 않다면)
         if (camera.inputs.attached.length === 0) {
             if (canvas) {
                 camera.attachControl(canvas, true);
@@ -1051,9 +1098,9 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         }
     }
 
-    // 씬을 렌더링합니다. (이 부분은 engine.runRenderLoop의 가장 마지막에 있어야 합니다.)
     scene.render();
 });
+
       const onResize = () => engine.resize();
       window.addEventListener("resize", onResize);
 
@@ -1099,7 +1146,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      <div
+      {/* <div
         style={{
           position: "absolute",
           top: 10,
@@ -1118,7 +1165,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div>
+      </div> */}
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
