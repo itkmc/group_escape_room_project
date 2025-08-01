@@ -30,7 +30,8 @@ function Main({ onStartGame }) {
             backgroundRepeat: 'repeat', // 이미지를 반복하여 채울 경우 (패턴 텍스처에 적합)
             backgroundPosition: 'center center', // 이미지를 중앙에 위치
             color: 'black',
-            fontSize: 'calc(10px + 2vmin)' // 텍스트 크기 조절
+            fontSize: 'calc(10px + 2vmin)', // 텍스트 크기 조절
+            userSelect: 'none'    
         }}>
             <h1>Escape 404</h1>
             {!showDifficulty ? (

@@ -23,7 +23,8 @@ function LoadingScreen({ progress = 0 }) {
       backgroundRepeat: 'repeat',
       backgroundPosition: 'center center',
       color: 'white',
-      fontSize: 'calc(10px + 2vmin)'
+      fontSize: 'calc(10px + 2vmin)',
+      userSelect: 'none'
     }}>
       <div style={{
         textAlign: 'center',

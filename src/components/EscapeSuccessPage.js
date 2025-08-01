@@ -48,7 +48,8 @@ function EscapeSuccessPage({ onRestart, onClose, bgmRef }) {
             color: 'white',
             fontSize: 'calc(10px + 2vmin)',
             zIndex: 9999,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)'
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            userSelect: 'none'
         }}>
             <h1 style={{ color: 'white', fontSize: '3rem' }}>Escape Successful</h1>
             <p style={{
