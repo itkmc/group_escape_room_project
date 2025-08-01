@@ -67,22 +67,22 @@ const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }
   }, [showProblemModal]);
 
   // 스크롤 방지
-  useEffect(() => {
-    const preventScroll = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    };
+  // useEffect(() => {
+  //   const preventScroll = (e) => {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //     return false;
+  //   };
 
-    // 전체 페이지에서 스크롤 방지
-    document.addEventListener('wheel', preventScroll, { passive: false });
-    document.addEventListener('touchmove', preventScroll, { passive: false });
+  //   // 전체 페이지에서 스크롤 방지
+  //   document.addEventListener('wheel', preventScroll, { passive: false });
+  //   document.addEventListener('touchmove', preventScroll, { passive: false });
 
-    return () => {
-      document.removeEventListener('wheel', preventScroll);
-      document.removeEventListener('touchmove', preventScroll);
-    };
-  }, []);
+  //   return () => {
+  //     document.removeEventListener('wheel', preventScroll);
+  //     document.removeEventListener('touchmove', preventScroll);
+  //   };
+  // }, []);
 
 
   const correctAnswer = "72";
@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21.04,15.59,11.35),
+        new BABYLON.Vector3(-13.88, 7.36, -2.86),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -971,8 +971,8 @@ scene.onBeforeRenderObservable.add(() => {
       canvasRef.current.addEventListener("wheel", (evt) => {
         evt.preventDefault();
         // 스크롤
-        evt.stopPropagation();
-        return false;
+        // evt.stopPropagation();
+        // return false;
         const delta = evt.deltaY < 0 ? 1 : -1;
         const forward = camera.getDirection(BABYLON.Axis.Z);
         camera.position.addInPlace(forward.scale(delta));
@@ -1146,7 +1146,7 @@ engine.runRenderLoop(() => {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      {/* <div
+      {<div
         style={{
           position: "absolute",
           top: 10,
@@ -1165,7 +1165,7 @@ engine.runRenderLoop(() => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div> */}
+      </div> }
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 

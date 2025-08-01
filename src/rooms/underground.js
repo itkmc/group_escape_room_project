@@ -571,7 +571,7 @@ export async function addUnderground(scene, parentMesh, onDoorInteraction, getHa
     }
     
     // 특정 위치에서 비명 소리 효과음 재생
-    const screamPos = new BABYLON.Vector3(22.24, 7.36, 6.65);
+    const screamPos = new BABYLON.Vector3(28.93, 7.36, 6.40);
     const distanceToScream = BABYLON.Vector3.Distance(camera.position, screamPos);
     
     if (distanceToScream < 3.0 && !screamTriggered) { // 3미터 이내에 들어오면 비명 소리 재생
