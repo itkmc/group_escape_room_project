@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-13.88, 7.36, -2.86),
+        new BABYLON.Vector3(-21.04, 15.59, 11.35),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -629,7 +629,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
