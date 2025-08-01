@@ -6,7 +6,8 @@ export default function CenterMessage({ message, visible }) {
       top: 0, left: 0, width: "100vw", height: "100vh",
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "none",
-      zIndex: 3000
+      zIndex: 3000,
+      userSelect: 'none'
     }}>
       <div style={{
         background: "rgba(0,0,0,0.85)",

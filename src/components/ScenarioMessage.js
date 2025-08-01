@@ -10,7 +10,8 @@ export default function ScenarioMessage({ message, visible, onClose = undefined 
       top: 0, left: 0, width: "100vw", height: "100vh",
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "rgba(0,0,0,0.5)", // 배경을 어둡게 하여 메시지에 집중
-      zIndex: 3000
+      zIndex: 3000,
+      userSelect: 'none'
     }}>
       <div style={{
     backgroundImage: `url('${process.env.PUBLIC_URL}/2.png')`,

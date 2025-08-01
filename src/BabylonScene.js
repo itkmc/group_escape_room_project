@@ -610,8 +610,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
               size: new BABYLON.Vector3(1.5, 5, 2.8)
           },
           {
-              center: new BABYLON.Vector3(-31.44,14.45,2.55), // 옥상계단
-              size: new BABYLON.Vector3(5.5,2.5,3.5)
+              center: new BABYLON.Vector3(-31.44,14.45,3.5), // 옥상계단
+              size: new BABYLON.Vector3(5.5,2.5,2)
           },
           {
               center: new BABYLON.Vector3(-20.51,1.26,-7.55), // 화장실계단
@@ -630,7 +630,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -1250,7 +1250,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             borderRadius: 12,
             textAlign: "center",
             minWidth: 320,
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            userSelect: 'none'
           }}>
             <div style={{
               fontSize: 20,
@@ -1328,7 +1329,8 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    zIndex: 2001 // 높은 z-index
+                    zIndex: 2001, // 높은 z-index
+                    userSelect: 'none'
                 }}>
                     <div style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
