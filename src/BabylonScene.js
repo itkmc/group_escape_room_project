@@ -629,7 +629,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -1297,7 +1297,8 @@ engine.runRenderLoop(() => {
             borderRadius: 12,
             textAlign: "center",
             minWidth: 320,
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            userSelect: 'none'
           }}>
             <div style={{
               fontSize: 20,
@@ -1375,7 +1376,8 @@ engine.runRenderLoop(() => {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    zIndex: 2001 // 높은 z-index
+                    zIndex: 2001, // 높은 z-index
+                    userSelect: 'none'
                 }}>
                     <div style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
