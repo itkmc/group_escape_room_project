@@ -54,6 +54,27 @@ if (glassMesh) {
             function () {
                 const doorToAnimate = glassMesh; // 애니메이션 대상은 Glass_Material.001_0 메쉬 자체입니다.
 
+                // 효과음 재생 (에러 처리 추가)
+                try {
+                    // 기존 사운드가 있다면 제거
+                    const existingSound = scene.getSoundByName("doorSlideSound");
+                    if (existingSound) {
+                        existingSound.dispose();
+                    }
+                    
+                    // HTML5 Audio API 사용
+                    const audio = new Audio("/empty-glass-table-foley-slide-3-237638.mp3");
+                    audio.volume = 1.0;
+                    audio.play().then(() => {
+                        console.log("문 효과음 재생 시작");
+                    }).catch((error) => {
+                        console.error("효과음 재생 실패:", error);
+                    });
+                    
+                } catch (error) {
+                    console.error("효과음 재생 중 오류:", error);
+                }
+
                 // 문이 옆으로 이동할 거리 (양수 값). 이 값을 조절하여 문이 열리는 거리를 설정하세요.
                 const slideDistance = 195; // 예: 5 단위 이동
 
@@ -162,6 +183,19 @@ if (garageDoorMesh) {
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
             if (isGarageAnimating) return;
             isGarageAnimating = true;
+
+            // 철문 효과음 재생
+            try {
+                const garageAudio = new Audio("/hard-grating-metal-gate-88979.mp3");
+                garageAudio.volume = 1.0;
+                garageAudio.play().then(() => {
+                    console.log("철문 효과음 재생 시작");
+                }).catch((error) => {
+                    console.error("철문 효과음 재생 실패:", error);
+                });
+            } catch (error) {
+                console.error("철문 효과음 재생 중 오류:", error);
+            }
 
             if (!isGarageDoorOpen) {
                 // 문 닫힘 -> 열기
@@ -303,6 +337,19 @@ if (garageDoorMesh) {
           interactiveMesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
               BABYLON.ActionManager.OnPickTrigger,
               () => {
+                  // 커튼 효과음 재생
+                  try {
+                      const curtainAudio = new Audio("/curtain-82308.mp3");
+                      curtainAudio.volume = 1.0;
+                      curtainAudio.play().then(() => {
+                          console.log("커튼 효과음 재생 시작");
+                      }).catch((error) => {
+                          console.error("커튼 효과음 재생 실패:", error);
+                      });
+                  } catch (error) {
+                      console.error("커튼 효과음 재생 중 오류:", error);
+                  }
+
                   if (!isOpen) {
                       curtainAnim.start(false, 5, curtainAnim.to, curtainAnim.from, false);
                       isOpen = true;
