@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-10.7, 5.29, 10.82),
+        new BABYLON.Vector3(-21.84,15.69,11.13),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -332,7 +332,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 플레이어 이동 속도 조절
       const WALK_SPEED = 0.1;
-      const RUN_SPEED = 0.4;
+      const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
 
       const specialPositions = [
