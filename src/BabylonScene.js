@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21.04, 15.59, 11.35),
+        new BABYLON.Vector3(-10.7, 5.29, 10.82),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -323,7 +323,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       camera.inputs.addMouse();
       camera.checkCollisions = true;
       camera.applyGravity = true;
-      camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
+      camera.ellipsoid = new BABYLON.Vector3(0.2, 0.7, 0.3); // 충돌체 크기 증가
 
       // 앉기 기능 관련 변수 제거됨
 
