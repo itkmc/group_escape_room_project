@@ -1146,7 +1146,7 @@ engine.runRenderLoop(() => {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      {<div
+      {/* {<div
         style={{
           position: "absolute",
           top: 10,
@@ -1165,7 +1165,7 @@ engine.runRenderLoop(() => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div> }
+      </div> } */}
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
