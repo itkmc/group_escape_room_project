@@ -383,6 +383,16 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           mesh.isPickable = true;
         }
 
+        // 계단 관련 메쉬들 강화
+        if (mesh.name.includes("stair") || mesh.name.includes("계단") || 
+            mesh.name.includes("40m") || mesh.name.includes("41m") || 
+            mesh.name.includes("42m") || mesh.name.includes("43m") ||
+            mesh.name === "Hospital_02_39m_0") { // 계단 손잡이 추가
+          mesh.checkCollisions = true;
+          mesh.isPickable = false; // 계단은 클릭 불가
+          console.log("계단 메쉬 충돌 강화:", mesh.name);
+        }
+
         if (mesh.name === "Hospital_02_36m_0") {
           parentMesh = mesh;
         }
@@ -1004,15 +1014,15 @@ scene.onBeforeRenderObservable.add(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
