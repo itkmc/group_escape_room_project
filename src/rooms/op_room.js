@@ -499,7 +499,7 @@ for (const mesh of combination_padlock.meshes) {
 };
 
   // 냉장고 안 애기 위치
-  const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.665, 14.00);
+  const alien_fetusWorldPos = new BABYLON.Vector3(11.20, 7.565, 14.00);
   const alien_fetus = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "alien_fetus.glb", scene);
   for (const alien_fetusMesh of alien_fetus.meshes) {
     if (alien_fetusMesh.name !== "__root__") {
@@ -716,7 +716,7 @@ if (rootKpMesh) {
 }
 
   // --- 냉장고 위치 및 배치 ---
-  const old_fridgeWorldPos = new BABYLON.Vector3(11.20, 6.65, 14.5);
+  const old_fridgeWorldPos = new BABYLON.Vector3(11.20, 6.55, 14.5);
   const old_fridgeResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "low_poly_old_rusty_fridge_-_game_ready.glb", scene);
 
   // op_room에서만 사용하는 prefix 추가
