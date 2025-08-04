@@ -389,7 +389,11 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             mesh.name.includes("42m") || mesh.name.includes("43m") ||
             mesh.name === "Hospital_02_39m_0" || // 계단 손잡이
             mesh.name === "Hospital_02_26m_0" || // 추가 메쉬 1
-            mesh.name === "Hospital_02_32m_0") { // 추가 메쉬 2
+            mesh.name === "Hospital_02_32m_0" || // 추가 메쉬 2
+            mesh.name === "Hospital_02_94m_0" || // 추가 메쉬 3
+            mesh.name === "Hospital_02_37m_0" || // 추가 메쉬 4
+            mesh.name === "Hospital_02_30m_0" || // 추가 메쉬 5
+            mesh.name === "Hospital_02_25m_0") { // 추가 메쉬 6
           mesh.checkCollisions = true;
           mesh.isPickable = false; // 계단은 클릭 불가
           console.log("계단 메쉬 충돌 강화:", mesh.name);
