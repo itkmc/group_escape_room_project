@@ -423,57 +423,87 @@ for (const mesh of combination_padlock.meshes) {
   }
 
   // 이 부분은 for 루프가 끝난 후 실행되므로, 밖에서 선언된 doorMesh 변수에 접근 가능
-  if (doorMesh) { // doorMesh가 할당되었는지 확인
+if (doorMesh) { // doorMesh가 할당되었는지 확인
     scene.onKeyboardObservable.add((kbInfo) => {
-        if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e" && !isUnlocked) {
-            if (getHasIdCardItem()) {
-                console.log("E키로 문 열기 - ID 카드 사용됨");
-                // ID 카드 소모 처리 - onDoorInteraction을 통해 처리
-                if (onDoorInteraction) onDoorInteraction("ID_CARD_USED");
-                isUnlocked = true;
+        // E키가 눌렸을 때만 로직 실행
+        if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e") {
+            // 플레이어의 위치 (카메라 위치로 가정)
+            const playerPosition = scene.activeCamera.position;
+            // 문 메쉬의 위치
+            const doorPosition = doorMesh.absolutePosition;
+            
+            // 두 위치 사이의 거리 계산
+            const distance = BABYLON.Vector3.Distance(playerPosition, doorPosition);
+            const interactionDistance = 5; // 상호작용 가능 거리 설정 (예시, 필요에 따라 조절)
 
-                if (isAnimating) return;
-                isAnimating = true;
-                // 문 열기 효과음 재생
-                const doorAudio = new Audio('/squeaky-door-open-317165.mp3');
-                doorAudio.play();
-                doorMesh.checkCollisions = false;
-                scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
-                    isDoorOpen = true;
-                    isAnimating = false;
-                    
-                    // BGM 일시정지
-                    if (bgmRef && bgmRef.current) {
-                        bgmRef.current.pause();
+            // 플레이어와 문 사이의 거리가 상호작용 거리 이내인지 확인
+            if (distance <= interactionDistance) {
+                // 문이 잠겨있을 때의 로직
+                if (!isUnlocked) {
+                    if (getHasIdCardItem()) {
+                        // ID 카드 소모 처리 - onDoorInteraction을 통해 처리
+                        if (onDoorInteraction) onDoorInteraction("ID_CARD_USED");
+                        isUnlocked = true;
+
+                        if (isAnimating) return;
+                        isAnimating = true;
+                        // 문 열기 효과음 재생
+                        const doorAudio = new Audio('/squeaky-door-open-317165.mp3');
+                        doorAudio.play();
+                        doorMesh.checkCollisions = false;
+                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                            isDoorOpen = true;
+                            isAnimating = false;
+                            
+                            // BGM 일시정지
+                            if (bgmRef && bgmRef.current) {
+                                bgmRef.current.pause();
+                            }
+                            
+                            // 현재 BGM 중지
+                            if (bgmRef && bgmRef.current) {
+                                bgmRef.current.pause();
+                            }
+                            
+                            // scary-music-box를 새로운 배경음으로 설정 (반복 재생)
+                            const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
+                            scaryAudio.loop = true; // 반복 재생 설정
+                            scaryAudio.play();
+                            
+                            // bgmRef를 scary-music-box로 업데이트
+                            if (bgmRef) {
+                                bgmRef.current = scaryAudio;
+                            }
+                        });
+                    } 
+                } else {
+                    // 문이 잠금 해제된 상태에서 E키를 누르면 열고 닫는 로직 추가
+                    if (isAnimating) return;
+                    isAnimating = true;
+
+                    if (isDoorOpen) {
+                         // 문 닫기 애니메이션
+                         scene.beginDirectAnimation(doorMesh, [closeAnim], 0, 30, false, 1.0, () => {
+                            doorMesh.checkCollisions = true;
+                            isAnimating = false;
+                            isDoorOpen = false;
+                        });
+                    } else {
+                        // 문 열기 애니메이션
+                        const doorAudio = new Audio('/squeaky-door-open-317165.mp3');
+                        doorAudio.play();
+                        doorMesh.checkCollisions = false;
+                        scene.beginDirectAnimation(doorMesh, [openAnim], 0, 30, false, 1.0, () => {
+                             isDoorOpen = true;
+                             isAnimating = false;
+                        });
                     }
-                    
-                    // 문 열기 애니메이션 완료 후 배경음을 scary-music-box로 변경 (계속 재생)
-                    console.log("문 열기 완료 - 배경음을 scary-music-box로 변경");
-                    
-                    // 현재 BGM 중지
-                    if (bgmRef && bgmRef.current) {
-                        bgmRef.current.pause();
-                    }
-                    
-                    // scary-music-box를 새로운 배경음으로 설정 (반복 재생)
-                    const scaryAudio = new Audio('/scary-music-box-for-spooky-scenes-165983.mp3');
-                    scaryAudio.loop = true; // 반복 재생 설정
-                    scaryAudio.play();
-                    
-                    // bgmRef를 scary-music-box로 업데이트
-                    if (bgmRef) {
-                        bgmRef.current = scaryAudio;
-                    }
-                });
-            } else {
-                // if (onDoorInteraction) onDoorInteraction("문이 잠겨있습니다!");
-            }
+                }
+            } 
         }
     });
-};
+}
   
-              
-
   // 수술대 위치
   const desiredOperatingWorldPos = new BABYLON.Vector3(6.8, 6.43, 12.67);
   const operating = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "operating_table.glb", scene);
