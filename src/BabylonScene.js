@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-21.04, 15.59, 11.35),
+        new BABYLON.Vector3(-10.7, 5.29, 10.82),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -535,7 +535,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.08; // 씬의 기본 밝기 조절 0.15
+      originalHemiLightIntensity = 0.8; // 씬의 기본 밝기 조절 0.08
       hemiLight.intensity = originalHemiLightIntensity;
 
       const darkZoneCenter = new BABYLON.Vector3(6, 7, 14.5);
@@ -601,8 +601,12 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       // --- 1. 수동으로 범위(트리거) 지정 ---
       const customTriggerConfigs = [
           {
-              center: new BABYLON.Vector3(-11.4, 5, 4.7), // 중앙계단
-              size: new BABYLON.Vector3(6.0, 7, 6)
+              center: new BABYLON.Vector3(-13.25, 5, 4.7), // 중앙계단
+              size: new BABYLON.Vector3(2.05, 7, 6)
+          },
+          {
+              center: new BABYLON.Vector3(-10.35, 5, 4.7), // 중앙계단2
+              size: new BABYLON.Vector3(2.1, 7, 6)
           },
           {
               center: new BABYLON.Vector3(8.81, 6.36, 5.06), // 지하계단
@@ -629,7 +633,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -1004,15 +1008,15 @@ scene.onBeforeRenderObservable.add(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      // scene.onPointerObservable.add((pointerInfo) => {
-      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
-      //     if (mesh) {
-      //       console.log("🖱️ Clicked mesh name:", mesh.name);
-      //       alert(`Clicked mesh name: ${mesh.name}`);
-      //     }
-      //   }
-      // });
+      scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+          const mesh = pointerInfo.pickInfo?.pickedMesh;
+          if (mesh) {
+            console.log("🖱️ Clicked mesh name:", mesh.name);
+            alert(`Clicked mesh name: ${mesh.name}`);
+          }
+        }
+      });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
@@ -1022,35 +1026,35 @@ scene.onBeforeRenderObservable.add(() => {
         }
       });
 
-// // 바닥 Mesh 생성
-// const ground = BABYLON.MeshBuilder.CreateBox("ground", {
-//     width: 2.2,
-//     height:0.3, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
-//     depth: 6.5
-// }, scene);
+// 바닥 Mesh 생성
+const ground = BABYLON.MeshBuilder.CreateBox("ground", {
+    width: 2.2,
+    height:0.05, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
+    depth: 6.5
+}, scene);
 
-// // 바닥의 재질 설정
-// const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-// groundMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // 빨간색
-// ground.material = groundMaterial;
-// // ground.isVisible = false;
+// 바닥의 재질 설정
+const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+groundMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0); // 빨간색
+ground.material = groundMaterial;
+ground.isVisible = true;
 
-// // 충돌 감지 활성화
-// ground.checkCollisions = true;
+// 충돌 감지 활성화
+ground.checkCollisions = true;
 
-// // -------------------------------------------------------------
-// // 바닥의 위치를 변경하는 부분입니다.
-// ground.position = new BABYLON.Vector3(-13.3, 2.3, 4.9);
+// -------------------------------------------------------------
+// 바닥의 위치를 변경하는 부분입니다.
+ground.position = new BABYLON.Vector3(-12.03, 6, 10);
 
-// // -------------------------------------------------------------
-// // 바닥의 각도를 변경하는 부분입니다.
-// // x, y, z 축을 기준으로 회전할 각도를 라디안으로 설정합니다.
-// // 예를 들어, x축을 기준으로 45도 회전하려면 아래와 같이 작성합니다.
-// ground.rotation = new BABYLON.Vector3(
-//     BABYLON.Tools.ToRadians(-26.3), // x축으로 45도 회전
-//     BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
-//     BABYLON.Tools.ToRadians(0)   // z축으로 0도 회전
-// );
+// -------------------------------------------------------------
+// 바닥의 각도를 변경하는 부분입니다.
+// x, y, z 축을 기준으로 회전할 각도를 라디안으로 설정합니다.
+// 예를 들어, x축을 기준으로 45도 회전하려면 아래와 같이 작성합니다.
+ground.rotation = new BABYLON.Vector3(
+    BABYLON.Tools.ToRadians(0), // x축으로 45도 회전
+    BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
+    BABYLON.Tools.ToRadians(90)   // z축으로 0도 회전
+);
 
 // -------------------------------------------------------------
       // --- 4. 메인 렌더 루프 ---
@@ -1146,7 +1150,7 @@ engine.runRenderLoop(() => {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      {/* {<div
+      {<div
         style={{
           position: "absolute",
           top: 10,
@@ -1165,7 +1169,7 @@ engine.runRenderLoop(() => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div> } */}
+      </div> }
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
