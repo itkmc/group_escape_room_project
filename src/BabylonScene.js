@@ -383,16 +383,6 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           mesh.isPickable = true;
         }
 
-        // 계단 관련 메쉬들 강화
-        if (mesh.name.includes("stair") || mesh.name.includes("계단") || 
-            mesh.name.includes("40m") || mesh.name.includes("41m") || 
-            mesh.name.includes("42m") || mesh.name.includes("43m") ||
-            mesh.name === "Hospital_02_39m_0") { // 계단 손잡이 추가
-          mesh.checkCollisions = true;
-          mesh.isPickable = false; // 계단은 클릭 불가
-          console.log("계단 메쉬 충돌 강화:", mesh.name);
-        }
-
         if (mesh.name === "Hospital_02_36m_0") {
           parentMesh = mesh;
         }
@@ -1054,7 +1044,7 @@ ground.checkCollisions = true;
 
 // -------------------------------------------------------------
 // 바닥의 위치를 변경하는 부분입니다.
-ground.position = new BABYLON.Vector3(-12.03, 6, 10);
+ground.position = new BABYLON.Vector3(-12.03, 3, 10);
 
 // -------------------------------------------------------------
 // 바닥의 각도를 변경하는 부분입니다.
