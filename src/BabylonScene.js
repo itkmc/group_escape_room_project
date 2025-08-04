@@ -323,7 +323,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       camera.inputs.addMouse();
       camera.checkCollisions = true;
       camera.applyGravity = true;
-      camera.ellipsoid = new BABYLON.Vector3(0.2, 0.7, 0.3); // 충돌체 크기 증가
+      camera.ellipsoid = new BABYLON.Vector3(0.1, 0.7, 0.1);
 
       // 앉기 기능 관련 변수 제거됨
 
@@ -389,11 +389,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
             mesh.name.includes("42m") || mesh.name.includes("43m") ||
             mesh.name === "Hospital_02_39m_0" || // 계단 손잡이
             mesh.name === "Hospital_02_26m_0" || // 추가 메쉬 1
-            mesh.name === "Hospital_02_32m_0" || // 추가 메쉬 2
-            mesh.name === "Hospital_02_94m_0" || // 추가 메쉬 3
-            mesh.name === "Hospital_02_37m_0" || // 추가 메쉬 4
-            mesh.name === "Hospital_02_30m_0" || // 추가 메쉬 5
-            mesh.name === "Hospital_02_25m_0") { // 추가 메쉬 6
+            mesh.name === "Hospital_02_32m_0") { // 추가 메쉬 2
           mesh.checkCollisions = true;
           mesh.isPickable = false; // 계단은 클릭 불가
           console.log("계단 메쉬 충돌 강화:", mesh.name);
@@ -649,7 +645,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
           }, scene);
           triggerBox.position = config.center;
 
-          triggerBox.isVisible = true; // 디버깅을 위해 보이게 설정합니다.
+          triggerBox.isVisible = false; // 디버깅을 위해 보이게 설정합니다.
           triggerBox.isPickable = false; // 클릭되지 않게 유지합니다.
 
           const triggerMat = new BABYLON.StandardMaterial(`triggerMat${index}`, scene);
@@ -708,7 +704,7 @@ scene.onBeforeRenderObservable.add(() => {
       let isWKeyPressed = false;
       let isSKeyPressed = false;
 
-      camera.speed = 0.3;
+      camera.speed = 0.05;
 
       scene.onKeyboardObservable.add((kbInfo) => {
           switch (kbInfo.type) {
@@ -1024,15 +1020,15 @@ scene.onBeforeRenderObservable.add(() => {
         }
       });
         //  Babylon.js 씬 내에서 메쉬 클릭 시 이름 출력
-      scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
-          const mesh = pointerInfo.pickInfo?.pickedMesh;
-          if (mesh) {
-            console.log("🖱️ Clicked mesh name:", mesh.name);
-            alert(`Clicked mesh name: ${mesh.name}`);
-          }
-        }
-      });
+      // scene.onPointerObservable.add((pointerInfo) => {
+      //   if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK) {
+      //     const mesh = pointerInfo.pickInfo?.pickedMesh;
+      //     if (mesh) {
+      //       console.log("🖱️ Clicked mesh name:", mesh.name);
+      //       alert(`Clicked mesh name: ${mesh.name}`);
+      //     }
+      //   }
+      // });
 
       window.addEventListener("keydown", (evt) => {
         if (evt.key === "p" || evt.key === "P") {
@@ -1044,8 +1040,8 @@ scene.onBeforeRenderObservable.add(() => {
 
 // 바닥 Mesh 생성
 const ground = BABYLON.MeshBuilder.CreateBox("ground", {
-    width: 5,
-    height:0.5, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
+    width: 10,
+    height:0.8, 
     depth: 6.5
 }, scene);
 
@@ -1080,9 +1076,9 @@ const ground1 = BABYLON.MeshBuilder.CreateBox("ground", {
 }, scene);
 
 // 바닥의 재질 설정
-const ground1Material = new BABYLON.StandardMaterial("groundMaterial", scene);
+const ground1Material = new BABYLON.StandardMaterial("ground1Material", scene);
 ground1Material.diffuseColor = new BABYLON.Color3(0, 0, 0); // 빨간색
-ground1.material = groundMaterial;
+ground1.material = ground1Material;
 ground1.isVisible = false;
 
 // 충돌 감지 활성화
@@ -1101,12 +1097,53 @@ ground1.rotation = new BABYLON.Vector3(
     BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
     BABYLON.Tools.ToRadians(90)   // z축으로 0도 회전
 );
+// 바닥 Mesh 생성
+const ground2 = BABYLON.MeshBuilder.CreateBox("ground", {
+    width: 10,
+    height:0.5, 
+    depth: 6.5
+}, scene);
+
+// 바닥의 재질 설정
+const ground2Material = new BABYLON.StandardMaterial("ground2Material", scene);
+ground2Material.diffuseColor = new BABYLON.Color3(0, 0, 0); // 빨간색
+ground2.material = ground2Material;
+ground2.isVisible = false;
+
+// 충돌 감지 활성화
+ground2.checkCollisions = true;
 
 // -------------------------------------------------------------
-      // --- 4. 메인 렌더 루프 ---
+// 바닥의 위치를 변경하는 부분입니다.
+ground2.position = new BABYLON.Vector3(-9, 3, 4);
+
+// -------------------------------------------------------------
+// 바닥의 각도를 변경하는 부분입니다.
+// x, y, z 축을 기준으로 회전할 각도를 라디안으로 설정합니다.
+// 예를 들어, x축을 기준으로 45도 회전하려면 아래와 같이 작성합니다.
+ground2.rotation = new BABYLON.Vector3(
+    BABYLON.Tools.ToRadians(0), // x축으로 45도 회전 -30
+    BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
+    BABYLON.Tools.ToRadians(90)   // z축으로 0도 회전
+);
+// -------------------------------------------------------------
+// --- 4. 메인 렌더 루프 ---
 engine.runRenderLoop(() => {
+    // customTriggerConfigs 범위 안에 있으면 Shift 키를 통한 달리기를 비활성화합니다.
+    if (isInCustomArea) {
+        camera.speed = WALK_SPEED;
+    } else {
+        // 범위 밖에 있을 때만 Shift 키로 달리기 가능
+        if (keysPressed["shift"]) {
+            camera.speed = RUN_SPEED;
+        } else {
+            camera.speed = WALK_SPEED;
+        }
+    }
+
     if (isInCustomArea) {
         // FreeCamera의 기본 WASD 이동 로직을 비활성화합니다.
+        // 이 부분은 이미 isInCustomArea가 true일 때만 실행됩니다.
         if (camera.inputs.attached.length > 0) {
             camera.inputs.clear();
             if (canvas) {
@@ -1150,6 +1187,7 @@ engine.runRenderLoop(() => {
 
     scene.render();
 });
+
 
       const onResize = () => engine.resize();
       window.addEventListener("resize", onResize);
