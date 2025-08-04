@@ -1040,8 +1040,8 @@ scene.onBeforeRenderObservable.add(() => {
 
 // 바닥 Mesh 생성
 const ground = BABYLON.MeshBuilder.CreateBox("ground", {
-    width: 2.2,
-    height:0.05, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
+    width: 5,
+    height:0.5, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
     depth: 6.5
 }, scene);
 
@@ -1049,21 +1049,51 @@ const ground = BABYLON.MeshBuilder.CreateBox("ground", {
 const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 groundMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0); // 빨간색
 ground.material = groundMaterial;
-ground.isVisible = true;
+ground.isVisible = false;
 
 // 충돌 감지 활성화
 ground.checkCollisions = true;
 
 // -------------------------------------------------------------
 // 바닥의 위치를 변경하는 부분입니다.
-ground.position = new BABYLON.Vector3(-12.03, 3, 10);
+ground.position = new BABYLON.Vector3(-11.9, 3, 4);
 
 // -------------------------------------------------------------
 // 바닥의 각도를 변경하는 부분입니다.
 // x, y, z 축을 기준으로 회전할 각도를 라디안으로 설정합니다.
 // 예를 들어, x축을 기준으로 45도 회전하려면 아래와 같이 작성합니다.
 ground.rotation = new BABYLON.Vector3(
-    BABYLON.Tools.ToRadians(0), // x축으로 45도 회전
+    BABYLON.Tools.ToRadians(0), // x축으로 45도 회전 -30
+    BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
+    BABYLON.Tools.ToRadians(90)   // z축으로 0도 회전
+);
+
+// 바닥 Mesh 생성
+const ground1 = BABYLON.MeshBuilder.CreateBox("ground", {
+    width: 5,
+    height:0.5, // 이 값이 두께(높이)입니다. 원하는 값으로 조절하세요.
+    depth: 6.5
+}, scene);
+
+// 바닥의 재질 설정
+const ground1Material = new BABYLON.StandardMaterial("groundMaterial", scene);
+ground1Material.diffuseColor = new BABYLON.Color3(0, 0, 0); // 빨간색
+ground1.material = groundMaterial;
+ground1.isVisible = false;
+
+// 충돌 감지 활성화
+ground1.checkCollisions = true;
+
+// -------------------------------------------------------------
+// 바닥의 위치를 변경하는 부분입니다.
+ground1.position = new BABYLON.Vector3(-14.5, 3, 4);
+
+// -------------------------------------------------------------
+// 바닥의 각도를 변경하는 부분입니다.
+// x, y, z 축을 기준으로 회전할 각도를 라디안으로 설정합니다.
+// 예를 들어, x축을 기준으로 45도 회전하려면 아래와 같이 작성합니다.
+ground1.rotation = new BABYLON.Vector3(
+    BABYLON.Tools.ToRadians(0), // x축으로 45도 회전 -30
     BABYLON.Tools.ToRadians(0),  // y축으로 0도 회전
     BABYLON.Tools.ToRadians(90)   // z축으로 0도 회전
 );
