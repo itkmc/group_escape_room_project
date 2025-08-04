@@ -61,3 +61,16 @@ EASY, NOMAL, HARD 총 3개의 난이도와  각각의 시나리오로 구성되�
 - 버전관리 : GitHub
 
 ![난이도](image.png)
+
+![로딩중](image-1.png)
+
+![타이머](image-2.png)
+
+![문제](image-3.png)
+
+![아이템 획득과 안내 메세지](image-4.png)
+
+![타임오버](image-5.png)
+
+![탈출 성공](image-6.png)
+
