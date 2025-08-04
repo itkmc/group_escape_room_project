@@ -627,7 +627,7 @@ for (const mesh of dirty_tube__melee_weaponResult.meshes) {
 }
 
 // 문제 위치 (두루마리)
-const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.2, 8.25, 14.5);
+const old__ancient_scrollWorldPos = new BABYLON.Vector3(11.2, 8.13, 14.5);
 const old__ancient_scrollResult = await BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "old__ancient_scroll.glb", scene);
 
 for (const mesh of old__ancient_scrollResult.meshes) {

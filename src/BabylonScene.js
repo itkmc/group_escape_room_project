@@ -67,22 +67,22 @@ const BabylonScene = ({ onGameLoaded, onGameRestart, bgmRef, onLoadingProgress }
   }, [showProblemModal]);
 
   // 스크롤 방지
-  // useEffect(() => {
-  //   const preventScroll = (e) => {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //     return false;
-  //   };
+  useEffect(() => {
+    const preventScroll = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
 
-  //   // 전체 페이지에서 스크롤 방지
-  //   document.addEventListener('wheel', preventScroll, { passive: false });
-  //   document.addEventListener('touchmove', preventScroll, { passive: false });
+    // 전체 페이지에서 스크롤 방지
+    document.addEventListener('wheel', preventScroll, { passive: false });
+    document.addEventListener('touchmove', preventScroll, { passive: false });
 
-  //   return () => {
-  //     document.removeEventListener('wheel', preventScroll);
-  //     document.removeEventListener('touchmove', preventScroll);
-  //   };
-  // }, []);
+    return () => {
+      document.removeEventListener('wheel', preventScroll);
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, []);
 
 
   const correctAnswer = "72";
@@ -315,7 +315,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
       const camera = new BABYLON.UniversalCamera(
         "camera",
         //첫시작
-        new BABYLON.Vector3(-10.7, 5.29, 10.82),
+        new BABYLON.Vector3(-21.84,15.69,11.13),
         scene
       );
       camera.rotation.y = Math.PI + Math.PI / 2;
@@ -332,7 +332,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 플레이어 이동 속도 조절
       const WALK_SPEED = 0.1;
-      const RUN_SPEED = 0.4;
+      const RUN_SPEED = 0.3;
       camera.speed = WALK_SPEED;
 
       const specialPositions = [
@@ -547,7 +547,7 @@ const handleCupboardClickToTriggerOfficeQuiz = useCallback(() => {
 
       // 전역 배경 조명 설정
       hemiLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-      originalHemiLightIntensity = 0.8; // 씬의 기본 밝기 조절 0.08
+      originalHemiLightIntensity = 0.08; // 씬의 기본 밝기 조절 0.08
       hemiLight.intensity = originalHemiLightIntensity;
 
       const darkZoneCenter = new BABYLON.Vector3(6, 7, 14.5);
@@ -987,8 +987,8 @@ scene.onBeforeRenderObservable.add(() => {
       canvasRef.current.addEventListener("wheel", (evt) => {
         evt.preventDefault();
         // 스크롤
-        // evt.stopPropagation();
-        // return false;
+        evt.stopPropagation();
+        return false;
         const delta = evt.deltaY < 0 ? 1 : -1;
         const forward = camera.getDirection(BABYLON.Axis.Z);
         camera.position.addInPlace(forward.scale(delta));
@@ -1163,8 +1163,7 @@ engine.runRenderLoop(() => {
                 moveAngle = -customMoveAngle;
             } else { // isSKeyPressed
                 moveAngle = customMoveAngle;
-                moveDirectionMultiplier = -1;
-            }
+                moveDirectionMultiplier = -1;}
 
             const rotationQuaternion = BABYLON.Quaternion.RotationAxis(rightVector, moveAngle);
             let rotationMatrix = new BABYLON.Matrix();
@@ -1234,7 +1233,7 @@ engine.runRenderLoop(() => {
   return (
     <>
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />
-      {<div
+      {/* {<div
         style={{
           position: "absolute",
           top: 10,
@@ -1253,7 +1252,7 @@ engine.runRenderLoop(() => {
         <div>X: {playerPos.x}</div>
         <div>Y: {playerPos.y}</div>
         <div>Z: {playerPos.z}</div>
-      </div> }
+      </div> } */}
 
       {/* 우측 상단 컨트롤 안내 UI 전체 삭제 */}
 
